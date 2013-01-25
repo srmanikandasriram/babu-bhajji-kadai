@@ -233,7 +233,7 @@ void setup(){
   Serial_Print();
   encoder_left = encoder_right = 0;
   LAPTOP.println("Encoder values reset.");
-  path_phase = LINEFOLLOWL1L2BRAKE;
+//  path_phase = LINEFOLLOWL1L2BRAKE;
   Transform();
 }
 
