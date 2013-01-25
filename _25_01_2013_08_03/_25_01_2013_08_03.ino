@@ -74,7 +74,7 @@ class SENSOR
   };
 
 /** Configuration Constants: Affect behaviour **/
-uint16_t distances[13] = {0, 700, 7400, 12150, 16900,950,4000,2000,6030,3800,6800,9800,0}; // 20500, 100, 4000, 3000, 0};
+uint16_t distances[15] = {0, 700, 7400, 12150, 16500, 300, 4000, 2400,6030,3800,90,6800,9800,0}; // 20500, 100, 4000, 3000, 0};
 
 /** Global declarations **/
 Motor left_motor(22, 23, 9), right_motor(25, 24, 10), turret_motor(27, 26, 11); // the order of pin numbers determine the direction
@@ -162,9 +162,13 @@ int actuation_phase = 0, path_phase = 0;
 #define LATITUDEFOLLOW1 11
 #define LATITUDEFOLLOW2 12
 #define TRANSFER_FIRST_BUD 13
+#define BACKLATITUDE1 14
+#define LONGITUDE1 15
+#define BUD2 16
+#define LATITUDE3 17
 #define TURRET_ANG1 1080 //1150
 #define TURRET_ANG2 1800 //1830
-#define TURRET_ANG3 1800 //1830
+#define TURRET_ANG3 2000 //1800 //1830
 #define TURRET_ANG4 1030 //1830
 #define TURRET_ANG5 4130 //3660
 #define TURRET_ANG6 3660
@@ -222,7 +226,7 @@ void setup(){
   setpoint = 0;  
   pid.SetMode(AUTOMATIC);
   pid.SetSampleTime(1);
-  pid.SetOutputLimits(-35,35);  
+  pid.SetOutputLimits(-15,15);  
   LAPTOP.println("Initialised");
 
   if( Serial_Wait() == 't' ){
@@ -239,9 +243,8 @@ void setup(){
 }
 
 void loop(){
-  prevmillis = millis();
   if( linefollow_enable ){
-    Read_Sensors();
+    //Read_Sensors();
     Query_Launchpad();
     PID_Adjust();
     Serial_Print();
@@ -260,7 +263,6 @@ void loop(){
   } else {
     Transform();
   }
-  Serial.println(millis() - prevmillis);
 }
 
 void Check_Motors(){
@@ -398,6 +400,8 @@ void Accelerate_Bot(){
   // Accelerate from rest
   while(base_pwm<140){
     base_pwm++;
+    if(base_pwm>35)
+      pid.SetOutputLimits(-35,35);
 //    turret_motor.pwm(base_pwm+75);
     Query_Launchpad();
     PID_Adjust();
@@ -521,13 +525,26 @@ void PID_Adjust(){
     }
     break;
   case 11:
-   LineFollow();
+    LineFollow();
     break;
-   case 12:
+  case 12:
     LineFollowL1L2break();
     if( ( R2.High() && R1.High() && L1.High() )||( L2.High() && R1.High() && L1.High() )  )
       line_detected=true;
-    break;    
+    break; 
+  case 13:
+  case 14:
+     LineFollow();
+    break;
+  case 15:
+    LineFollowL1L2break();
+    if( ( R2.High() && R1.High() && L1.High() )||( L2.High() && R1.High() && L1.High() )  )
+      line_detected=true;
+    break;
+  case 16:
+  case 17:
+    LineFollow();
+    break;
   }
 }
 
@@ -566,7 +583,7 @@ void Transform(){
       turret_motor.Brake(0);
       LAPTOP.println("Turret has aligned.");
       Actuate_High(V_PISTON);
-      delay(3000);
+      delay(1000);
       Actuate_Low(V_PISTON);
       Serial_Wait();
       Query_Launchpad();
@@ -611,7 +628,7 @@ void Transform(){
       actuation_phase++;
       break;
       
-    case DROP_MIDDLE_LEAF:
+  case DROP_MIDDLE_LEAF:
       // brake the bot
       LAPTOP.println("Stopping at second leaf");
       left_motor.Brake(HARDBRAKE);
@@ -629,52 +646,24 @@ void Transform(){
       right_motor.Control(FWD);
       left_motor.pwm(50);
       right_motor.pwm(50);
-      
-      
-      // turret rotation only after turn     
-      /*encoder_turret = 0;
-      turret_motor.Control(BCK);
-      turret_motor.pwm(140);
-      actuation_phase++;*/
-      break;
-/*   case RUN_STAGE_TWO:
-      LAPTOP.println("Into Stage 2");
-      path_phase = 5;  
-      // encoder_turret = 0;
-      encoder_left = 0; encoder_right = 0;
-      /*
-      turret_motor.Control(FWD);
-      turret_motor.pwm(140);
-      while(encoder_turret<TURRET_ANG_STAGE_TWO){
-        LAPTOP.print("Turret Angle: "); LAPTOP.println(encoder_turret);
-      }
-      turret_motor.Brake(255);
-      
-      LAPTOP.println("Turret aligned for stage 2");
-      Serial_Wait();
-      pid_enable = false;
-      LAPTOP.println("Moving forward slightly");
+      while(L1.Low()&&R1.Low());
+      mbreak(255,255);
+      delay(10);
       left_motor.Control(FWD);
       right_motor.Control(FWD);
       left_motor.pwm(50);
       right_motor.pwm(50);
-            
-       // turret rotation only after turn     
-      /*encoder_turret = 0;
-      turret_motor.Control(BCK);
-      turret_motor.pwm(140);
-      actuation_phase++;
       break;
-   */
+      
    case LINEFOLLOW:
       // soft turn
       LAPTOP.println("Going into soft turn");
       right_motor.Brake(HARDBRAKE);
-      left_motor.pwm(100);
+      left_motor.pwm(150);
       delay(100);
       while(!R2.High());      
       right_motor.Control(FWD);
-      right_motor.pwm(10);
+      right_motor.pwm(30);
       left_motor.Brake(HARDBRAKE);
       while(!R1.High());
       delay(150);
@@ -682,12 +671,8 @@ void Transform(){
       Serial_Wait();
       LAPTOP.println(" Beginning to follow line ");
       Query_Launchpad();
-      encoder_left = encoder_right = 0;      
-      //encoder_turret = 0;
-      //turret_motor.Control(BCK);
-      ///turret_motor.pwm(200);
+      encoder_left = encoder_right = 0;     
       linefollow_enable = true;
-     // actuation_phase++;
       Serial.println(actuation_phase);
       break;
 
@@ -695,14 +680,15 @@ void Transform(){
       // brake the bot
       LAPTOP.println("LinegollowL1L2 entered");
       left_motor.Brake(HARDBRAKE);
+      right_motor.Control(BCK);
+      right_motor.pwm(30);
+      while(!L2.High());
       right_motor.Brake(HARDBRAKE);
       Serial_Wait();
       Query_Launchpad();
       encoder_left = encoder_right = 0;
       actuation_phase++;
       LAPTOP.println("Setting turret and servo");
-      
-      //Adjust servo and turret to place leaf after stopping. TEMPORARY. 
       encoder_turret = 0;
       turret_motor.Control(BCK);
       turret_motor.pwm(200);       
@@ -734,12 +720,11 @@ void Transform(){
       actuation_phase++;
       LAPTOP.println(actuation_phase);
       break;
-
+      
     case REVERSE_TO_LATITUDE:
       // brake the bot
       left_motor.Brake(HARDBRAKE);
       right_motor.Brake(HARDBRAKE);
-      Serial_Wait();
       while(encoder_turret<TURRET_ANG5);
       turret_motor.Brake(255);
       LAPTOP.println("Reached Bud");
@@ -764,7 +749,7 @@ void Transform(){
     case TOKYODRIFT:
       left_motor.Brake(HARDBRAKE);
       LAPTOP.println("Aligning onto latitude");
-      Set_Turn(90);
+      Set_Turn(distances[path_phase]);
       Query_Launchpad();
       encoder_left = encoder_right = 0;
       left_motor.Control(FWD);
@@ -779,6 +764,8 @@ void Transform(){
       left_motor.Brake(HARDBRAKE);
       right_motor.Brake(HARDBRAKE);
       line_detected=false;
+      LAPTOP.println("Line follow 1");
+      Serial_Print();
       Serial_Wait();
       LAPTOP.println("Line follow 1");
       break;
