@@ -73,7 +73,7 @@ class Sensor{
 };
 
 /** Configuration Constants: Affect behaviour **/
-uint16_t distances[15] = {0, 700, 7400, 12150, 16500, 300, 4000, 2400,6030,3800,90,6800,9800,0}; // 20500, 100, 4000, 3000, 0};
+uint16_t distances[15] = {0, 700, 7400, 12150, 16500, 300, 4000, 2400,8030,3800,75,8000,9650,0}; // 20500, 100, 4000, 3000, 0};
 
 /** Global declarations **/
 Motor left_motor(22, 23, 9), right_motor(25, 24, 10), turret_motor(27, 26, 11); // the order of pin numbers determine the direction
@@ -96,7 +96,7 @@ const int minimum_pwm = 20, maximum_pwm = 200;
 const int acceleration_delay_short = 2, acceleration_delay_long = 5;
 const int deceleration_delay_short = 2, deceleration_delay_long = 5;
 const int path_profile = 1;
-const int encoder_count = 5802;  // Encoder count for hard turn 5802
+const int encoder_count = 11604;  // Encoder count for hard turn 5802
 const int diff = 10;
 
 // For PID
@@ -168,8 +168,8 @@ int actuation_phase = 0, path_phase = 0;
 #define TURRET_ANG1 1080 //1150
 #define TURRET_ANG2 1800 //1830
 #define TURRET_ANG3 2000 //1800 //1830
-#define TURRET_ANG4 1030 //1830
-#define TURRET_ANG5 4130 //3660
+#define TURRET_ANG4 1830 //1030 //1830
+#define TURRET_ANG5 3660 //3660
 #define TURRET_ANG6 3660
 #define RUN_STAGE_TWO 20
 
@@ -237,7 +237,8 @@ void setup(){
   Serial_Print();
   encoder_left = encoder_right = 0;
   LAPTOP.println("Encoder values reset.");
-//  path_phase = LINEFOLLOWL1L2BRAKE;
+  //path_phase = DROP_RIGHT_LEAF;
+  //actuation_phase = 3;
   Transform();
 }
 
@@ -247,6 +248,8 @@ void loop(){
     Query_Launchpad();
     PID_Adjust();
     Serial_Print();
+    Move_Turret();
+    Move_Servo();
     if( (encoder_left > distances[path_phase]) || (encoder_right > distances[path_phase]) || line_detected)
       Transform();
   }else if( (encoder_left < distances[path_phase]) && (encoder_right < distances[path_phase]) ){
@@ -307,8 +310,7 @@ void Read_Sensors(){
   for(int i = 1; i<=4; i++){
     sensor_state |= digitalRead(sensors[i])<<(i-1);
   }
-  //LAPTOP.print("Sensor Reading: ");
-  //LAPTOP.println(sensor_state,BIN);
+  LAPTOP.println(sensor_state,BIN);
 }
 
 /** Helper functions **/
@@ -460,8 +462,7 @@ void Move_Turret(){
   case 3:
     if(encoder_turret>TURRET_ANG3){
       turret_motor.Brake(0);
-    }else if(encoder_turret>500)
-      servo_angle_right = SERVO_ANG_R1;
+    }
     break;
   case 4:
     if(encoder_turret>TURRET_ANG4){
@@ -471,8 +472,7 @@ void Move_Turret(){
   case 5:
     if(encoder_turret>TURRET_ANG5){
       turret_motor.Brake(0);
-    }else if(encoder_turret>200)
-      servo_angle_left = SERVO_ANG_L1;
+    }
     break;
   }
 }
@@ -507,19 +507,19 @@ void PID_Adjust(){
       line_detected=true;
     break;
   case 10:
-    input = encoder_left;
+    input = encoder_right;
     pid.Compute();
-    if(output>75){
-      left_motor.pwm(75);
-      right_motor.pwm(75);
-    }else if(output>25){
+    if(output>150){
+      left_motor.pwm(150);
+      right_motor.pwm(150);
+    }else if(output>15){
       left_motor.pwm(output);
       right_motor.pwm(output);
     }else{
-      left_motor.pwm(25);
-      right_motor.pwm(25);
+      left_motor.pwm(15);
+      right_motor.pwm(15);
     }
-    if(abs(input-setpoint<750)&&(sensor_state&0x0F)){
+    if(R2.High()||R1.High()||L1.High()||L2.High()){
       LAPTOP.println("\n DETECTED LINE");
       line_detected = true;
     }
@@ -605,7 +605,6 @@ void Transform(){
       pid.SetTunings(cons_kp,cons_ki,cons_kd);
       pid.SetOutputLimits(-55,55);
       base_pwm = VFAST;
-//      servo_angle_right = SERVO_ANG_R3;
       break;
       
     case DECELERATE:
@@ -656,6 +655,12 @@ void Transform(){
       right_motor.Control(FWD);
       left_motor.pwm(50);
       right_motor.pwm(50);
+      servo_angle_left = 110;
+      servo_angle_right = SERVO_ANG_R2;
+      encoder_turret = 0;
+      turret_motor.Control(BCK);
+      turret_motor.pwm(150);
+      actuation_phase++;
       break;
       
    case LINEFOLLOW:
@@ -676,7 +681,6 @@ void Transform(){
       Query_Launchpad();
       encoder_left = encoder_right = 0;     
       linefollow_enable = true;
-      Serial.println(actuation_phase);
       break;
 
    case LINEFOLLOWL1L2:
@@ -687,41 +691,28 @@ void Transform(){
       right_motor.pwm(30);
       while(!L2.High());
       right_motor.Brake(HARDBRAKE);
-      Serial_Wait();
       Query_Launchpad();
       encoder_left = encoder_right = 0;
-      actuation_phase++;
-      LAPTOP.println("Setting turret and servo");
-      encoder_turret = 0;
-      turret_motor.Control(BCK);
-      turret_motor.pwm(200);       
       while(encoder_turret<TURRET_ANG4);
       turret_motor.Brake(255);
-      servo_left.write(135);
-      delay(50);
       Actuate_High(LEFT_VG);
+      delay(500);
       Serial_Wait();
       LAPTOP.println("Stopping near third leaf");
-      Serial_Wait();
       encoder_turret = 0;
       turret_motor.Control(BCK);
       turret_motor.pwm(200);
+      actuation_phase++;
+      servo_angle_left = SERVO_ANG_L2;
       break;
       
     case LINEFOLLOWL1L2BRAKE:
       // brake the bot
-      
+      Query_Launchpad();
       encoder_left = encoder_right = 0;
       left_motor.Brake(HARDBRAKE);
       right_motor.Brake(HARDBRAKE);
-      servo_left.write(65);
       LAPTOP.println("Final alignment.");
-      delay(200); 
-      while(encoder_turret<TURRET_ANG5);
-      turret_motor.Brake(255);
-      //Serial_Wait();
-      actuation_phase++;
-      LAPTOP.println(actuation_phase);
       break;
       
     case REVERSE_TO_LATITUDE:
@@ -750,16 +741,18 @@ void Transform(){
       pid_enable = true;
       break;
     case TOKYODRIFT:
-      left_motor.Brake(HARDBRAKE);
       LAPTOP.println("Aligning onto latitude");
       Set_Turn(distances[path_phase]);
+      LAPTOP.println(distances[path_phase]);
       Query_Launchpad();
       encoder_left = encoder_right = 0;
       left_motor.Control(FWD);
       right_motor.Control(BCK);
-      left_motor.pwm(120);
-      right_motor.pwm(120);
-      delay(200);
+      left_motor.pwm(255);
+      right_motor.pwm(255);
+      delay(100);
+      base_pwm = 0;
+      LAPTOP.println("delay over");
       linefollow_enable = true;
       line_detected = false; 
       break;
@@ -769,7 +762,6 @@ void Transform(){
       line_detected=false;
       LAPTOP.println("Line follow 1");
       Serial_Print();
-      Serial_Wait();
       LAPTOP.println("Line follow 1");
       break;
     case LATITUDEFOLLOW2:
@@ -788,7 +780,7 @@ void Transform(){
 
 void Set_Turn(float ang){
   setpoint = ang/360.0*encoder_count;
-  cons_kp = 300.0/setpoint;
+  cons_kp = 255.0/setpoint;
   distances[path_phase] = setpoint;
   pid.SetTunings(cons_kp, cons_ki, cons_kd);
   pid.SetOutputLimits(0,255);  
@@ -801,7 +793,7 @@ void LineFollow()
   else if(  R2.Low() && R1.Low() && L1.High()  ){  moveforward(SLOW,NORMAL); }
   else if(  R2.High() && L1.Low() && L2.Low()  ){  moveforward(NORMAL,SLOWEST); right_motor.Brake(255);}
   else if(  R1.High() && L1.Low() && L2.Low()  ){  moveforward(NORMAL,SLOW); } 
-    else if(  R2.Low() && R1.Low() && L1.Low() && L2.Low()  ){  moveforward(NORMAL,NORMAL);}
+//    else if(  R2.Low() && R1.Low() && L1.Low() && L2.Low()  ){  moveforward(NORMAL,NORMAL);}
     delay(2);
 }
 void LineFollowL1L2()
