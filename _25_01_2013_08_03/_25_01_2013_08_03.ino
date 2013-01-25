@@ -74,7 +74,7 @@ class SENSOR
   };
 
 /** Configuration Constants: Affect behaviour **/
-uint16_t distances[13] = {0, 700, 7400, 12150, 16900,1400,4000,4000,1030,3800,6800,9800,0}; // 20500, 100, 4000, 3000, 0};
+uint16_t distances[13] = {0, 700, 7400, 12150, 16900,950,4000,2000,6030,3800,6800,9800,0}; // 20500, 100, 4000, 3000, 0};
 
 /** Global declarations **/
 Motor left_motor(22, 23, 9), right_motor(25, 24, 10), turret_motor(27, 26, 11); // the order of pin numbers determine the direction
@@ -132,7 +132,7 @@ int actuation_phase = 0, path_phase = 0;
 #define SERVO_RGT 8
 #define SERVO_ANG_L1 60
 #define SERVO_ANG_L2 95
-#define SERVO_ANG_L3 165
+#define SERVO_ANG_L3 135
 #define SERVO_ANG_R1 20
 #define SERVO_ANG_R2 40
 #define SERVO_ANG_R3 130
@@ -165,8 +165,9 @@ int actuation_phase = 0, path_phase = 0;
 #define TURRET_ANG1 1080 //1150
 #define TURRET_ANG2 1800 //1830
 #define TURRET_ANG3 1800 //1830
-#define TURRET_ANG4 1830
-#define TURRET_ANG5 3660
+#define TURRET_ANG4 1030 //1830
+#define TURRET_ANG5 4130 //3660
+#define TURRET_ANG6 3660
 #define RUN_STAGE_TWO 20
 
 float curservo_angle_left = SERVO_ANG_L1, curservo_angle_right = SERVO_ANG_R1;
@@ -507,20 +508,20 @@ void PID_Adjust(){
     if(output>75){
       left_motor.pwm(75);
       right_motor.pwm(75);
-    }
-    if(output>25){
+    }else if(output>25){
       left_motor.pwm(output);
       right_motor.pwm(output);
     }else{
       left_motor.pwm(25);
       right_motor.pwm(25);
     }
-    if(input-setpoint<200&&(sensor_state&0x0F))
+    if(abs(input-setpoint<750)&&(sensor_state&0x0F)){
+      LAPTOP.println("\n DETECTED LINE");
       line_detected = true;
+    }
     break;
   case 11:
    LineFollow();
-   line_detected=false;
     break;
    case 12:
     LineFollowL1L2break();
@@ -669,11 +670,15 @@ void Transform(){
       // soft turn
       LAPTOP.println("Going into soft turn");
       right_motor.Brake(HARDBRAKE);
-      left_motor.pwm(50);
+      left_motor.pwm(100);
       delay(100);
-      while(!R2.High());
+      while(!R2.High());      
+      right_motor.Control(FWD);
+      right_motor.pwm(10);
       left_motor.Brake(HARDBRAKE);
-      delay(250);
+      while(!R1.High());
+      delay(150);
+      right_motor.Brake(HARDBRAKE);
       Serial_Wait();
       LAPTOP.println(" Beginning to follow line ");
       Query_Launchpad();
@@ -689,20 +694,6 @@ void Transform(){
    case LINEFOLLOWL1L2:
       // brake the bot
       LAPTOP.println("LinegollowL1L2 entered");
-      LAPTOP.println("\n Sensor Reading at the beginning of L1L2:");
-      LAPTOP.println(sensor_state,BIN);
-/*
-      Read_Sensors();
-      if(!(sensor_state&0x0F)){
-        left_motor.Brake(HARDBRAKE);
-        right_motor.pwm(30);
-      }else{
-        right_motor.Brake(HARDBRAKE);
-        left_motor.pwm(20);
-      }*/
-      while(!L1.High()){
-        Read_Sensors();
-      }
       left_motor.Brake(HARDBRAKE);
       right_motor.Brake(HARDBRAKE);
       Serial_Wait();
@@ -712,19 +703,20 @@ void Transform(){
       LAPTOP.println("Setting turret and servo");
       
       //Adjust servo and turret to place leaf after stopping. TEMPORARY. 
-      servo_left.write(135);
-      delay(50);
       encoder_turret = 0;
       turret_motor.Control(BCK);
-      turret_motor.pwm(200); 
-      
+      turret_motor.pwm(200);       
       while(encoder_turret<TURRET_ANG4);
       turret_motor.Brake(255);
+      servo_left.write(135);
+      delay(50);
       Actuate_High(LEFT_VG);
+      Serial_Wait();
       LAPTOP.println("Stopping near third leaf");
       Serial_Wait();
-
       encoder_turret = 0;
+      turret_motor.Control(BCK);
+      turret_motor.pwm(200);
       break;
       
     case LINEFOLLOWL1L2BRAKE:
@@ -735,25 +727,24 @@ void Transform(){
       right_motor.Brake(HARDBRAKE);
       servo_left.write(65);
       LAPTOP.println("Final alignment.");
-      delay(200);
+      delay(200); 
+      while(encoder_turret<TURRET_ANG5);
+      turret_motor.Brake(255);
       //Serial_Wait();
-      encoder_turret = 0;
-      turret_motor.Control(BCK);
-      turret_motor.pwm(200);
       actuation_phase++;
       LAPTOP.println(actuation_phase);
       break;
 
     case REVERSE_TO_LATITUDE:
       // brake the bot
-      /*left_motor.Brake(HARDBRAKE);
+      left_motor.Brake(HARDBRAKE);
       right_motor.Brake(HARDBRAKE);
       Serial_Wait();
       while(encoder_turret<TURRET_ANG5);
-      turret_motor.Brake(255);*/
+      turret_motor.Brake(255);
       LAPTOP.println("Reached Bud");
-      Serial_Wait();
       Actuate_High(GRIPPER);
+      Serial_Wait();
       setpoint = 0;
       pid.SetMode(AUTOMATIC);
       pid.SetSampleTime(1);
@@ -773,19 +764,21 @@ void Transform(){
     case TOKYODRIFT:
       left_motor.Brake(HARDBRAKE);
       LAPTOP.println("Aligning onto latitude");
-      Set_Turn(70);
+      Set_Turn(90);
       Query_Launchpad();
       encoder_left = encoder_right = 0;
       left_motor.Control(FWD);
       right_motor.Control(BCK);
-//      left_motor.pwm(120);
-//      right_motor.pwm(120);
+      left_motor.pwm(120);
+      right_motor.pwm(120);
+      delay(200);
       linefollow_enable = true;
       line_detected = false; 
       break;
     case LATITUDEFOLLOW1:
       left_motor.Brake(HARDBRAKE);
       right_motor.Brake(HARDBRAKE);
+      line_detected=false;
       Serial_Wait();
       LAPTOP.println("Line follow 1");
       break;
@@ -824,21 +817,21 @@ void LineFollow()
 void LineFollowL1L2()
 {
   if( L1.Low() && L2.Low() ){moveforward(SLOW,SLOW);}
-  else if( L1.High() && L2.Low() ){moveforward(70,0);}
-  else if( L1.Low() && L2.High() ){moveforward(5,100);}
+  else if( L1.High() && L2.Low() ){moveforward(50,0);}
+  else if( L1.Low() && L2.High() ){moveforward(0,100);}
   else if( ( R2.High() && R1.High() && L1.High() )||( L2.High() && R1.High() && L1.High() )  ){mbreak(255,255);Serial.println("node....");delay(1);}
   
 }
 void LineFollowL1L2break()
 {
   if( L1.Low() && L2.Low() ){moveforward(10,10);}
-  else if( L1.High() && L2.Low() ){moveforward(60,0);right_motor.Brake(255);}
-  else if( L1.Low() && L2.High() ){moveforward(0,60);left_motor.Brake(255);}  
+  else if( L1.High() && L2.Low() ){moveforward(30,0);right_motor.Brake(255);}
+  else if( L1.Low() && L2.High() ){moveforward(0,30);left_motor.Brake(255);}  
 }
 void displaysensors()
 {
     if(L2.High()) Serial.println("L2");
     if(L1.High()) Serial.println("L1");
     if(R1.High()) Serial.println("R1");
-    if(R2.High()) Serial.println("R2"); 
+    if(R2.High()) Serial.println("R2");
 }
