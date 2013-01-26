@@ -169,8 +169,7 @@ int actuation_phase = 0, path_phase = 0;
 #define TURRET_ANG2 1800 //1830
 #define TURRET_ANG3 2000 //1800 //1830
 #define TURRET_ANG4 1830 //1030 //1830
-#define TURRET_ANG5 3660 //3660
-#define TURRET_ANG6 3660
+#define TURRET_ANG5 3500 //3660
 #define RUN_STAGE_TWO 20
 
 float curservo_angle_left = SERVO_ANG_L1, curservo_angle_right = SERVO_ANG_R1;
@@ -676,7 +675,6 @@ void Transform(){
       while(!R1.High());
       delay(150);
       right_motor.Brake(HARDBRAKE);
-      Serial_Wait();
       LAPTOP.println(" Beginning to follow line ");
       Query_Launchpad();
       encoder_left = encoder_right = 0;     
@@ -687,9 +685,9 @@ void Transform(){
       // brake the bot
       LAPTOP.println("LinegollowL1L2 entered");
       left_motor.Brake(HARDBRAKE);
-      right_motor.Control(BCK);
-      right_motor.pwm(30);
-      while(!L2.High());
+//      right_motor.Control(BCK);
+//      right_motor.pwm(30);
+//      while(!L2.High());
       right_motor.Brake(HARDBRAKE);
       Query_Launchpad();
       encoder_left = encoder_right = 0;
