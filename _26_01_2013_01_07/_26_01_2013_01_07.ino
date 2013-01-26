@@ -73,7 +73,7 @@ class Sensor{
 };
 
 /** Configuration Constants: Affect behaviour **/
-uint16_t distances[15] = {0, 700, 7400, 12150, 16500, 300, 4000, 2400,8030,3800,75,8000,9650,0}; // 20500, 100, 4000, 3000, 0};
+uint16_t distances[15] = {0, 700, 7400, 12150, 16500, 300, 4000, 2400,8030,3800,80,8000,9650,0}; // 20500, 100, 4000, 3000, 0};
 
 /** Global declarations **/
 Motor left_motor(22, 23, 9), right_motor(25, 24, 10), turret_motor(27, 26, 11); // the order of pin numbers determine the direction
@@ -131,7 +131,7 @@ int actuation_phase = 0, path_phase = 0;
 #define SERVO_RGT 8
 #define SERVO_ANG_L1 60
 #define SERVO_ANG_L2 93
-#define SERVO_ANG_L3 135
+#define SERVO_ANG_L3 115
 #define SERVO_ANG_R1 20
 #define SERVO_ANG_R2 45
 #define SERVO_ANG_R3 130
@@ -168,8 +168,8 @@ int actuation_phase = 0, path_phase = 0;
 #define TURRET_ANG1 1080 //1150
 #define TURRET_ANG2 1800 //1830
 #define TURRET_ANG3 2000 //1800 //1830
-#define TURRET_ANG4 1830 //1030 //1830
-#define TURRET_ANG5 3500 //3660
+#define TURRET_ANG4 1530 //1030 //1830
+#define TURRET_ANG5 3200 //3660
 #define RUN_STAGE_TWO 20
 
 float curservo_angle_left = SERVO_ANG_L1, curservo_angle_right = SERVO_ANG_R1;
@@ -203,12 +203,13 @@ void setup(){
   servo_left.write(SERVO_ANG_L1);
   servo_right.write(SERVO_ANG_R1);
 
-  for(int i = 1; i<7; i++){
+  for(int i = 1; i<8; i++){
     pinMode(actuations[i],OUTPUT);
   }
 
   // for encoders
   pinMode(TURRET_ENCODER_PIN, INPUT);  
+  pinMode(A9, INPUT);
 
   // for sensors
   pinMode(sensors[1],INPUT);
@@ -226,12 +227,16 @@ void setup(){
   pid.SetSampleTime(1);
   pid.SetOutputLimits(-15,15);  
   LAPTOP.println("Initialised");
-
-  if( Serial_Wait() == 't' ){
+  char temp = Serial_Wait();
+  if( temp == 't' ){
     Turret_Reset();
     //Check_Motors();
     Serial_Wait();
+  }else if( temp == 'p'){  
+    Parallelogram_Reset(0,1);
+    Serial_Wait();
   }
+//  Parallelogram_Reset(1,1);
   Query_Launchpad();
   Serial_Print();
   encoder_left = encoder_right = 0;
@@ -392,6 +397,45 @@ void Turret_Reset(){
     turret_motor.Brake(0);
     while(1);
   }  
+}
+
+void Parallelogram_Reset(int dir, int num){
+  LAPTOP.println("Resetting Parallelogram");
+  int Reading, i = 0, j = 0, k;
+  if(dir){
+    digitalWrite(48,HIGH);
+    digitalWrite(49,LOW);
+  }else{
+    digitalWrite(48,LOW);
+    digitalWrite(49,HIGH);
+  }
+  for( k = 0; k<num; k++){
+    delay(500);
+    while(!Serial.available()){
+      Reading = 0;
+      j = 0;
+      while(j<5){
+        Reading += analogRead(A9);
+        delay(5);
+        j++;
+      }
+      Reading /= 5;
+      if(Reading <= 300)
+        i++;
+      if(i>5){
+        digitalWrite(48,LOW);
+        digitalWrite(49,LOW);
+        break;
+      }
+    }
+    if(Serial.available()){
+      Serial.read();
+      Serial.println("ABORTED!");
+      digitalWrite(48,LOW);
+      digitalWrite(49,LOW);
+    }
+    LAPTOP.println("one tape done");
+  }
 }
 
 /** To accelerate bot **/
@@ -654,8 +698,8 @@ void Transform(){
       right_motor.Control(FWD);
       left_motor.pwm(50);
       right_motor.pwm(50);
-      servo_angle_left = 110;
-      servo_angle_right = SERVO_ANG_R2;
+      servo_angle_left = SERVO_ANG_L2;
+      servo_right.write(SERVO_ANG_R1);
       encoder_turret = 0;
       turret_motor.Control(BCK);
       turret_motor.pwm(150);
@@ -685,9 +729,9 @@ void Transform(){
       // brake the bot
       LAPTOP.println("LinegollowL1L2 entered");
       left_motor.Brake(HARDBRAKE);
-//      right_motor.Control(BCK);
-//      right_motor.pwm(30);
-//      while(!L2.High());
+      right_motor.Control(BCK);
+      right_motor.pwm(30);
+      while(!L2.High());
       right_motor.Brake(HARDBRAKE);
       Query_Launchpad();
       encoder_left = encoder_right = 0;
@@ -720,7 +764,10 @@ void Transform(){
       while(encoder_turret<TURRET_ANG5);
       turret_motor.Brake(255);
       LAPTOP.println("Reached Bud");
+//      Parallelogram_Reset(0,1);
+      Serial_Wait();
       Actuate_High(GRIPPER);
+      Parallelogram_Reset(1,1);
       Serial_Wait();
       setpoint = 0;
       pid.SetMode(AUTOMATIC);
@@ -748,7 +795,7 @@ void Transform(){
       right_motor.Control(BCK);
       left_motor.pwm(255);
       right_motor.pwm(255);
-      delay(100);
+      delay(400);
       base_pwm = 0;
       LAPTOP.println("delay over");
       linefollow_enable = true;
