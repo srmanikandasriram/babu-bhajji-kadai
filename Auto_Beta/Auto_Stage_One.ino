@@ -1,0 +1,272 @@
+
+/** Auto Stage One **/
+
+float mx, my;
+float distance_per_count = PI*12.0/1668;
+float radians_per_count = distance_per_count/50.0;
+float motor_heading = PI/2.0;
+long int prev_left_counts, prev_right_counts;
+
+void Auto_Stage_One(){
+  while(1){
+    //  prevmillis = millis();
+    if( (encoder_left < distances[path_phase]) && (encoder_right < distances[path_phase]) ){
+      Move_Turret();
+      Move_Servo();
+      Query_Launchpad();
+      if (pid_enable){
+        PID_Adjust();
+      }
+      Serial_Print();
+      delay(delay_long);
+      Check_Abort();
+    } else {
+      path_phase++;
+      Transform[path_phase]();
+      if(stage_one_complete)
+        break;
+    }
+    //  LAPTOP.println(millis() - prevmillis);
+  }
+}
+
+void Pick_Leaves(){
+  LAPTOP.println("Going to pick up the leaves.");
+  pid_enable = false;
+  Move_Forward(30, 30);
+  encoder_turret = 0;
+  turret_motor.Control(Check_Mirror(BCK,FWD),255);
+  actuation_phase++;
+  servo_left.SetTargetAngle(2);
+  servo_right.SetTargetAngle(2);
+}
+
+void Accelerate_Bot(){
+  LAPTOP.println("Stopping to pick up leaves");
+  Motors_Brake(VSOFTBRAKE, VSOFTBRAKE);
+  while(encoder_turret<TURRET_ANG1){
+    Move_Servo();
+  }
+  turret_motor.Brake(0);
+  Actuate_High(V_PISTON);
+  delay(1000);
+  Actuate_Low(V_PISTON);
+  LAPTOP.println("Picked up leaves");
+  Serial_Wait();
+  Query_Launchpad();
+  encoder_left = encoder_right = 0;
+  Serial_Print();
+  pid_enable = true;
+  Move_Forward(minimum_pwm, minimum_pwm);
+  encoder_turret = 0;
+  turret_motor.Control(Check_Mirror(BCK,FWD), 220);
+  actuation_phase++;
+  base_pwm = minimum_pwm;
+  servo_right.SetTargetAngle(3);
+  LAPTOP.println("Acceleration begun");
+
+  while(base_pwm<maximum_pwm){
+    base_pwm += acceleration;
+    if(base_pwm == 36){
+      Serial.println("\n PID begun \n");    /// indicate start of PID
+      encoder_left = encoder_right;
+      pid.SetOutputLimits(-35,35);
+    }
+    if(base_pwm>35){
+      PID_Adjust();
+    }
+    Query_Launchpad();
+    Move_Turret();
+    Move_Servo();
+    delay(acceleration_delay);
+    Serial_Print();
+    Check_Abort();
+  }
+  
+  LAPTOP.println("Acceleration completed.");
+  cons_kp = 1.5;
+  pid.SetTunings(cons_kp,cons_ki,cons_kd);
+  pid.SetOutputLimits(-45,45);
+}
+
+void Decelerate_Bot(){
+  LAPTOP.println("Deceleration begun!");
+//  base_pwm = 120;
+//  encoder_left = encoder_right;
+
+  while(base_pwm>slowdown_pwm){
+    base_pwm -= deceleration;
+/*    if(base_pwm<85)
+      pid.SetOutputLimits(-45,45);*/
+    Query_Launchpad();
+    PID_Adjust();
+    delay(deceleration_delay);
+    Move_Turret();
+    Move_Servo();
+    Serial_Print();
+    Check_Abort();
+  }
+  
+  LAPTOP.println("Deceleration done");
+  base_pwm = 40;
+//  cons_kp = 1.5;
+//  pid.SetTunings(cons_kp,cons_ki,cons_kd);
+  pid.SetOutputLimits(-35,35);
+}
+
+void Drop_Right_Leaf(){
+  Actuate_High(Check_Mirror(LEFT_VG,RIGHT_VG));
+  LAPTOP.println("Right leaf dropped");
+  if(encoder_turret<TURRET_ANG2)
+    LAPTOP.println("but turret didn\'t rotate enough");
+  encoder_turret = 0;
+  turret_motor.Control(Check_Mirror(BCK,FWD), 180);
+  actuation_phase++;
+}
+
+void Drop_Middle_Leaf(){
+  Motors_Brake(HARDBRAKE,HARDBRAKE);
+  LAPTOP.println("Waiting for turret to turn");
+  turret_motor.Control(Check_Mirror(BCK,FWD), 200);
+  while(encoder_turret<TURRET_ANG3);
+  turret_motor.Brake(0);
+  delay(100);
+  Query_Launchpad();
+  Serial_Print();
+  Actuate_High(MIDDLE_VG);
+  LAPTOP.println("Middle leaf dropped");
+  Serial_Wait();
+  LAPTOP.println("Moving forward slightly");
+  Move_Forward(50,50);
+  while(L1.Low()||R1.Low());
+  LAPTOP.println("Line detected");
+  pid_enable = false;
+  Query_Launchpad();
+  encoder_left = 0; encoder_right = 0;
+  servo_left.SetTargetAngle(3);
+  servo_right.SetTargetAngle(1);
+  encoder_turret = 0;
+  turret_motor.Control(Check_Mirror(FWD,BCK), 255);
+  actuation_phase++;
+}
+
+void Soft_Turn(){
+  LAPTOP.println("Going into soft turn");
+  if( mirror ){
+    right_motor.Brake(HARDBRAKE);
+    left_motor.pwm(150);
+  }else{
+    left_motor.Brake(HARDBRAKE);
+    right_motor.pwm(150);
+  }
+  pid_type = SOFT_TURN_PID;
+  Set_Turn(distances[path_phase]);
+}
+
+void Auto_Stage_One_Complete(){
+  Motors_Brake(HARDBRAKE,HARDBRAKE);
+  LAPTOP.println("Waiting for turret to turn");
+  while(encoder_turret<TURRET_ANG4){
+    Move_Servo();
+  }
+  turret_motor.Brake(0);
+  if( stratergy == 2 ){
+    // Drop third leaf
+  }
+  LAPTOP.println("Stopping after turn to drop the third leaf.");  
+  Query_Launchpad();
+  encoder_left = encoder_right = 0;
+  LAPTOP.println("Auto Stage One Complete. Beginning to follow line... ");
+  stage_one_complete = true;
+}
+
+void Set_Turn(float ang){
+  setpoint = ang/360.0*encoder_count;
+  cons_kp = 255.0/setpoint;
+  distances[path_phase] = setpoint;
+  pid.SetTunings(cons_kp, cons_ki, cons_kd);
+  pid.SetOutputLimits(0,255);  
+}
+
+void PID_Adjust(){
+  
+  if( pid_type == STRAIGHT_LINE_PID ){
+   /** straight line PID **/
+    calculate_x();
+    input = (encoder_left - encoder_right);
+    if(input>-15&&input<15)
+      pid.SetTunings(cons_kp, cons_ki, cons_kd);
+//    else
+//      pid.SetTunings(aggressive_kp, aggressive_ki, aggressive_kd);
+    pid.Compute();
+    left_motor.pwm(base_pwm + output);
+    right_motor.pwm(base_pwm - output);
+    
+  }else if( pid_type == SOFT_TURN_PID ){
+    /** soft turn PID **/
+    Motor motor = mirror?right_motor:left_motor;
+    input = Check_Mirror(encoder_right, encoder_left);
+    pid.Compute();
+    if(output>150){
+      motor.pwm(150);
+    }else if(output>15){
+      motor.pwm(output);
+    }else{
+      motor.pwm(15);
+    }
+    if(R2.High()||R1.High()||L1.High()||L2.High()){
+      LAPTOP.println("\n DETECTED LINE");
+      path_phase++;
+      Transform[path_phase]();
+    }
+    
+  }
+}
+
+void Move_Servo(){
+  servo_left.Sweep(servo_speeds[path_phase]);
+  servo_right.Sweep(servo_speeds[path_phase]);
+}
+
+void Move_Turret(){
+  switch(actuation_phase){
+  case 1:
+    // To pick up leaves
+    if(encoder_turret>TURRET_ANG1){
+      turret_motor.Brake(255);
+    }
+    break;
+  case 2:
+    // To drop first leaf
+    if(encoder_turret>TURRET_ANG2){
+      turret_motor.Brake(255);
+    }
+    break;
+  case 3:
+    // To drop second leaf
+    if(encoder_turret>TURRET_ANG3){
+      turret_motor.Brake(255);
+    }
+    break;
+  case 4:
+    // To drop third leaf
+    if(encoder_turret>TURRET_ANG4){
+      turret_motor.Brake(255);
+    }
+    break;
+  }
+}
+
+float calculate_x(){
+    int delta_left = encoder_left - prev_left_counts, delta_right = encoder_right - prev_right_counts;
+    float delta_distance = (float )(delta_left + delta_right)*0.5f*distance_per_count;
+    float delta_heading = (float )(delta_left - delta_right)*radians_per_count;
+    mx += delta_distance*(float)cos(motor_heading);
+    motor_heading += delta_heading;
+    if(motor_heading > PI)
+      motor_heading -= TWO_PI;
+    else if(motor_heading <= -PI)
+      motor_heading += TWO_PI;
+    prev_left_counts = encoder_left;
+    prev_right_counts = encoder_right;
+}
