@@ -121,7 +121,6 @@ void Drop_First_Leaf(){
 void Drop_Second_Leaf(){
   Motors_Brake(HARDBRAKE,HARDBRAKE);
   LAPTOP.println("Waiting for turret to turn");
-  turret_motor.Control(Check_Mirror(FWD,BCK), 255);
   while(encoder_turret<TURRET_ANG3);
   turret_motor.Brake(0);
   delay(100);

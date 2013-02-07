@@ -120,6 +120,8 @@ class Custom_Servo{
       angles[1] = angle1;
       angles[2] = angle2;
       angles[3] = angle3;
+      current_angle = angles[1];
+      servo.write(current_angle);
     }
     
     void SetTargetAngle(int angle_index){
@@ -142,7 +144,7 @@ class Custom_Servo{
       servo.write(angle);  
     }
 
-    void Sweep(int servo_speed){
+    void Sweep(float servo_speed){
       if(current_angle < target_angle){
         current_angle += servo_speed;
         servo.write((int)current_angle);
@@ -170,10 +172,10 @@ class Custom_Servo{
 #define SERVO_LFT 7
 #define SERVO_RGT 8
 #define SERVO_ANG_L1 110
-#define SERVO_ANG_L2 100
+#define SERVO_ANG_L2 90
 #define SERVO_ANG_L3 0
 #define SERVO_ANG_R1 40
-#define SERVO_ANG_R2 55
+#define SERVO_ANG_R2 58
 #define SERVO_ANG_R3 140
 
 #define TURRET_SENSOR_PIN A10
@@ -252,7 +254,7 @@ int SLOWEST = 0;
 
 // for Servo
 Custom_Servo servo1, servo2;
-float servo_speeds[] = {0, 0.5, 0.5, 0.5, 0.25, 0.25, 0.25, 0.375, 0.5, 0};
+float servo_speeds[] = {0, 0.5, 0.75, 0.5, 0.25, 0.25, 0.25, 0.375, 0.5, 0};
 
 // for PWM
 const int mask = 0b11111000;
@@ -361,6 +363,7 @@ void loop(){
   Motors_Brake(255,255);
   Serial.read();
   Serial_Wait();*/
+  Move_Parallelogram(FWD,1);
   Auto_Stage_One();
   //Serial_Wait();
   //LAPTOP.println("uncomment stage two");
@@ -372,10 +375,10 @@ void loop(){
 void Initialise(){
   // Code to read external byte and set the parameters respectively
   LAPTOP.println("No external byte found :P");
-  mirror = false;
+  mirror = true;
   if( mirror ){
-    motor1.Attach(22,23,9);
-    motor2.Attach(25,24,10);
+    motor1.Attach(25,24,10);
+    motor2.Attach(22,23,9);
     servo1.Attach(SERVO_RGT);
     servo2.Attach(SERVO_LFT);
     servo1.SetAngles(SERVO_ANG_R1,SERVO_ANG_R2,SERVO_ANG_R3);
@@ -385,8 +388,8 @@ void Initialise(){
     S3.Attach(A13);
     S4.Attach(A14);
   }else{
-    motor1.Attach(25,24,10);
-    motor2.Attach(22,23,9);
+    motor1.Attach(22,23,9);
+    motor2.Attach(25,24,10);
     servo1.Attach(SERVO_LFT);
     servo2.Attach(SERVO_RGT);
     servo1.SetAngles(SERVO_ANG_L1,SERVO_ANG_L2,SERVO_ANG_L3);
