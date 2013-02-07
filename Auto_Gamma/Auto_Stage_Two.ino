@@ -177,7 +177,7 @@ void Auto_Stage_Two(){
     Serial_Wait();                  
   }
   Move_Back(255,255);
-  delay(1000);
+  delay(200);
   Motors_Brake(255,255);
   
   while(1);

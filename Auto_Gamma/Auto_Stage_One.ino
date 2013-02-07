@@ -21,6 +21,9 @@ void Auto_Stage_One(){
       delay(delay_long);
       Check_Abort();
     } else {
+      LCD.setCursor(0,1);
+      LCD.print("Path phase:");
+      LCD.print(path_phase);
       path_phase++;
       Transform[path_phase]();
       if(stage_one_complete)

@@ -12,6 +12,7 @@
 #include <PID_v1.h>
 #include <Servo.h>
 #include <inttypes.h>
+#include <LiquidCrystal.h>
 
 /** Class definition for motor **/
 class Motor{
@@ -290,9 +291,13 @@ int actuation_phase = 0, path_phase = 0;
 boolean volatile parallelogram_reset = false;
 long int prevmillis = 0;
 
+LiquidCrystal LCD(13, 34, 30, 31, 32, 33);
+
 void setup(){
   LAPTOP.begin(115200);
   LAUNCHPAD.begin(115200);
+  LCD.begin(16,2);
+  
   attachInterrupt(0, Turret_ISR, RISING);
 
   for(int i = 1; i<8; i++){
@@ -316,6 +321,7 @@ void setup(){
   
 //  Handshake_Launchpad();
   LAPTOP.println("Initialised");
+  LCD.print("Hello World!");
   
   char temp = Serial_Wait();
   while( temp != 'q' ){
@@ -363,10 +369,14 @@ void loop(){
   Motors_Brake(255,255);
   Serial.read();
   Serial_Wait();*/
+  LCD.clear();
+  LCD.print("Stage One:");
   Move_Parallelogram(FWD,1);
   Auto_Stage_One();
   //Serial_Wait();
   //LAPTOP.println("uncomment stage two");
+  LCD.clear();
+  LCD.print("Stage Two:");
   Auto_Stage_Two();
   LAPTOP.println("Bot going into hibernation");
   while(1);
