@@ -20,7 +20,7 @@ int LineFollow_Brake(){
   if( S1.High() ){  Move_Forward(0,30);  motor1.Brake(255);}
   if( S4.High() ){  Move_Forward(30,0);  motor2.Brake(255);}
   
-  if(( S4.High() && S3.High() )||( S3.High() && S2.High() )||( S2.High() && S1.High() )){
+  if(( S4.High() && S3.High() )||( S2.High() && S1.High() )){
       Motors_Brake(255,255);
       return 1;
   }
@@ -66,7 +66,7 @@ void LineFollow12(){
   Serial_Print_Sensors();
   if( S3.High() || S4.High() ){  Move_Forward(60,0);  motor2.Brake(255);}
   if( S2.High() && S1.Low() ){  Move_Forward(60,0);}
-  else if( S3.Low() && S4.High() ){  Move_Forward(0,80);}
+  else if( S2.Low() && S1.High() ){  Move_Forward(0,60);}
 }
 
 void LineFollow12_Brake(){
@@ -78,7 +78,6 @@ void LineFollow12_Brake(){
     else if( S2.Low() && S1.High() ){  Move_Forward(0,80);  motor1.Brake(255);}  
     if( ( S4.High() && S3.High() && S2.High() )||( S1.High() && S3.High() && S2.High() ))
       break;
-    Serial_Wait();
   }
   Motors_Brake(255,255);
 }

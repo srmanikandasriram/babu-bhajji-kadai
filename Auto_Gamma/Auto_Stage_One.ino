@@ -144,15 +144,13 @@ void Drop_Second_Leaf(){
 
 void Soft_Turn(){
   LAPTOP.println("Going into soft turn");
-  if( mirror ){
-    motor1.Brake(HARDBRAKE);
-    motor2.pwm(150);
-  }else{
-    motor2.Brake(HARDBRAKE);
-    motor1.pwm(150);
-  }
+  motor1.pwm(150);
+  motor2.Brake(HARDBRAKE);
   pid_type = SOFT_TURN_PID;
+  pid_enable = true;
   Set_Turn(distances[path_phase]);
+  Query_Launchpad();
+  encoder_motor1 = 0; encoder_motor2 = 0;
 }
 
 void Auto_Stage_One_Complete(){
@@ -196,9 +194,7 @@ void PID_Adjust(){
     /** soft turn PID **/
     input = encoder_motor1;
     pid.Compute();
-    if(output>150){
-      motor1.pwm(150);
-    }else if(output>15){
+    if(output>15){
       motor1.pwm(output);
     }else{
       motor1.pwm(15);

@@ -30,6 +30,9 @@ void Auto_Stage_Two_Universal(){
   LAPTOP.println("Dropped Third Leaf");
   Serial_Wait();
   
+  motor2.Control(BCK,30);
+  while(!S1.High());
+  
   //Linefollowing centred on S2 and S1. Linefollowing with brake till bud junction
   Parameters_Reset();
   while(1){
@@ -123,6 +126,7 @@ void Auto_Stage_Two_Universal(){
         if(!LineFollow_Encoders(500)) //Have to change 500 da!! 
           break;
       }
+      Motors_Brake(255,255);
     }
 
     LAPTOP.println("Reached bud 2");
@@ -138,9 +142,10 @@ void Auto_Stage_Two_Universal(){
     Motors_Brake(255,0);
     Parameters_Reset();
     motor2.Control(BCK,60);
-    while(encoder_motor2<6000){ 
+    while(encoder_motor2<7000){ 
       Query_Launchpad();
-      if(S4.High()&&encoder_motor2>2000){
+      LAPTOP.println(encoder_motor2);
+      if(S4.High()||S3.High()){//&&encoder_motor2>2000){
         LAPTOP.println("Line Detected");
         break;
       }

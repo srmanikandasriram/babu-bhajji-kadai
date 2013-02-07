@@ -35,12 +35,17 @@ void Serial_Print(){
     LAPTOP.print(input - setpoint);
     LAPTOP.print("\t PID Output: ");
     LAPTOP.print(output);
-    LAPTOP.print("\t Left PWM: ");
-    LAPTOP.print(base_pwm + output);
-    LAPTOP.print("\t Right PWM: ");
-    LAPTOP.print(base_pwm - output);  
-    LAPTOP.print("\tx: ");
-    LAPTOP.println(mx);
+    if( pid_type == STRAIGHT_LINE_PID ){
+      LAPTOP.print("\t Left PWM: ");
+      LAPTOP.print(base_pwm + output);
+      LAPTOP.print("\t Right PWM: ");
+      LAPTOP.print(base_pwm - output);  
+      LAPTOP.print("\tx: ");
+      LAPTOP.println(mx);
+    }else{
+      LAPTOP.print("\t Left PWM: ");
+      LAPTOP.println(output);
+    }
   }else{
     LAPTOP.print("\n");
   }
