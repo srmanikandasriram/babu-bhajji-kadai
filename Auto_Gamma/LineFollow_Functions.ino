@@ -76,7 +76,7 @@ void LineFollow12_Brake(){
     if( S3.High() || S4.High() ){  Move_Forward(60,0);  motor2.Brake(255);}
     if( S2.High() && S1.Low() ){  Move_Forward(80,0);  motor2.Brake(255);}
     else if( S2.Low() && S1.High() ){  Move_Forward(0,80);  motor1.Brake(255);}  
-    if( ( S4.High() && S3.High() && S2.High() )||( S1.High() && S3.High() && S2.High() ))
+    if( ( S4.High() && S3.High())||( S2.High() && S3.High()))
       break;
   }
   Motors_Brake(255,255);

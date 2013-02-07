@@ -1,10 +1,10 @@
 
 /** Auto Stage Two **/
 
-void Auto_Stage_Two_Universal(){
+void Auto_Stage_Two(){
 
   LAPTOP.println("Commencing Auto Stage Two");
-  Serial_Wait();
+  //Serial_Wait();
   Parameters_Reset();
   
   // Till Junction
@@ -19,24 +19,24 @@ void Auto_Stage_Two_Universal(){
   
   // Linefollow till fourth ring drop site. Drop third leaf. 
   Parameters_Reset();  
+  servo1.Angle(70);
   while(1){
-    if(!LineFollow_Encoders(2000)) //Need to change 2000!! IMPORTANT NUMBER!!!
+    if(!LineFollow_Encoders(3500)) //Need to change 2000!! IMPORTANT NUMBER!!!
       break;
   }
   Motors_Brake(255,255);
   delay(100);
   Actuate_High(Check_Mirror(RIGHT_VG,LEFT_VG));
-  delay(200);
+  delay(400);
   LAPTOP.println("Dropped Third Leaf");
-  Serial_Wait();
+
   
-  motor2.Control(BCK,30);
-  while(!S1.High());
-  
+
+    servo1.Home();
   //Linefollowing centred on S2 and S1. Linefollowing with brake till bud junction
   Parameters_Reset();
   while(1){
-    if(!LineFollow12_Encoders(6000)) 
+    if(!LineFollow12_Encoders(3500)) 
       break;
   }
   LineFollow12_Brake();
@@ -81,7 +81,7 @@ void Auto_Stage_Two_Universal(){
   while(1){
     LAPTOP.print("Linefollow Slow");
     LineFollow_Slow();
-    if(( S4.High() && S2.High() )||( S3.High() && S1.High() ))
+    if(( S4.High() && S3.High() )||( S3.High() && S2.High() )||( S1.High() && S2.High() ))
       break;
   }
   Motors_Brake(255,255);
@@ -138,7 +138,11 @@ void Auto_Stage_Two_Universal(){
     Parameters_Reset();
 
     Move_Back(170,255);
-    Run_For_Encoder_Count(7500);
+    if(i==1){
+      Run_For_Encoder_Count(8000);
+    }else{
+      Run_For_Encoder_Count(7500);
+    }
     Motors_Brake(255,0);
     Parameters_Reset();
     motor2.Control(BCK,60);
@@ -152,7 +156,7 @@ void Auto_Stage_Two_Universal(){
     }  
     Motors_Brake(255,255);
     LAPTOP.println("Right turn completed");
-    delay(500);
+    delay(200);
     motor2.Control(FWD,60);
     while(!S2.High());
 
@@ -172,4 +176,10 @@ void Auto_Stage_Two_Universal(){
     Serial.println("Reached da");
     Serial_Wait();                  
   }
+  Move_Back(255,255);
+  delay(1000);
+  Motors_Brake(255,255);
+  
+  while(1);
+  LAPTOP.println("Stage two completed");
 }

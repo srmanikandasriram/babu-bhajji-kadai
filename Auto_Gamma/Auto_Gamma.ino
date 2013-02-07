@@ -236,7 +236,7 @@ class Custom_Servo{
 
 // for Array of Functions
 typedef void (*fn) (void);
-fn Transform[] = {Initialise, Pick_Leaves, Accelerate_Bot, Decelerate_Bot, Drop_First_Leaf, Drop_Second_Leaf, Soft_Turn, Auto_Stage_One_Complete, Auto_Stage_Two_Universal};
+fn Transform[] = {Initialise, Pick_Leaves, Accelerate_Bot, Decelerate_Bot, Drop_First_Leaf, Drop_Second_Leaf, Soft_Turn, Auto_Stage_One_Complete, Auto_Stage_Two};
 
 /** Configuration Constants: Affect behaviour **/
 uint16_t distances[26] = {0, 2930, 13880, 20700, 30100, 565, 180,100};
@@ -363,11 +363,11 @@ void loop(){
   Motors_Brake(255,255);
   Serial.read();
   Serial_Wait();*/
-  //Move_Parallelogram(FWD,1);
-  //Auto_Stage_One();
+  Move_Parallelogram(FWD,1);
+  Auto_Stage_One();
   //Serial_Wait();
   //LAPTOP.println("uncomment stage two");
-  Auto_Stage_Two_Universal();
+  Auto_Stage_Two();
   LAPTOP.println("Bot going into hibernation");
   while(1);
 }
