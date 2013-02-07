@@ -35,6 +35,9 @@ void Auto_Stage_Two_Mirror(){
   Serial.println("Dropped Third Leaf");
   Serial_Wait();
   
+  //Here turret will be at a particular angle. Need to build up.
+  //For now, assume turret is straight
+  
   //Line Follow till Bud One site
   Parameters_Reset();
   while(1){
@@ -44,13 +47,14 @@ void Auto_Stage_Two_Mirror(){
   LineFollowR1R2_Brake();
 
   //Reverse and go to Tokyo
-
+  Move_Parallelogram(BCK,1);
   Actuate_High(GRIPPER);
   Serial.println("Reverse");
   Serial_Wait();
   
   Parameters_Reset();
   Move_Back(200,255);
+  
   Run_For_Encoder_Count(6000);
   
   Motors_Brake(0,255);
@@ -135,7 +139,7 @@ void Auto_Stage_Two_Mirror(){
               break;
       }
       }
-
+       Motors_Brake(255,255);
       Serial.println("Reached bud 2");
       Serial_Wait();
       Actuate_High(GRIPPER);
@@ -145,8 +149,11 @@ void Auto_Stage_Two_Mirror(){
       Parameters_Reset();
 
         Move_Back(255,170);
-        
+        if(i==1){
+          Run_For_Encoder_Count(8000); //Depends on third bud position
+        }else{
    Run_For_Encoder_Count(7500);
+        }
     
   Motors_Brake(0,255);
   Parameters_Reset();

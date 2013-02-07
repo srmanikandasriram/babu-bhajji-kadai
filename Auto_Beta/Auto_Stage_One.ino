@@ -125,6 +125,8 @@ void Drop_Right_Leaf(){
 }
 
 void Drop_Middle_Leaf(){
+//  Motors_Brake(HARDBRAKE,0);
+//  delay(50);
   Motors_Brake(HARDBRAKE,HARDBRAKE);
   LAPTOP.println("Waiting for turret to turn");
   turret_motor.Control(Check_Mirror(BCK,FWD), 200);
@@ -143,7 +145,7 @@ void Drop_Middle_Leaf(){
   pid_enable = false;
   Query_Launchpad();
   encoder_left = 0; encoder_right = 0;
-  servo_left.SetTargetAngle(3);
+//  servo_left.SetTargetAngle(2);
   servo_right.SetTargetAngle(1);
   encoder_turret = 0;
   turret_motor.Control(Check_Mirror(FWD,BCK), 255);
@@ -153,11 +155,11 @@ void Drop_Middle_Leaf(){
 void Soft_Turn(){
   LAPTOP.println("Going into soft turn");
   if( mirror ){
-    right_motor.Brake(HARDBRAKE);
-    left_motor.pwm(150);
+    motor1.Brake(HARDBRAKE);
+    motor2.pwm(150);
   }else{
-    left_motor.Brake(HARDBRAKE);
-    right_motor.pwm(150);
+    motor2.Brake(HARDBRAKE);
+    motor1.pwm(150);
   }
   pid_type = SOFT_TURN_PID;
   Set_Turn(distances[path_phase]);
@@ -199,8 +201,8 @@ void PID_Adjust(){
 //    else
 //      pid.SetTunings(aggressive_kp, aggressive_ki, aggressive_kd);
     pid.Compute();
-    left_motor.pwm(base_pwm + output);
-    right_motor.pwm(base_pwm - output);
+    motor1.pwm(base_pwm + output);
+    motor2.pwm(base_pwm - output);
     
   }else if( pid_type == SOFT_TURN_PID ){
     /** soft turn PID **/

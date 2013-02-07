@@ -1,0 +1,124 @@
+
+					Autobot pin outs -- Arduino
+
+	MOTOR DRIVERS
+
+Motor 1 (LEFT) :
+
+IN1 -   ,   IN2 - 
+PWM - 
+
+Motor 1 (RIGHT) :
+
+IN1 -   ,   IN2 - 
+PWM - 
+
+Motor 1 (TURRET) :
+
+IN1 -   ,   IN2 - 
+PWM - 
+
+Motor  (backup) :
+
+IN1 -   ,   IN2 - 
+PWM - 
+
+
+	SERVO
+
+servo 1 (LEFT)   - 
+servo 2 (RIGHT)  - 
+backup 1         -  
+backup 2         - 
+
+
+	AUTONICS
+
+line sensors :
+L2 (LEFT MOST)  - 
+L1 (LEFT)       -
+R1 (RIGHT)      -
+R2 (RIGHT MOST) -
+
+turret          - 
+
+parallelogram   - 
+
+backup -
+	
+
+	ENCODERS
+
+turret          - 
+backup          -
+	
+
+	ACTUATIONS
+
+solenoid valves:
+LEFT   - 
+MIDDLE -
+RIGHT  -
+
+parallelogram - 
+
+vaccuum generators -
+
+backup - 
+
+
+	SHARP SENSORS
+
+sensor 1 -
+sensor 2 -
+backup   -
+
+	LCD
+
+	EXTERANAL BYTE/SWITCHES	
+
+
+
+
+						Autobot pin outs -- launchpad
+
+
+	COMMUNICATION
+
+rx -
+tx-
+
+spi/i2c - 
+
+	INTERRUPTS
+
+left encoder  -
+right encoder -	
+backup        -
+
+
+
+
+
+						Autobot pin outs -- maxon encoders
+
+pin out read when the protrusion is on to the right side and facing you 
+
+
+2 - vcc 
+3 - gnd
+6 - channel A
+8 - channel B
+
+
+
+
+
+
+
+
+
+
+
+
+

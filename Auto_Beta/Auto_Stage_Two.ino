@@ -451,13 +451,18 @@ void Motor_Down()
   
 }
 
-void Run_For_Encoder_Count(int encoder_count){
+void Run_For_Encoder_Count(int encoder_count, int parallelogram_enable = 0){
+     int i = 0; 
      while(1){
       Query_Launchpad();
       Serial.println(encoder_motor1); 
-      if(encoder_motor1>encoder_count){
+      if(encoder_motor1>encoder_count)
         break;
-      }
+      if(parallelogram_enable&&parallelogram_reset){
+        i++;
+        if(i==2)
+          stoprise();
+       }
      }
 }
 

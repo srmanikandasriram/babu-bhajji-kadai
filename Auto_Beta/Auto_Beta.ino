@@ -210,7 +210,7 @@ typedef void (*fn) (void);
 fn Transform[] = {Initialise, Pick_Leaves, Accelerate_Bot, Decelerate_Bot, Drop_Right_Leaf, Drop_Middle_Leaf, Soft_Turn, Auto_Stage_One_Complete};
 
 /** Configuration Constants: Affect behaviour **/
-uint16_t distances[26] = {0, 1830, 13880, 20900, 30800, 565, 90};
+uint16_t distances[26] = {0, 2930, 13880, 21200, 30100, 565, 90};
 
 /** Global declarations **/
 Motor left_motor(22, 23, 9), right_motor(25, 24, 10), turret_motor(27, 26, 11); // the order of pin numbers determine the direction
@@ -232,7 +232,7 @@ float servo_speeds[] = {0, 0.5, 0.5, 0.5, 0.25, 0.25, 0.25, 0.375, 0.5, 0};
 const int mask = 0b11111000;
 
 // for behaviour
-const int minimum_pwm = 20, maximum_pwm = 200, slowdown_pwm = 50;
+const int minimum_pwm = 20, maximum_pwm = 100, slowdown_pwm = 50;
 const int acceleration_delay = 2, acceleration = 2;
 const int deceleration_delay = 2, deceleration = 5;
 const int stratergy = 1;
@@ -318,10 +318,19 @@ void setup(){
      temp = Serial_Wait();
       if( temp == 'u' ) 
         Move_Parallelogram(FWD,1);
-      else
+      else if( temp == 'd' )
         Move_Parallelogram(BCK,1);
-    }else if( temp == 'c' ){
-      Check_Motors();
+    }else if( temp == 'P' ){
+      temp = Serial_Wait();
+      if( temp == 'u' ) {
+        riseup();
+        Serial_Wait();
+        stoprise();
+      }else if( temp == 'd' ){
+        risedown();
+        Serial_Wait();
+        stoprise();
+      }
     }else{
       LAPTOP.println("Enter t for turret reset or p for parallelogram reset or q to continue");
     }
@@ -347,10 +356,10 @@ void loop(){
   Motors_Brake(255,255);
   Serial.read();
   Serial_Wait();*/
-  Auto_Stage_One();
+  //Auto_Stage_One();
   //Serial_Wait();
   //LAPTOP.println("uncomment stage two");
-  //Auto_Stage_Two_Mirror();
+  Auto_Stage_Two_Mirror();
   LAPTOP.println("Bot going into hibernation");
   while(1);
 }
@@ -377,6 +386,8 @@ void Initialise(){
     R1.Attach(A12);
     R2.Attach(A11);
   }
+  servo_left.SetTargetAngle(1);
+  servo_right.SetTargetAngle(1);
   servo_left.Home();
   servo_right.Home();
   motor1 = mirror?right_motor:left_motor;
