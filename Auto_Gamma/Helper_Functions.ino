@@ -12,9 +12,10 @@ char Serial_Wait()
 }
 
 void Check_Abort(){
-  if (LAPTOP.available()) {
+  if( LAPTOP.available() ){
     Motors_Brake(255, 255);
     turret_motor.Brake(0);
+    Parallelogram_Stop();
     while(1);
   }
 }
@@ -70,22 +71,15 @@ void Handshake_Launchpad(){
   LAPTOP.println("Handshake completed");
 }
 
-///  
-/*
 int Parallelogram_Reached(int count){
-    Serial.print(parallelogram_reset);     Serial.print("\t");     Serial.println(parallelogram_count);
-    if(parallelogram_reset){
-        parallelogram_count++;
-        parallelogram_reset = 0;
-    }
-     if(parallelogram_count==count){
-       parallelogram_count= 0;
-       stoprise();
-       return 0;
-     }
-     return 1;
+  Serial.println(parallelogram_count);
+  if( parallelogram_count == count ){
+    parallelogram_count= 0;
+    Parallelogram_Stop();
+    return 1;
+  }
+  return 0;
 }
-*/
 
 void Check_Motors(){
   while(1){

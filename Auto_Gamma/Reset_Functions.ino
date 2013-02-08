@@ -13,7 +13,7 @@ void Turret_Reset(){
 
   int sensor_reading, detected_count = 0, reading_count = 0;
 
-  while(!LAPTOP.available()){
+  while(detected_count<5){
     sensor_reading = 0;
     reading_count = 0;
     while(reading_count<5){
@@ -26,44 +26,25 @@ void Turret_Reset(){
       detected_count++;
     else
       detected_count = 0;
-    if(detected_count>5){
-      turret_motor.Brake(0);
-      break;
-    }
     LAPTOP.println(sensor_reading);
-  }
-  if(LAPTOP.available()){
-    LAPTOP.read();
-    LAPTOP.println("Aborted Turret reset!");
-    turret_motor.Brake(0);
-    while(1);
+    Check_Abort();
   }
   LAPTOP.println("Turret reset complete");  
 }
 
 void Move_Parallelogram(int dir, int num){
   LAPTOP.println("Resetting Parallelogram");
-  attachInterrupt(PARALLELOGRAM_SENSOR_PIN, Parallelogram_ISR, FALLING);
-  int k;
-  for( k = 0; k<num; k++){
-    if(dir){
-      Parallelogram_Up();
-    }else{
-      Parallelogram_Down();
-    }
-    parallelogram_reset = false;
-    while(!parallelogram_reset){
-      if(Serial.available()){
-        Serial.read();
-        Serial.println("ABORTED!");
-        Parallelogram_Stop();
-        while(1);
-      }
-    }
-    Parallelogram_Stop();
-    LAPTOP.println("One tape done");
+  if(dir){
+    Parallelogram_Up();
+  }else{
+    Parallelogram_Down();
   }
-  detachInterrupt(PARALLELOGRAM_SENSOR_PIN);
+  parallelogram_count = 0;
+  while(parallelogram_count != num){
+    Check_Abort();
+  }
+  Parallelogram_Stop();
+  LAPTOP.println("Parallelogram Reset done.");
 }
 
 void Turret_ISR(){
@@ -71,7 +52,7 @@ void Turret_ISR(){
 }
 
 void Parallelogram_ISR(){
- parallelogram_reset = true;
+ parallelogram_count++;
 }
 
 void Parameters_Reset()

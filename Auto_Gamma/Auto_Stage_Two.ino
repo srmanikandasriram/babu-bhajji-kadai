@@ -8,8 +8,6 @@ void Auto_Stage_Two(){
   ///Check Auto_Gamma for parallelogram_count declaration and initialise. 
   ///Check Helper_Functions for Parallelogram_Reached function.
   
-  ///attachInterrupt(PARALLELOGRAM_SENSOR_PIN, Parallelogram_ISR, FALLING); //Parallelogram interrupts active throughout Auto_Stage_Two
-  
   LAPTOP.println("Commencing Auto Stage Two");
   //Serial_Wait();
   Parameters_Reset();
@@ -39,23 +37,21 @@ void Auto_Stage_Two(){
   servo1.Home();
   
   ///Take Parallelogram to lowest position
-  ///parallelogram_reset = 0;
-  ///parallelogram_count = 0;
-  ///Parallelogram_Down(); 
+  parallelogram_count = 0;
+  Parallelogram_Down(); 
   
   //Linefollowing centred on S2 and S1. Linefollowing with brake till bud junction
   Parameters_Reset();
   while(1){
     if(!LineFollow12_Encoders(3500)) 
       break;
-    ///Parallelogram_Reached(1); 
-    
+    Parallelogram_Reached(1);    
   }
   LineFollow12_Brake();
       
   //Pick up, reverse and Go to Tokyo
   
-  ///while(Parallelogram_Reached(1));
+  while(Parallelogram_Reached(1));
   ///May have to move forward slightly here. Parallelogram can alternatively be lowerd early in the previous while(1) loop
   
   Actuate_High(GRIPPER);
@@ -63,10 +59,9 @@ void Auto_Stage_Two(){
   Serial_Wait();
   
   ///Take Parallelogram to mid position before reverse
-  ///parallelogram_reset = 0;
-  ///parallelogram_count = 0;
-  ///Parallelogram_Up(); 
-  ///while(Parallelogram_Reached(1));
+  parallelogram_count = 0;
+  Parallelogram_Up(); 
+  while(Parallelogram_Reached(1));
   
   Parameters_Reset();
   Move_Back(255,200);
@@ -90,9 +85,8 @@ void Auto_Stage_Two(){
   while(!S2.High());
   
   ///Take Parallelogram to top position  
-  ///parallelogram_reset = 0;
-  ///parallelogram_count = 0;
-  ///Parallelogram_Up();
+  parallelogram_count = 0;
+  Parallelogram_Up();
   
   //Line Follow to Manual Bot
   Parameters_Reset();  
@@ -102,7 +96,7 @@ void Auto_Stage_Two(){
     LineFollow();
     if(( S3.High() && S2.High() )||( S4.High() && S3.High() )||( S1.High()&&S2.High() ))
       break;
-    ///Parallelogram_Reached(1);
+    Parallelogram_Reached(1);
   }
   Move_Forward(40,40);  //To bypass junction
   delay(200);
@@ -111,10 +105,10 @@ void Auto_Stage_Two(){
     LineFollow_Slow();
     if(( S4.High() && S3.High() )||( S3.High() && S2.High() )||( S1.High() && S2.High() ))
       break;
-    ///Parallelogram_Reached(1);
+    Parallelogram_Reached(1);
   }
   Motors_Brake(255,255);
-  ///while(Parallelogram_Reached(1));
+  while(Parallelogram_Reached(1));
   LAPTOP.println("Meet the Manual Bot");
   Serial_Wait();
   
@@ -132,28 +126,27 @@ void Auto_Stage_Two(){
     LAPTOP.println("Part One done"); 
     
     ///Take Parallelogram to lowest position
-    ///parallelogram_reset = 0;
-    ///parallelogram_count = 0;
-    ///Parallelogram_Down();
+    parallelogram_count = 0;
+    Parallelogram_Down();
       
     Motors_Brake(0,255);
     motor1.Control(BCK,60);
     delay(600);
     while(S4.Low()&&S3.Low()&&S1.Low()&&S2.Low()){
-      ///Parallelogram_Reached(2); //Dropping of parallelogram begins during turn itself.
+      Parallelogram_Reached(2); //Dropping of parallelogram begins during turn itself.
     }
 
     Parameters_Reset();
     while(1){
       if(!LineFollow_Encoders(9000))
         break;
-   ///Parallelogram_Reached(2);
+      Parallelogram_Reached(2);
     }
       
     while(1){
       if(LineFollow_Brake())
         break;
-     ///Parallelogram_Reached(2);
+      Parallelogram_Reached(2);
     }
         
     if(i==1){
@@ -174,10 +167,9 @@ void Auto_Stage_Two(){
     Parameters_Reset();
     
     ///Take Parallelogram to mid position    
-    ///parallelogram_reset = 0;
-    ///parallelogram_count = 0;
-    ///Parallelogram_Up();
-    ///while(Parallelogram_Reached(1));
+    parallelogram_count = 0;
+    Parallelogram_Up();
+    while(Parallelogram_Reached(1));
     
     Move_Back(170,255);
     if(i==1){
@@ -204,10 +196,9 @@ void Auto_Stage_Two(){
     
     ///Distance to manual bot is very short, so lift parallelogram fully and then continue to linefollow.
     ///Take Parallelogram to top position   
-    ///parallelogram_reset = 0;
-    ///parallelogram_count = 0;
-    ///Parallelogram_Up();
-    ///while(Parallelogram_Reached(1));
+    parallelogram_count = 0;
+    Parallelogram_Up();
+    while(Parallelogram_Reached(1));
 
 
     Parameters_Reset();
@@ -229,9 +220,6 @@ void Auto_Stage_Two(){
   Move_Back(255,255);
   delay(200);
   Motors_Brake(255,255);
-  
-  ///detachInterrupt(PARALLELOGRAM_SENSOR_PIN); //Just a formality! 
-  
   LAPTOP.println("Stage two completed");
   while(1);
   

@@ -1,5 +1,5 @@
 // Core AutoBot Code
-// 07-01-2013 08 12 PM
+// 08-01-2013 04 47 PM
 /**********************************************************************
   Bot Data:
     wheel to wheel                                - 50cm
@@ -288,8 +288,7 @@ boolean linefollow_enable = false, line_detected = false;
 // Core phase variables
 int actuation_phase = 0, path_phase = 0;
 
-boolean volatile parallelogram_reset = false;
-///int parallelogram_count = 0; 
+int parallelogram_count = 0; 
 long int prevmillis = 0;
 
 LiquidCrystal LCD(13, 34, 30, 31, 32, 33);
@@ -300,7 +299,8 @@ void setup(){
   LCD.begin(16,2);
   
   attachInterrupt(0, Turret_ISR, RISING);
-
+  attachInterrupt(PARALLELOGRAM_SENSOR_PIN, Parallelogram_ISR, FALLING);
+  
   for(int i = 1; i<8; i++){
     pinMode(actuations[i],OUTPUT);
   }
