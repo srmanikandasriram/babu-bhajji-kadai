@@ -66,9 +66,10 @@ void Auto_Stage_Two(){
   Serial_Wait();
   
   ///Take Parallelogram to mid position before reverse
-  parallelogram_count = 0;
-  Parallelogram_Up(); 
-  while(!Parallelogram_Reached(1));
+//  parallelogram_count = 0;
+//  Parallelogram_Up(); 
+//  while(!Parallelogram_Reached(1));
+  Move_Parallelogram(FWD,1);
   
   Parameters_Reset();
   Move_Back(255,200);
@@ -133,8 +134,8 @@ void Auto_Stage_Two(){
     LAPTOP.println("Part One done"); 
     
     ///Take Parallelogram to lowest position
-    parallelogram_count = 0;
-    Parallelogram_Down();
+    //parallelogram_count = 0;
+    //Parallelogram_Down();
       
     Motors_Brake(0,255);
     motor1.Control(BCK,60);
@@ -142,25 +143,28 @@ void Auto_Stage_Two(){
     while(S4.Low()&&S3.Low()&&S1.Low()&&S2.Low()){
       //Parallelogram_Reached(2); //Dropping of parallelogram begins during turn itself.
     }
-    parallelogram_count = 0;    
+    //parallelogram_count = 0;    
     Parameters_Reset();
-    while(1){
+    Motors_Brake(255,255);
+    Move_Parallelogram(BCK,2);
+    Move_Forward(30,30);
+    /*while(1){
       if(!LineFollow_Encoders(1000))
         break;
       //Parallelogram_Reached(2);
-    }
-    if( parallelogram_count != 1 )
-      parallelogram_count = 0;    
+    }*/
+    //if( parallelogram_count != 1 )
+    //  parallelogram_count = 0;    
     Parameters_Reset();
     while(1){
-      if(!LineFollow_Encoders(8000))
+      if(!LineFollow_Encoders(9000))
         break;
-      Parallelogram_Reached(2);
+      //Parallelogram_Reached(2);
     }      
     while(1){
       if(LineFollow_Brake())
         break;
-      Parallelogram_Reached(2);
+      //Parallelogram_Reached(2);
     }
         
     if(i==1){
@@ -171,7 +175,7 @@ void Auto_Stage_Two(){
       }
       Motors_Brake(255,255);
     }
-    Parallelogram_Stop();
+    //Parallelogram_Stop();
     LAPTOP.println("Reached bud 2");
     Serial_Wait();
     Actuate_High(GRIPPER);
@@ -181,10 +185,10 @@ void Auto_Stage_Two(){
     Parameters_Reset();
     
     ///Take Parallelogram to mid position    
-    parallelogram_count = 0;
-    Parallelogram_Up();
-    while(!Parallelogram_Reached(1));
-    
+//    parallelogram_count = 0;
+  //  Parallelogram_Up();
+    //while(!Parallelogram_Reached(1));
+    Move_Parallelogram(FWD,1);
     Move_Back(170,255);
     if(i==1){
       Run_For_Encoder_Count(8000);
@@ -207,14 +211,14 @@ void Auto_Stage_Two(){
     delay(200);
     motor2.Control(FWD,60);
     while(!S2.High());
-    
+    Motors_Brake(255,255);
     ///Distance to manual bot is very short, so lift parallelogram fully and then continue to linefollow.
     ///Take Parallelogram to top position   
-    parallelogram_count = 0;
-    Parallelogram_Up();
-    while(!Parallelogram_Reached(1));
-
-
+//    parallelogram_count = 0;
+//    Parallelogram_Up();
+//    while(!Parallelogram_Reached(1));
+    Move_Parallelogram(FWD,1);
+    Move_Forward(30,30);
     Parameters_Reset();
     while(1){
       LAPTOP.print("Linefollow Slow");
@@ -232,7 +236,7 @@ void Auto_Stage_Two(){
   }
   
   Move_Back(255,255);
-  delay(200);
+  delay(1000);
   Motors_Brake(255,255);
   LAPTOP.println("Stage two completed");
   while(1);

@@ -13,7 +13,7 @@ void Turret_Reset(){
 
   int sensor_reading, detected_count = 0, reading_count = 0;
 
-  while(detected_count<5){
+  while(detected_count<3){
     sensor_reading = 0;
     reading_count = 0;
     while(reading_count<5){

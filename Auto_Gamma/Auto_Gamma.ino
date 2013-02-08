@@ -196,9 +196,9 @@ class Custom_Servo{
 #define VSOFTBRAKE 100
 #define HARDBRAKE 255
 
-#define TURRET_ANG1 1080
+#define TURRET_ANG1 1180
 #define TURRET_ANG2 1750
-#define TURRET_ANG3 1950
+#define TURRET_ANG3 1800
 #define TURRET_ANG4 1800
 #define TURRET_ANG5 3800
 
@@ -373,16 +373,16 @@ void loop(){
   }
   Motors_Brake(255,255);
   Serial.read();
-  Serial_Wait();*/
+  Serial_Wait();
   LCD.clear();
-  LCD.print("Stage One:");
+  LCD.print("Stage One:");*/
   Move_Parallelogram(FWD,1);
   Parallelogram_Up();
-  delay(100);
+  delay(300);
   Parallelogram_Stop();
   Auto_Stage_One();
   //Serial_Wait();
-  //LAPTOP.println("uncomment stage two");
+  //LAPTOP.println("uncomment stage two");*/
   LCD.clear();
   LCD.print("Stage Two:");
   Auto_Stage_Two();

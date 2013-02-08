@@ -116,7 +116,7 @@ void Drop_First_Leaf(){
   LAPTOP.println("First leaf dropped");
   if(encoder_turret<TURRET_ANG2)
     LAPTOP.println("but turret didn\'t rotate enough");
-  servo2.Angle(1);
+  servo2.SetTargetAngle(2);
   encoder_turret = 0;
   turret_motor.Control(Check_Mirror(BCK,FWD), 255);
   actuation_phase++;
