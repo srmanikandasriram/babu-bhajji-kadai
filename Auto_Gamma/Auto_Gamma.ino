@@ -289,6 +289,7 @@ boolean linefollow_enable = false, line_detected = false;
 int actuation_phase = 0, path_phase = 0;
 
 boolean volatile parallelogram_reset = false;
+///int parallelogram_count = 0; 
 long int prevmillis = 0;
 
 LiquidCrystal LCD(13, 34, 30, 31, 32, 33);

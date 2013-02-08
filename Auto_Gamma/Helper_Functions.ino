@@ -70,6 +70,23 @@ void Handshake_Launchpad(){
   LAPTOP.println("Handshake completed");
 }
 
+///  
+/*
+int Parallelogram_Reached(int count){
+    Serial.print(parallelogram_reset);     Serial.print("\t");     Serial.println(parallelogram_count);
+    if(parallelogram_reset){
+        parallelogram_count++;
+        parallelogram_reset = 0;
+    }
+     if(parallelogram_count==count){
+       parallelogram_count= 0;
+       stoprise();
+       return 0;
+     }
+     return 1;
+}
+*/
+
 void Check_Motors(){
   while(1){
     motor1.Control(FWD, 100);
