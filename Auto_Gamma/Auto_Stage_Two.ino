@@ -36,6 +36,13 @@ void Auto_Stage_Two(){
   LAPTOP.println("Dropped Third Leaf");
   servo1.Home();
   
+  encoder_turret = 0;
+  turret_motor.Control(FWD,255);
+  while(encoder_turret<TURRET_ANG5);
+  turret_motor.Brake(255);
+
+  Serial_Wait();  
+
   ///Take Parallelogram to lowest position
   parallelogram_count = 0;
   Parallelogram_Down(); 
@@ -43,15 +50,15 @@ void Auto_Stage_Two(){
   //Linefollowing centred on S2 and S1. Linefollowing with brake till bud junction
   Parameters_Reset();
   while(1){
+    Parallelogram_Reached(2);
     if(!LineFollow12_Encoders(3500)) 
-      break;
-    Parallelogram_Reached(1);    
+      break;    
   }
   LineFollow12_Brake();
       
   //Pick up, reverse and Go to Tokyo
   
-  while(Parallelogram_Reached(1));
+//  while(!Parallelogram_Reached(1));
   ///May have to move forward slightly here. Parallelogram can alternatively be lowerd early in the previous while(1) loop
   
   Actuate_High(GRIPPER);
@@ -61,7 +68,7 @@ void Auto_Stage_Two(){
   ///Take Parallelogram to mid position before reverse
   parallelogram_count = 0;
   Parallelogram_Up(); 
-  while(Parallelogram_Reached(1));
+  while(!Parallelogram_Reached(1));
   
   Parameters_Reset();
   Move_Back(255,200);
@@ -70,9 +77,9 @@ void Auto_Stage_Two(){
   Motors_Brake(255,0);
   Parameters_Reset();
   motor2.Control(BCK,60);
-  while(encoder_motor2<6000){ 
+  while(encoder_motor2<9000){ 
     Query_Launchpad();
-    if(S4.High()&&encoder_motor2>2000){
+    if(S2.High()&&encoder_motor2>2000){
        LAPTOP.println("This is Tokyo");
        break;
     }
@@ -108,7 +115,7 @@ void Auto_Stage_Two(){
     Parallelogram_Reached(1);
   }
   Motors_Brake(255,255);
-  while(Parallelogram_Reached(1));
+  while(!Parallelogram_Reached(1));
   LAPTOP.println("Meet the Manual Bot");
   Serial_Wait();
   
@@ -122,7 +129,7 @@ void Auto_Stage_Two(){
   for(int i = 0; i<2; i++){
     Parameters_Reset();                  
     Move_Back(125,225);
-    delay(600); 
+    Run_For_Encoder_Count(3500); 
     LAPTOP.println("Part One done"); 
     
     ///Take Parallelogram to lowest position
@@ -133,16 +140,23 @@ void Auto_Stage_Two(){
     motor1.Control(BCK,60);
     delay(600);
     while(S4.Low()&&S3.Low()&&S1.Low()&&S2.Low()){
-      Parallelogram_Reached(2); //Dropping of parallelogram begins during turn itself.
+      //Parallelogram_Reached(2); //Dropping of parallelogram begins during turn itself.
     }
-
+    parallelogram_count = 0;    
     Parameters_Reset();
     while(1){
-      if(!LineFollow_Encoders(9000))
+      if(!LineFollow_Encoders(1000))
+        break;
+      //Parallelogram_Reached(2);
+    }
+    if( parallelogram_count != 1 )
+      parallelogram_count = 0;    
+    Parameters_Reset();
+    while(1){
+      if(!LineFollow_Encoders(8000))
         break;
       Parallelogram_Reached(2);
-    }
-      
+    }      
     while(1){
       if(LineFollow_Brake())
         break;
@@ -157,7 +171,7 @@ void Auto_Stage_Two(){
       }
       Motors_Brake(255,255);
     }
-
+    Parallelogram_Stop();
     LAPTOP.println("Reached bud 2");
     Serial_Wait();
     Actuate_High(GRIPPER);
@@ -169,7 +183,7 @@ void Auto_Stage_Two(){
     ///Take Parallelogram to mid position    
     parallelogram_count = 0;
     Parallelogram_Up();
-    while(Parallelogram_Reached(1));
+    while(!Parallelogram_Reached(1));
     
     Move_Back(170,255);
     if(i==1){
@@ -180,10 +194,10 @@ void Auto_Stage_Two(){
     Motors_Brake(255,0);
     Parameters_Reset();
     motor2.Control(BCK,60);
-    while(encoder_motor2<7000){ 
+    while(encoder_motor2<9000){ 
       Query_Launchpad();
       LAPTOP.println(encoder_motor2);
-      if(S4.High()||S3.High()&&encoder_motor2>2000){
+      if(S4.High()&&encoder_motor2>2000){
         LAPTOP.println("Line Detected");
         break;
       }
@@ -198,7 +212,7 @@ void Auto_Stage_Two(){
     ///Take Parallelogram to top position   
     parallelogram_count = 0;
     Parallelogram_Up();
-    while(Parallelogram_Reached(1));
+    while(!Parallelogram_Reached(1));
 
 
     Parameters_Reset();

@@ -116,6 +116,7 @@ void Drop_First_Leaf(){
   LAPTOP.println("First leaf dropped");
   if(encoder_turret<TURRET_ANG2)
     LAPTOP.println("but turret didn\'t rotate enough");
+  servo2.Angle(1);
   encoder_turret = 0;
   turret_motor.Control(Check_Mirror(BCK,FWD), 255);
   actuation_phase++;
@@ -131,15 +132,14 @@ void Drop_Second_Leaf(){
   Serial_Print();
   Actuate_High(MIDDLE_VG);
   LAPTOP.println("Middle leaf dropped");
-  Serial_Wait();
+  //Serial_Wait();
   LAPTOP.println("Moving forward slightly");
-  Move_Forward(slowdown_pwm,slowdown_pwm);
+  Move_Forward(20,20);
   while(S2.Low()&&S3.Low());
   LAPTOP.println("Line detected");
   pid_enable = false;
   Query_Launchpad();
   encoder_motor1 = 0; encoder_motor2 = 0;
-  servo2.SetTargetAngle(1);
   encoder_turret = 0;
   turret_motor.Control(Check_Mirror(FWD,BCK), 255);
   actuation_phase++;

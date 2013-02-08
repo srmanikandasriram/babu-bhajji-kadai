@@ -173,7 +173,7 @@ class Custom_Servo{
 #define SERVO_LFT 7
 #define SERVO_RGT 8
 #define SERVO_ANG_L1 120
-#define SERVO_ANG_L2 97
+#define SERVO_ANG_L2 100
 #define SERVO_ANG_L3 0
 #define SERVO_ANG_R1 40
 #define SERVO_ANG_R2 58
@@ -198,9 +198,9 @@ class Custom_Servo{
 
 #define TURRET_ANG1 1080
 #define TURRET_ANG2 1750
-#define TURRET_ANG3 2100
-#define TURRET_ANG4 2100
-#define TURRET_ANG5 3400
+#define TURRET_ANG3 1950
+#define TURRET_ANG4 1800
+#define TURRET_ANG5 3800
 
 #define STRAIGHT_LINE_PID 1
 #define SOFT_TURN_PID 2
@@ -235,12 +235,17 @@ class Custom_Servo{
   digitalWrite(PARALLELOGRAM_PIN2,LOW);\
 }
 
+#define Check_Abort(){\
+  if( LAPTOP.available() )\
+    Abort();\
+}
+
 // for Array of Functions
 typedef void (*fn) (void);
 fn Transform[] = {Initialise, Pick_Leaves, Accelerate_Bot, Decelerate_Bot, Drop_First_Leaf, Drop_Second_Leaf, Soft_Turn, Auto_Stage_One_Complete, Auto_Stage_Two};
 
 /** Configuration Constants: Affect behaviour **/
-uint16_t distances[26] = {0, 2930, 13880, 20700, 30100, 565, 180,100};
+uint16_t distances[26] = {0, 2930, 13880, 20700, 29100, 365, 230,100};
 
 /** Global declarations **/
 Motor motor1, motor2, turret_motor(27, 26, 11); // the order of pin numbers determine the direction  left_motor(22, 23, 9), right_motor(25, 24, 10),
@@ -255,7 +260,7 @@ int SLOWEST = 0;
 
 // for Servo
 Custom_Servo servo1, servo2;
-float servo_speeds[] = {0, 0.5, 0.75, 0.5, 0.25, 0.25, 0.25, 0.375, 0.5, 0};
+float servo_speeds[] = {0, 0.5, 0.75, 1.5, 0.25, 0.25, 0.25, 0.375, 0.5, 0};
 
 // for PWM
 const int mask = 0b11111000;
@@ -296,8 +301,8 @@ LiquidCrystal LCD(13, 34, 30, 31, 32, 33);
 void setup(){
   LAPTOP.begin(115200);
   LAUNCHPAD.begin(115200);
-  LCD.begin(16,2);
-  
+  LCD.begin(20,4);
+  LCD.print("Hello World!");
   attachInterrupt(0, Turret_ISR, RISING);
   attachInterrupt(PARALLELOGRAM_SENSOR_PIN, Parallelogram_ISR, FALLING);
   
@@ -322,7 +327,6 @@ void setup(){
   
 //  Handshake_Launchpad();
   LAPTOP.println("Initialised");
-  LCD.print("Hello World!");
   
   char temp = Serial_Wait();
   while( temp != 'q' ){
@@ -373,6 +377,9 @@ void loop(){
   LCD.clear();
   LCD.print("Stage One:");
   Move_Parallelogram(FWD,1);
+  Parallelogram_Up();
+  delay(100);
+  Parallelogram_Stop();
   Auto_Stage_One();
   //Serial_Wait();
   //LAPTOP.println("uncomment stage two");

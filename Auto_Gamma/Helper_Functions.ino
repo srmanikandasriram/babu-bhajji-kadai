@@ -4,20 +4,18 @@ int inline Check_Mirror(int a, int b){
   return mirror?a:b;
 }
 
-char Serial_Wait()
-{
+char Serial_Wait(){
   LAPTOP.println("Waiting for Serial Input ");
   while(!LAPTOP.available());
   return LAPTOP.read();
 }
 
-void Check_Abort(){
-  if( LAPTOP.available() ){
-    Motors_Brake(255, 255);
-    turret_motor.Brake(0);
-    Parallelogram_Stop();
-    while(1);
-  }
+void Abort(){
+  Motors_Brake(255, 255);
+  turret_motor.Brake(0);
+  Parallelogram_Stop();
+  LAPTOP.println("ABORTED!");
+  while(1);
 }
 
 void Serial_Print(){
@@ -72,9 +70,9 @@ void Handshake_Launchpad(){
 }
 
 int Parallelogram_Reached(int count){
+  Serial.print(" PARALLELOGRAM COUNT:");
   Serial.println(parallelogram_count);
-  if( parallelogram_count == count ){
-    parallelogram_count= 0;
+  if( parallelogram_count >= count ){
     Parallelogram_Stop();
     return 1;
   }

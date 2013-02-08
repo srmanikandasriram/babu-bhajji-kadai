@@ -29,6 +29,7 @@ void Turret_Reset(){
     LAPTOP.println(sensor_reading);
     Check_Abort();
   }
+  turret_motor.Brake(255);
   LAPTOP.println("Turret reset complete");  
 }
 
@@ -59,7 +60,6 @@ void Parameters_Reset()
 {
   Query_Launchpad();
   encoder_motor1 = encoder_motor2 = 0; 
-  encoder_turret = 0;
   mx = 0;
   my = 0;
   motor_heading = 1.57; //Increase accuracy
