@@ -8,14 +8,14 @@ void Auto_Stage_Two(){
   ///Check Auto_Gamma for parallelogram_count declaration and initialise. 
   ///Check Helper_Functions for Parallelogram_Reached function.
   
-  LAPTOP.println("Commencing Auto Stage Two");
-  //Serial_Wait();
+  LAPTOP.println("Commencing Auto Stage Two. Left turn complete.");
+  Serial_Wait();
   Parameters_Reset();
-  
+
   // Till Junction
   // NOTE: In first two while(1) loops, need to add turret angle change
   while(1){
-    LineFollow();
+    LineFollow_Straight();
     if(( S4.High() && S2.High() )||( S1.High() && S3.High() ))
       break;
   }
@@ -26,7 +26,8 @@ void Auto_Stage_Two(){
   Parameters_Reset();  
   servo1.Angle(70);
   while(1){
-    if(!LineFollow_Encoders(3500)) //Need to change 2000!! IMPORTANT NUMBER!!!
+    Serial.print("Encoders");
+    if(!LineFollow_Encoders(3500,1)) 
       break;
   }
   Motors_Brake(255,255);
@@ -47,14 +48,31 @@ void Auto_Stage_Two(){
   parallelogram_count = 0;
   Parallelogram_Down(); 
   
+  /*
+  delay(150);
+  while(PLGM.High1()){
+  Serial.println("High1");
+  }
+  
+  while(PLGM.Low1()){
+    Serial.println("Low1");
+  }
+  while(PLGM.High1()){
+  Serial.println("High2");
+} */
+  while(Parallelogram_Reached(2));
+  Parallelogram_Stop();Serial.println("Low2");
+  
+  Serial.println("Parallelogram should be down by now");
+  Serial_Wait();
   //Linefollowing centred on S2 and S1. Linefollowing with brake till bud junction
   Parameters_Reset();
   while(1){
-    Parallelogram_Reached(2);
+    //Parallelogram_Reached(2);
     if(!LineFollow12_Encoders(3500)) 
       break;    
   }
-  LineFollow12_Brake();
+  while(LineFollow_Curve_Precision());
       
   //Pick up, reverse and Go to Tokyo
   
@@ -101,16 +119,17 @@ void Auto_Stage_Two(){
   LAPTOP.println("Ready to linefollow");  
   while(1){
     LAPTOP.print("Linefollow ONE");
-    LineFollow();
+    LineFollow_Straight();
     if(( S3.High() && S2.High() )||( S4.High() && S3.High() )||( S1.High()&&S2.High() ))
       break;
     Parallelogram_Reached(1);
   }
   Move_Forward(40,40);  //To bypass junction
   delay(200);
+  
   while(1){
     LAPTOP.print("Linefollow Slow");
-    LineFollow_Slow();
+    LineFollow_Straight_Precision();
     if(( S4.High() && S3.High() )||( S3.High() && S2.High() )||( S1.High() && S2.High() ))
       break;
     Parallelogram_Reached(1);
@@ -134,43 +153,35 @@ void Auto_Stage_Two(){
     LAPTOP.println("Part One done"); 
     
     ///Take Parallelogram to lowest position
+
     //parallelogram_count = 0;
     //Parallelogram_Down();
+
       
     Motors_Brake(0,255);
     motor1.Control(BCK,60);
     delay(600);
-    while(S4.Low()&&S3.Low()&&S1.Low()&&S2.Low()){
-      //Parallelogram_Reached(2); //Dropping of parallelogram begins during turn itself.
-    }
-    //parallelogram_count = 0;    
-    Parameters_Reset();
+    while(S4.Low()&&S3.Low()&&S1.Low()&&S2.Low());
+    
     Motors_Brake(255,255);
     Move_Parallelogram(BCK,2);
     Move_Forward(30,30);
-    /*while(1){
-      if(!LineFollow_Encoders(1000))
-        break;
-      //Parallelogram_Reached(2);
-    }*/
-    //if( parallelogram_count != 1 )
-    //  parallelogram_count = 0;    
+    
     Parameters_Reset();
     while(1){
-      if(!LineFollow_Encoders(9000))
+      if(!LineFollow_Encoders(9000,1))
         break;
       //Parallelogram_Reached(2);
     }      
-    while(1){
-      if(LineFollow_Brake())
-        break;
+
+    while(LineFollow_Curve_Precision()){
       //Parallelogram_Reached(2);
     }
         
     if(i==1){
       Parameters_Reset();
       while(1){
-        if(!LineFollow_Encoders(500)) //Have to change 500 da!! 
+        if(!LineFollow_Encoders(500,1)) //Have to change 500 da!! 
           break;
       }
       Motors_Brake(255,255);
@@ -209,8 +220,10 @@ void Auto_Stage_Two(){
     Motors_Brake(255,255);
     LAPTOP.println("Right turn completed");
     delay(200);
+   
     motor2.Control(FWD,60);
-    while(!S2.High());
+    while(S2.Low()&&S3.Low());
+
     Motors_Brake(255,255);
     ///Distance to manual bot is very short, so lift parallelogram fully and then continue to linefollow.
     ///Take Parallelogram to top position   
@@ -222,7 +235,7 @@ void Auto_Stage_Two(){
     Parameters_Reset();
     while(1){
       LAPTOP.print("Linefollow Slow");
-      LineFollow_Slow();
+      LineFollow_Straight_Precision();
       if(( S4.High() && S2.High() )||( S3.High() && S1.High() ))
         break;
     }
@@ -236,7 +249,9 @@ void Auto_Stage_Two(){
   }
   
   Move_Back(255,255);
-  delay(1000);
+
+  delay(700);
+
   Motors_Brake(255,255);
   LAPTOP.println("Stage two completed");
   while(1);
