@@ -59,7 +59,7 @@ int Query_Launchpad(){
   
   last_encoder_diff = (diff_encoder_left + diff_encoder_right)/2;
   
-  LAPTOP.println(last_encoder_diff);
+//  LAPTOP.println(last_encoder_diff);
   
   if(diff_encoder_left == 0 || diff_encoder_right == 0)
     LAPTOP.println("\n ZERO \n");

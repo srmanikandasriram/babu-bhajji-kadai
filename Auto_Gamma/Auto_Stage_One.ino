@@ -18,7 +18,7 @@ void Auto_Stage_One(){
         PID_Adjust();
       }
       Serial_Print();
-      delay(delay_long);
+///      delay(delay_long);
       Check_Abort();
     } else {
       LCD.setCursor(0,1);

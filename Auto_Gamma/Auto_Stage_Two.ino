@@ -189,7 +189,7 @@ void Auto_Stage_Two(){
     }
     Motors_Brake(255,0);
     Parameters_Reset();
-    motor2.Control(BCK,60);
+    motor2.Control(BCK,40);
     while(encoder_motor2<9000){ 
       Query_Launchpad();
       LAPTOP.println(encoder_motor2);
