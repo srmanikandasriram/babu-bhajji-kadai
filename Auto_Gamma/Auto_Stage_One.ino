@@ -55,14 +55,13 @@ void Accelerate_Bot(){
   delay(1000);
   Actuate_Low(V_PISTON);
   LAPTOP.println("Picked up leaves");
-  Serial_Wait();
-  Query_Launchpad();
+  Toggle_Wait();
+  Launchpad_Reset();
   encoder_motor1 = encoder_motor2 = 0;
   Serial_Print();
   pid_enable = true;
   base_pwm = minimum_pwm;
   Move_Forward(minimum_pwm, minimum_pwm);
-  encoder_turret = 0;
   turret_motor.Control(Check_Mirror(BCK,FWD), 220);
   actuation_phase++;
   servo2.SetTargetAngle(3);
@@ -117,7 +116,6 @@ void Drop_First_Leaf(){
   if(encoder_turret<TURRET_ANG2)
     LAPTOP.println("but turret didn\'t rotate enough");
   servo2.SetTargetAngle(2);
-  encoder_turret = 0;
   turret_motor.Control(Check_Mirror(BCK,FWD), 255);
   actuation_phase++;
 }
@@ -138,9 +136,8 @@ void Drop_Second_Leaf(){
   while(S2.Low()&&S3.Low());
   LAPTOP.println("Line detected");
   pid_enable = false;
-  Query_Launchpad();
+  Launchpad_Reset();
   encoder_motor1 = 0; encoder_motor2 = 0;
-  encoder_turret = 0;
   turret_motor.Control(Check_Mirror(FWD,BCK), 255);
   actuation_phase++;
 }
@@ -152,7 +149,7 @@ void Soft_Turn(){
   pid_type = SOFT_TURN_PID;
   pid_enable = true;
   Set_Turn(distances[path_phase]);
-  Query_Launchpad();
+  Launchpad_Reset();
   encoder_motor1 = 0; encoder_motor2 = 0;
 }
 
@@ -167,7 +164,7 @@ void Auto_Stage_One_Complete(){
     // Drop third leaf
   }
   LAPTOP.println("Stopping after turn to drop the third leaf.");  
-  Query_Launchpad();
+  Launchpad_Reset();
   encoder_motor1 = encoder_motor2 = 0;
   LAPTOP.println("Auto Stage One Complete. Beginning to follow line... ");
   stage_one_complete = true;

@@ -9,7 +9,7 @@ void Auto_Stage_Two(){
   ///Check Helper_Functions for Parallelogram_Reached function.
   
   LAPTOP.println("Commencing Auto Stage Two. Left turn complete.");
-  Serial_Wait();
+  Toggle_Wait();
   Parameters_Reset();
 
   // Till Junction
@@ -27,53 +27,40 @@ void Auto_Stage_Two(){
   servo1.Angle(70);
   while(1){
     Serial.print("Encoders");
-    if(!LineFollow_Encoders(3500,1)) 
+    if(!LineFollow_Encoders(3250,1)) 
       break;
   }
   Motors_Brake(255,255);
-  delay(100);
+  delay(500);
   Actuate_High(Check_Mirror(RIGHT_VG,LEFT_VG));
   delay(400);
   LAPTOP.println("Dropped Third Leaf");
   servo1.Home();
   
-  encoder_turret = 0;
   turret_motor.Control(FWD,255);
   while(encoder_turret<TURRET_ANG5);
   turret_motor.Brake(255);
-
-  Serial_Wait();  
+  
+  
+  Toggle_Wait();  
 
   ///Take Parallelogram to lowest position
   parallelogram_count = 0;
   Parallelogram_Down(); 
   
-  /*
-  delay(150);
-  while(PLGM.High1()){
-  Serial.println("High1");
-  }
-  
-  while(PLGM.Low1()){
-    Serial.println("Low1");
-  }
-  while(PLGM.High1()){
-  Serial.println("High2");
-} */
-  while(Parallelogram_Reached(2));
-  Parallelogram_Stop();Serial.println("Low2");
-  
+  while(!Parallelogram_Reached(2));
+
   Serial.println("Parallelogram should be down by now");
-  Serial_Wait();
+  
   //Linefollowing centred on S2 and S1. Linefollowing with brake till bud junction
   Parameters_Reset();
   while(1){
     //Parallelogram_Reached(2);
-    if(!LineFollow12_Encoders(3500)) 
+    if(!LineFollow12_Encoders(5000)) //&& Parallelogram_Reached(2) && encoder_turret>TURRET_ANG5) 
       break;    
   }
   while(LineFollow_Curve_Precision());
-      
+  Motors_Brake(255,255);  
   //Pick up, reverse and Go to Tokyo
   
 //  while(!Parallelogram_Reached(1));
@@ -81,7 +68,7 @@ void Auto_Stage_Two(){
   
   Actuate_High(GRIPPER);
   LAPTOP.println("Reverse");
-  Serial_Wait();
+  Toggle_Wait();
   
   ///Take Parallelogram to mid position before reverse
 //  parallelogram_count = 0;
@@ -91,11 +78,11 @@ void Auto_Stage_Two(){
   
   Parameters_Reset();
   Move_Back(255,200);
-  Run_For_Encoder_Count(6000);
+  Run_For_Encoder_Count(8000);
   
   Motors_Brake(255,0);
   Parameters_Reset();
-  motor2.Control(BCK,60);
+  motor2.Control(BCK,30);
   while(encoder_motor2<9000){ 
     Query_Launchpad();
     if(S2.High()&&encoder_motor2>2000){
@@ -105,9 +92,9 @@ void Auto_Stage_Two(){
   }  
   Motors_Brake(255,255);
   LAPTOP.println("Left Turn Done");
-  delay(200);
+  delay(150);
   
-  motor2.Control(FWD,60); //To get back on track
+  motor2.Control(FWD,40); //To get back on track
   while(!S2.High());
   
   ///Take Parallelogram to top position  
@@ -120,7 +107,7 @@ void Auto_Stage_Two(){
   while(1){
     LAPTOP.print("Linefollow ONE");
     LineFollow_Straight();
-    if(( S3.High() && S2.High() )||( S4.High() && S3.High() )||( S1.High()&&S2.High() ))
+    if((S3.High() && S1.High()) || (S4.High() && S2.High()) || (S3.High() && S2.High()))
       break;
     Parallelogram_Reached(1);
   }
@@ -128,22 +115,21 @@ void Auto_Stage_Two(){
   delay(200);
   
   while(1){
-    LAPTOP.print("Linefollow Slow");
+    LAPTOP.print("Linefollow Precision");
     LineFollow_Straight_Precision();
-    if(( S4.High() && S3.High() )||( S3.High() && S2.High() )||( S1.High() && S2.High() ))
+    if(( S3.High() && S1.High() )||( S4.High() && S2.High())||(S3.High() && S2.High() ))
       break;
     Parallelogram_Reached(1);
   }
   Motors_Brake(255,255);
   while(!Parallelogram_Reached(1));
   LAPTOP.println("Meet the Manual Bot");
-  Serial_Wait();
+  Toggle_Wait();
   
   //COMMS CODE COMES HERE DA!
     
   Actuate_Low(GRIPPER);
   LAPTOP.println("Ready to go for two and three");
-  Serial_Wait();      
  
   //Continue to pickup bud two and three
   for(int i = 0; i<2; i++){
@@ -159,7 +145,7 @@ void Auto_Stage_Two(){
 
       
     Motors_Brake(0,255);
-    motor1.Control(BCK,60);
+    motor1.Control(BCK,40);
     delay(600);
     while(S4.Low()&&S3.Low()&&S1.Low()&&S2.Low());
     
@@ -169,14 +155,12 @@ void Auto_Stage_Two(){
     
     Parameters_Reset();
     while(1){
-      if(!LineFollow_Encoders(9000,1))
+      if(!LineFollow_Encoders(9000,2))
         break;
       //Parallelogram_Reached(2);
     }      
 
-    while(LineFollow_Curve_Precision()){
-      //Parallelogram_Reached(2);
-    }
+    while(LineFollow_Curve_Precision());
         
     if(i==1){
       Parameters_Reset();
@@ -187,24 +171,21 @@ void Auto_Stage_Two(){
       Motors_Brake(255,255);
     }
     //Parallelogram_Stop();
+    Motors_Brake(255,255);
     LAPTOP.println("Reached bud 2");
-    Serial_Wait();
+    Toggle_Wait();
     Actuate_High(GRIPPER);
 
     LAPTOP.println("Going to reverse");
-    Serial_Wait();
     Parameters_Reset();
     
-    ///Take Parallelogram to mid position    
-//    parallelogram_count = 0;
-  //  Parallelogram_Up();
-    //while(!Parallelogram_Reached(1));
+
     Move_Parallelogram(FWD,1);
     Move_Back(170,255);
     if(i==1){
-      Run_For_Encoder_Count(8000);
+      Run_For_Encoder_Count(9000);
     }else{
-      Run_For_Encoder_Count(7500);
+      Run_For_Encoder_Count(8500);
     }
     Motors_Brake(255,0);
     Parameters_Reset();
@@ -234,25 +215,24 @@ void Auto_Stage_Two(){
     Move_Forward(30,30);
     Parameters_Reset();
     while(1){
-      LAPTOP.print("Linefollow Slow");
+      LAPTOP.print("Linefollow Precision");
       LineFollow_Straight_Precision();
-      if(( S4.High() && S2.High() )||( S3.High() && S1.High() ))
+      if(( S4.High() && S2.High() )||( S3.High() && S1.High() )||(S3.High() && S2.High()))
         break;
     }
     Motors_Brake(255,255);
     LAPTOP.println("Meet the Manual Bot");
-    Serial_Wait();
+    Toggle_Wait();
          //COMMS AGAIN!! 
     Actuate_Low(GRIPPER);
     Serial.println("Reached da");
-    Serial_Wait();                  
   }
   
   Move_Back(255,255);
 
   delay(700);
 
-  Motors_Brake(255,255);
+  Motors_Brake(100,100);
   LAPTOP.println("Stage two completed");
   while(1);
   

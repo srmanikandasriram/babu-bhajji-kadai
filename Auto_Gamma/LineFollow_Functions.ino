@@ -45,7 +45,7 @@ void LineFollow(){
 */
 
 void LineFollow_Curve(){
-  Serial.println("LineFollow Curve Precision ");
+  Serial.println("LineFollow CURVE");
   Serial_Print_Sensors();
   if(S2.High()){
      if(S1.High()){
@@ -74,6 +74,36 @@ void LineFollow_Curve(){
   }
 }
 
+void LineFollow_Curve2(){
+  Serial.println("LineFollow CURVE2");
+  Serial_Print_Sensors();
+  if(S2.High()){
+     if(S1.High()){
+       Move_Forward(0,80); 
+     }else{
+       Move_Forward(20,80); 
+     }
+  }
+  else if(S1.High()){
+    Move_Forward(0,80);
+    motor1.Brake(255);
+  }
+  else if(S3.High()){
+    if(S4.High()){
+      Move_Forward(50,0);
+     }else{
+      Move_Forward(50,20);
+     }  
+  }
+  else if(S4.High()){
+    Move_Forward(50,0);
+    motor2.Brake(255);
+  }
+  else{
+   Move_Forward(50,80);
+  }
+}
+
 int LineFollow_Encoders(long int encoder_value, int curve_enable){
   LAPTOP.print(encoder_motor1);
   LAPTOP.print("\t");
@@ -81,8 +111,10 @@ int LineFollow_Encoders(long int encoder_value, int curve_enable){
   
   Query_Launchpad();
   if( encoder_motor1<encoder_value ){
-     if(curve_enable){
+     if(curve_enable == 1){
        LineFollow_Curve();
+     }else if( curve_enable == 2 ){
+       LineFollow_Curve2();
      }else{
        LineFollow_Straight();
      }
@@ -118,7 +150,9 @@ void LineFollow12(){
    else if(local_flag == 1){
      Move_Forward(0,40);
      motor1.Brake(255); 
-     local_flag = 0;  
+     local_flag = 0; 
+   }else{
+     Move_Forward(40,40); 
    }
  } 
 }
@@ -142,6 +176,7 @@ int LineFollow12_Encoders(long int encoder_value){
     LineFollow12();
     return 1;
   }
+  Motors_Brake(255,255);
   return 0;
 }
 
@@ -151,7 +186,7 @@ int LineFollow_Straight_Precision(){
     
     if(S2.High()){
        if(S1.High()){
-         Move_Forward(0,40); motor1.Brake(255);
+         Move_Forward(0,60); motor1.Brake(255);
        }else{
          Move_Forward(0,40); 
        }
@@ -162,7 +197,7 @@ int LineFollow_Straight_Precision(){
     }
     else if(S3.High()){
       if(S4.High()){
-        Move_Forward(40,0); motor2.Brake(255);
+        Move_Forward(60,0); motor2.Brake(255);
        }else{
         Move_Forward(40,0);
        }  
@@ -174,7 +209,7 @@ int LineFollow_Straight_Precision(){
     else{
      Move_Forward(40,40);
     }
-    if(( S4.High() && S3.High() )||( S2.High() && S1.High() )){
+    if(S2.High() && S3.High()){
       Motors_Brake(255,255);
       return 1;
     }
@@ -239,7 +274,7 @@ int LineFollow_Curve_Precision(){
     else{
      Move_Forward(30,40);
     }
-    if( ( S4.High() && S3.High())||( S2.High() && S3.High())){
+    if( S2.High() && S3.High()){
       return 0;
     }
   return 1;

@@ -197,10 +197,10 @@ class Custom_Servo{
 #define HARDBRAKE 255
 
 #define TURRET_ANG1 1180
-#define TURRET_ANG2 1750
-#define TURRET_ANG3 1800
-#define TURRET_ANG4 1800
-#define TURRET_ANG5 3800
+#define TURRET_ANG2 2930
+#define TURRET_ANG3 4730
+#define TURRET_ANG4 6300
+#define TURRET_ANG5 10330
 
 #define STRAIGHT_LINE_PID 1
 #define SOFT_TURN_PID 2
@@ -245,7 +245,7 @@ typedef void (*fn) (void);
 fn Transform[] = {Initialise, Pick_Leaves, Accelerate_Bot, Decelerate_Bot, Drop_First_Leaf, Drop_Second_Leaf, Soft_Turn, Auto_Stage_One_Complete, Auto_Stage_Two};
 
 /** Configuration Constants: Affect behaviour **/
-uint16_t distances[26] = {0, 2930, 13880, 20700, 29100, 365, 230,100};
+uint16_t distances[26] = {0, 2930, 13880, 21650, 29100, 565, 120,100};
 
 /** Global declarations **/
 Motor motor1, motor2, turret_motor(27, 26, 11); // the order of pin numbers determine the direction  left_motor(22, 23, 9), right_motor(25, 24, 10),
@@ -316,6 +316,9 @@ void setup(){
   // for PWM
   TCCR1B = TCCR1B & mask | 0x02;
 
+  // for Serial_Wait
+  pinMode(A0, INPUT);
+  
   // for PID
   input = 0;
   setpoint = 0;  
@@ -373,16 +376,22 @@ void loop(){
   }
   Motors_Brake(255,255);
   Serial.read();
-  Serial_Wait();
+  Serial_Wait();*/
+  Toggle_Wait();
   LCD.clear();
-  LCD.print("Stage One:");*/
+  LCD.print("Stage One:");
+  
+  
   Move_Parallelogram(FWD,1);
   Parallelogram_Up();
   delay(300);
   Parallelogram_Stop();
   Auto_Stage_One();
   //Serial_Wait();
-  //LAPTOP.println("uncomment stage two");*/
+  //LAPTOP.println("uncomment stage two");
+  
+  
+  
   LCD.clear();
   LCD.print("Stage Two:");
   Auto_Stage_Two();

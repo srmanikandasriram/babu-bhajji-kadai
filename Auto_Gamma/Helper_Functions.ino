@@ -10,6 +10,13 @@ char Serial_Wait(){
   return LAPTOP.read();
 }
 
+int Toggle_Wait(){
+  int static pin_state = 0;
+  while(pin_state == digitalRead(A0));
+  pin_state = digitalRead(A0);
+  delay(1000);
+}
+
 void Abort(){
   Motors_Brake(255, 255);
   turret_motor.Brake(0);
