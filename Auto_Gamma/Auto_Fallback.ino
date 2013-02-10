@@ -59,7 +59,8 @@ void Accelerate_Bot1(){
   turret_motor.Control(Check_Mirror(FWD,BCK), 220);
   actuation_phase++;
   LAPTOP.println("Acceleration begun");
-
+  servo1.SetTargetAngle(3);
+  servo2.SetTargetAngle(4);
   while(base_pwm<maximum_pwm){
     base_pwm += acceleration;
     if(base_pwm == 36){
@@ -129,14 +130,12 @@ void Auto_Fallback_Begin(){
   }
   LAPTOP.println("Aligned onto the line");
   Motors_Brake(255,255);
-  Toggle_Wait();
   fallback_begin = true;
 }
 
 void LineFollow_Fallback(){
   
   LAPTOP.println("Commencing Auto Fallback Stratergy. Left turn complete.");
-  Toggle_Wait();
   Parameters_Reset();
 
   // Till Junction
@@ -147,17 +146,19 @@ void LineFollow_Fallback(){
       break;
   }
   Motors_Brake(255,255);
-
+  delay(5000);
   encoder_turret = 0;
   turret_motor.Control(Check_Mirror(FWD,BCK),255);
   while(encoder_turret<400);
   turret_motor.Brake(255);
-  servo2.Angle(50);
-  servo1.Angle(53);
-  Toggle_Wait();
+  servo1.Extend();
+  servo2.Extend();
+  delay(1000);
   Actuate_High(LEFT_VG);
   Actuate_High(RIGHT_VG);
-  
+  delay(2000);  
+  servo1.Home();
+  servo2.Home();
   // Linefollow till fourth ring drop site. Drop third leaf. 
   Parameters_Reset();
   motor2.Control(FWD,100);
@@ -173,19 +174,18 @@ void LineFollow_Fallback(){
   }
   Motors_Brake(255,255);
   delay(50);
-  Toggle_Wait();
   motor1.Control(FWD,50);
   delay(600);
   while(S1.Low()&&S2.Low());
   Motors_Brake(255,255);
   encoder_turret = 0;
   turret_motor.Control(Check_Mirror(BCK,FWD),255);
-  while(encoder_turret<TURRET_ANG2-TURRET_ANG1);
+  while(encoder_turret<TURRET_ANG2-TURRET_ANG1+400);
   turret_motor.Brake(255);
   Parameters_Reset();
   while(1){
     Serial.print("Encoders");
-    if(!LineFollow_Encoders(2000,1)) 
+    if(!LineFollow12_Encoders(3500)) 
       break;
   }
   Motors_Brake(255,255);

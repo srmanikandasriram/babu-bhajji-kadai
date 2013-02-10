@@ -152,7 +152,8 @@ void LineFollow12(){
      motor1.Brake(255); 
      local_flag = 0; 
    }else{
-     Move_Forward(40,40); 
+     Move_Forward(30,0); 
+     motor2.Brake(255);
    }
  } 
 }
@@ -186,7 +187,9 @@ void LineFollow34(){
      motor2.Brake(255); 
      local_flag = 0; 
    }else{
-     Move_Forward(40,40); 
+     Move_Forward(0,30); 
+     motor1.Brake(255);
+
    }
  } 
 }

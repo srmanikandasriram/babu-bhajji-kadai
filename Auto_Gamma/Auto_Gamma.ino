@@ -179,6 +179,13 @@ class Custom_Servo{
 #define SERVO_ANG_R2 58
 #define SERVO_ANG_R3 140
 
+#define SERVO_ANG_L1F 120
+#define SERVO_ANG_L2F 100
+#define SERVO_ANG_L3F 60
+#define SERVO_ANG_R1F 40
+#define SERVO_ANG_R2F 58
+#define SERVO_ANG_R3F 53
+
 #define TURRET_SENSOR_PIN A10
 #define PARALLELOGRAM_SENSOR_PIN 1
 
@@ -201,6 +208,12 @@ class Custom_Servo{
 #define TURRET_ANG3 4730
 #define TURRET_ANG4 6300
 #define TURRET_ANG5 10330
+
+#define TURRET_ANG1F 1180
+#define TURRET_ANG2F 2930
+#define TURRET_ANG3F 4730
+#define TURRET_ANG4F 6300
+#define TURRET_ANG5F 10330
 
 #define STRAIGHT_LINE_PID 1
 #define SOFT_TURN_PID 2
@@ -252,7 +265,7 @@ uint16_t distances_fallback[26] = {0, 2930, 13880, 17000, 700, 100};
 Motor motor1, motor2, turret_motor(27, 26, 11); // the order of pin numbers determine the direction  left_motor(22, 23, 9), right_motor(25, 24, 10),
 
 //Sensor L1(A13),L2(A14),R1(A12),R2(A11);
-Sensor S1, S2, S3, S4;
+Sensor S1, S2, S3, S4, SW;
 const int actuations[] = {0, 37, 40, 44, 39, 41, 48, 49};
 
 int NORMAL = 60;
@@ -300,6 +313,7 @@ long int prevmillis = 0;
 LiquidCrystal LCD(13, 34, 30, 31, 32, 33);
 
 void setup(){
+  SW.Attach(A0);
   LAPTOP.begin(115200);
   LAUNCHPAD.begin(115200);
   LCD.begin(20,4);
@@ -408,8 +422,8 @@ void Initialise(){
     motor2.Attach(22,23,9);
     servo1.Attach(SERVO_RGT);
     servo2.Attach(SERVO_LFT);
-    servo1.SetAngles(SERVO_ANG_R1,SERVO_ANG_R2,SERVO_ANG_R3);
-    servo2.SetAngles(SERVO_ANG_L1,SERVO_ANG_L2,SERVO_ANG_L3);
+    servo1.SetAngles(SERVO_ANG_R1F,SERVO_ANG_R2F,SERVO_ANG_R3F);
+    servo2.SetAngles(SERVO_ANG_L1F,SERVO_ANG_L2F,SERVO_ANG_L3F);
     S1.Attach(A11);
     S2.Attach(A12);
     S3.Attach(A13);

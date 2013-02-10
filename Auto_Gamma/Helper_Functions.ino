@@ -11,9 +11,9 @@ char Serial_Wait(){
 }
 
 int Toggle_Wait(){
-  int static pin_state = 0;
-  while(pin_state == digitalRead(A0));
-  pin_state = digitalRead(A0);
+  int static pin_state = SW.High();
+  while(pin_state == SW.High());
+  pin_state = SW.High();
   delay(1000);
 }
 
