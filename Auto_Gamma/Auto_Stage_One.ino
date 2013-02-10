@@ -194,10 +194,12 @@ void PID_Adjust(){
     /** soft turn PID **/
     input = encoder_motor1;
     pid.Compute();
-    if(output>15){
+    if(output>100)
+      motor1.pwm(100);
+    else if(output>55){
       motor1.pwm(output);
     }else{
-      motor1.pwm(15);
+      motor1.pwm(20);
     }
     if(S1.High()||S2.High()||S3.High()||S4.High()){
       LAPTOP.println("\n DETECTED LINE");

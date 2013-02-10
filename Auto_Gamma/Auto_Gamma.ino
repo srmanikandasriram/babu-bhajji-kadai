@@ -243,9 +243,10 @@ class Custom_Servo{
 // for Array of Functions
 typedef void (*fn) (void);
 fn Transform[] = {Initialise, Pick_Leaves, Accelerate_Bot, Decelerate_Bot, Drop_First_Leaf, Drop_Second_Leaf, Soft_Turn, Auto_Stage_One_Complete, Auto_Stage_Two};
-
+fn Transform_Fallback[] = {Initialise, Pick_Leaves1, Accelerate_Bot1, Decelerate_Bot1, Detect_Line, Soft_Turn1, Auto_Fallback_Begin, LineFollow_Fallback};
 /** Configuration Constants: Affect behaviour **/
-uint16_t distances[26] = {0, 2930, 13880, 21650, 29100, 565, 120,100};
+uint16_t distances[26] = {0, 2930, 13880, 21650, 29100, 565, 150,100};
+uint16_t distances_fallback[26] = {0, 2930, 13880, 17000, 565, 150, 100};
 
 /** Global declarations **/
 Motor motor1, motor2, turret_motor(27, 26, 11); // the order of pin numbers determine the direction  left_motor(22, 23, 9), right_motor(25, 24, 10),
@@ -272,7 +273,7 @@ const int acceleration_delay = 2, acceleration = 2;
 const int deceleration_delay = 2, deceleration = 5;
 const int encoder_count = 22134;  // Encoder count for hard turn 5802
 const int delay_long = 5;
-boolean stage_one_complete = false, mirror;
+boolean stage_one_complete = false, mirror, fallback_begin = false;
 
 // For PID
 double setpoint, input, output;
@@ -318,7 +319,7 @@ void setup(){
 
   // for Serial_Wait
   pinMode(A0, INPUT);
-  
+  pinMode(A1, INPUT);
   // for PID
   input = 0;
   setpoint = 0;  
@@ -380,21 +381,20 @@ void loop(){
   Toggle_Wait();
   LCD.clear();
   LCD.print("Stage One:");
-  
-  
   Move_Parallelogram(FWD,1);
   Parallelogram_Up();
   delay(300);
   Parallelogram_Stop();
-  Auto_Stage_One();
-  //Serial_Wait();
-  //LAPTOP.println("uncomment stage two");
-  
-  
-  
-  LCD.clear();
-  LCD.print("Stage Two:");
-  Auto_Stage_Two();
+
+  if(digitalRead(A1)){
+    Auto_Stage_One();
+    LCD.clear();
+    LCD.print("Stage Two:");
+    Auto_Stage_Two();
+  }else{
+    Auto_Fallback();
+    LineFollow_Fallback();
+  }
   LAPTOP.println("Bot going into hibernation");
   while(1);
 }

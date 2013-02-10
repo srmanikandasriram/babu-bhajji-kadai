@@ -156,6 +156,41 @@ void LineFollow12(){
    }
  } 
 }
+
+void LineFollow34(){
+ Serial.println("LineFollow S3S4 ");
+ static int local_flag = 0; 
+ Serial_Print_Sensors();
+  if(S3.High()){
+  if(S4.High()){
+   Move_Forward(40,30);
+  }
+  else{
+   Move_Forward(0,30); 
+   local_flag = 2;
+  }
+ }
+ else if(S4.High()){
+   Move_Forward(40,0); 
+   local_flag = 1; 
+ }
+ else
+ {
+   if(local_flag == 2){
+     Move_Forward(0,30);
+     motor1.Brake(255);
+     local_flag = 0;
+   }
+   else if(local_flag == 1){
+     Move_Forward(40,0);
+     motor2.Brake(255); 
+     local_flag = 0; 
+   }else{
+     Move_Forward(40,40); 
+   }
+ } 
+}
+
 /*
 //OLD LINE FOLLOW 12 FUNCTION
 
@@ -174,6 +209,19 @@ int LineFollow12_Encoders(long int encoder_value){
   Query_Launchpad();
   if( encoder_motor1<encoder_value ){
     LineFollow12();
+    return 1;
+  }
+  Motors_Brake(255,255);
+  return 0;
+}
+
+int LineFollow34_Encoders(long int encoder_value){
+  LAPTOP.print(encoder_motor1);
+  LAPTOP.print("\t");
+  LAPTOP.println(encoder_motor2);
+  Query_Launchpad();
+  if( encoder_motor1<encoder_value ){
+    LineFollow34();
     return 1;
   }
   Motors_Brake(255,255);

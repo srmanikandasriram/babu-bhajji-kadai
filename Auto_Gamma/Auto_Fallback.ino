@@ -1,14 +1,154 @@
 
-/** Auto Stage Two **/
+/** Auto Fallback **/
 
-void Auto_Stage_Two(){
+void Auto_Fallback(){
+  LAPTOP.println("\n Falllback! ");
+  while(1){
+    //  prevmillis = millis();
+    if( (encoder_motor1 < distances_fallback[path_phase]) && (encoder_motor2 < distances_fallback[path_phase]) ){
+      Move_Turret();
+      Move_Servo();
+      Query_Launchpad();
+      if (pid_enable){
+        PID_Adjust();
+      }
+      Serial_Print();
+      Check_Abort();
+    } else {
+      LCD.setCursor(0,1);
+      LAPTOP.print("Path phase:");
+      LAPTOP.println(path_phase);
+      path_phase++;
+      Transform_Fallback[path_phase]();
+      if(fallback_begin)
+        break;
+    }
+    //  LAPTOP.println(millis() - prevmillis);
+  }
+}
 
-  ///If possible fix turret rotation delay/stop between Auto_Stage_One and Auto_Stage_Two.
-  ///Parallelogram changes made. 
-  ///Check Auto_Gamma for parallelogram_count declaration and initialise. 
-  ///Check Helper_Functions for Parallelogram_Reached function.
+void Pick_Leaves1(){
+  LAPTOP.println("Going to pick up the leaves.");
+  pid_enable = false;
+  Move_Forward(30, 30);
+  encoder_turret = 0;
+  turret_motor.Control(Check_Mirror(BCK,FWD),255);
+  actuation_phase++;
+  servo1.SetTargetAngle(2);
+  servo2.SetTargetAngle(2);
+}
+
+void Accelerate_Bot1(){
+  LAPTOP.println("Stopping to pick up leaves");
+  Motors_Brake(VSOFTBRAKE, VSOFTBRAKE);
+  while(encoder_turret<TURRET_ANG1){
+    Move_Servo();
+  }
+  turret_motor.Brake(0);
+  Actuate_High(V_PISTON);
+  delay(1000);
+  Actuate_Low(V_PISTON);
+  LAPTOP.println("Picked up leaves");
+  Toggle_Wait();
+  Launchpad_Reset();
+  encoder_motor1 = encoder_motor2 = 0;
+  Serial_Print();
+  pid_enable = true;
+  base_pwm = minimum_pwm;
+  Move_Forward(minimum_pwm, minimum_pwm);
+  turret_motor.Control(Check_Mirror(FWD,BCK), 220);
+  actuation_phase++;
+  LAPTOP.println("Acceleration begun");
+
+  while(base_pwm<maximum_pwm){
+    base_pwm += acceleration;
+    if(base_pwm == 36){
+      Serial.println("\n PID begun \n");    /// indicate start of PID
+      encoder_motor1 = encoder_motor2;
+      pid.SetOutputLimits(-35,35);
+    }
+    if(base_pwm>35){
+      PID_Adjust();
+    }
+    Query_Launchpad();
+    Move_Turret();
+    Move_Servo();
+    delay(acceleration_delay);
+    Serial_Print();
+    Check_Abort();
+  }
   
-  LAPTOP.println("Commencing Auto Stage Two. Left turn complete.");
+  LAPTOP.println("Acceleration completed.");
+  cons_kp = 1.5;
+  pid.SetTunings(cons_kp,cons_ki,cons_kd);
+  pid.SetOutputLimits(-45,45);
+}
+
+void Decelerate_Bot1(){
+
+  LAPTOP.println("Deceleration begun!");
+
+  while(base_pwm>slowdown_pwm){
+    base_pwm -= deceleration;
+    Query_Launchpad();
+    PID_Adjust();
+    delay(deceleration_delay);
+    Move_Turret();
+    Move_Servo();
+    Serial_Print();
+    Check_Abort();
+  }
+  
+  LAPTOP.println("Deceleration done");
+  base_pwm = slowdown_pwm;
+  pid.SetOutputLimits(-35,35);
+}
+
+void Detect_Line(){
+  Motors_Brake(HARDBRAKE, HARDBRAKE);
+  LAPTOP.println("Waiting for turret to turn");
+  while(encoder_turret<TURRET_ANG2);
+  turret_motor.Brake(0);
+//  Toggle_Wait();
+
+  LAPTOP.println("Moving forward slightly");
+  Move_Forward(20,20);
+  while(S2.Low()&&S3.Low());
+  LAPTOP.println("Line detected");
+  pid_enable = false;
+  Launchpad_Reset();
+  encoder_motor1 = 0; encoder_motor2 = 0;
+}
+
+void Auto_Fallback_Begin(){
+  Motors_Brake(HARDBRAKE, HARDBRAKE);
+  LAPTOP.println("Aligned onto the line");
+  fallback_begin = true;
+}
+
+void Soft_Turn1(){
+  LAPTOP.println("Going into soft turn");
+  motor1.pwm(150);
+  motor2.Brake(HARDBRAKE);
+  pid_type = SOFT_TURN_PID;
+  pid_enable = true;
+  Set_Turn1(distances_fallback[path_phase]);
+  Launchpad_Reset();
+  encoder_motor1 = 0; encoder_motor2 = 0;
+}
+
+void Set_Turn1(float ang){
+  setpoint = ang/360.0*encoder_count;
+  cons_kp = 255.0/setpoint;
+  distances_fallback[path_phase] = setpoint;
+  pid.SetTunings(cons_kp, cons_ki, cons_kd);
+  pid.SetOutputLimits(0,255);  
+}
+
+
+void LineFollow_Fallback(){
+  
+  LAPTOP.println("Commencing Auto Fallback Stratergy. Left turn complete.");
   Toggle_Wait();
   Parameters_Reset();
 
@@ -21,26 +161,50 @@ void Auto_Stage_Two(){
   }
   Motors_Brake(255,255);
   delay(50);
+  Toggle_Wait();
+  Actuate_High(LEFT_VG);
+  Actuate_High(RIGHT_VG);
   
   // Linefollow till fourth ring drop site. Drop third leaf. 
-  Parameters_Reset();  
-  servo1.Angle(70);
+  Parameters_Reset();
+  motor2.Control(FWD,100);
+  delay(600);
+  while(S4.Low()&&S3.Low()&&S1.Low()&&S2.Low());
+  Motors_Brake(255,255);
+  // Till Junction
+  // NOTE: In first two while(1) loops, need to add turret angle change
+  while(1){
+    LineFollow_Straight();
+    if(( S4.High() && S2.High() )||( S1.High() && S3.High() ))
+      break;
+  }
+  Motors_Brake(255,255);
+  delay(50);
+  Toggle_Wait();
+  motor1.Control(FWD,100);
+  delay(600);
+  while(S4.Low()&&S3.Low()&&S1.Low()&&S2.Low());
+  Motors_Brake(255,255);
+  encoder_turret = 0;
+  turret_motor.Control(Check_Mirror(BCK,FWD),255);
+  while(encoder_turret<TURRET_ANG2);
+  turret_motor.Brake(255);
+
   while(1){
     Serial.print("Encoders");
-    if(!LineFollow_Encoders(3250,1)) 
+    if(!LineFollow_Encoders(1250,1)) 
       break;
   }
   Motors_Brake(255,255);
   delay(500);
-  Actuate_High(Check_Mirror(RIGHT_VG,LEFT_VG));
+  Actuate_High(MIDDLE_VG);
   delay(400);
   LAPTOP.println("Dropped Third Leaf");
   servo1.Home();
   
   turret_motor.Control(FWD,255);
-  while(encoder_turret<TURRET_ANG5);
+  while(encoder_turret<TURRET_ANG2);
   turret_motor.Brake(255);
-  
   
   Toggle_Wait();  
 
@@ -96,7 +260,7 @@ void Auto_Stage_Two(){
   
   motor2.Control(FWD,40); //To get back on track
   while(!S2.High());
-  Motors_Brake(255,255);  
+  
   ///Take Parallelogram to top position  
   parallelogram_count = 0;
   Parallelogram_Up();
@@ -235,5 +399,4 @@ void Auto_Stage_Two(){
   Motors_Brake(100,100);
   LAPTOP.println("Stage two completed");
   while(1);
-  
 }
