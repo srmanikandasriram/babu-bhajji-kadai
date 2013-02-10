@@ -109,7 +109,7 @@ void Detect_Line(){
   LAPTOP.println("Waiting for turret to turn");
   while(encoder_turret<TURRET_ANG2);
   turret_motor.Brake(0);
-//  Toggle_Wait();
+  Toggle_Wait();
 
   LAPTOP.println("Moving forward slightly");
   Move_Forward(20,20);
@@ -121,30 +121,17 @@ void Detect_Line(){
 }
 
 void Auto_Fallback_Begin(){
-  Motors_Brake(HARDBRAKE, HARDBRAKE);
+  LAPTOP.println("Going into soft turn");
+  motor1.pwm(50);
+  motor2.Brake(HARDBRAKE);
+  while(S1.Low()&&S2.Low()&&S3.Low()&&S4.Low()){
+      LAPTOP.println("\n DETECTED LINE");
+  }
   LAPTOP.println("Aligned onto the line");
+  Motors_Brake(255,255);
+  Toggle_Wait();
   fallback_begin = true;
 }
-
-void Soft_Turn1(){
-  LAPTOP.println("Going into soft turn");
-  motor1.pwm(150);
-  motor2.Brake(HARDBRAKE);
-  pid_type = SOFT_TURN_PID;
-  pid_enable = true;
-  Set_Turn1(distances_fallback[path_phase]);
-  Launchpad_Reset();
-  encoder_motor1 = 0; encoder_motor2 = 0;
-}
-
-void Set_Turn1(float ang){
-  setpoint = ang/360.0*encoder_count;
-  cons_kp = 255.0/setpoint;
-  distances_fallback[path_phase] = setpoint;
-  pid.SetTunings(cons_kp, cons_ki, cons_kd);
-  pid.SetOutputLimits(0,255);  
-}
-
 
 void LineFollow_Fallback(){
   
@@ -155,12 +142,18 @@ void LineFollow_Fallback(){
   // Till Junction
   // NOTE: In first two while(1) loops, need to add turret angle change
   while(1){
-    LineFollow_Straight();
+    LineFollow34();
     if(( S4.High() && S2.High() )||( S1.High() && S3.High() ))
       break;
   }
   Motors_Brake(255,255);
-  delay(50);
+
+  encoder_turret = 0;
+  turret_motor.Control(Check_Mirror(FWD,BCK),255);
+  while(encoder_turret<400);
+  turret_motor.Brake(255);
+  servo2.Angle(50);
+  servo1.Angle(53);
   Toggle_Wait();
   Actuate_High(LEFT_VG);
   Actuate_High(RIGHT_VG);
@@ -181,18 +174,18 @@ void LineFollow_Fallback(){
   Motors_Brake(255,255);
   delay(50);
   Toggle_Wait();
-  motor1.Control(FWD,100);
+  motor1.Control(FWD,50);
   delay(600);
-  while(S4.Low()&&S3.Low()&&S1.Low()&&S2.Low());
+  while(S1.Low()&&S2.Low());
   Motors_Brake(255,255);
   encoder_turret = 0;
   turret_motor.Control(Check_Mirror(BCK,FWD),255);
-  while(encoder_turret<TURRET_ANG2);
+  while(encoder_turret<TURRET_ANG2-TURRET_ANG1);
   turret_motor.Brake(255);
-
+  Parameters_Reset();
   while(1){
     Serial.print("Encoders");
-    if(!LineFollow_Encoders(1250,1)) 
+    if(!LineFollow_Encoders(2000,1)) 
       break;
   }
   Motors_Brake(255,255);
@@ -201,9 +194,9 @@ void LineFollow_Fallback(){
   delay(400);
   LAPTOP.println("Dropped Third Leaf");
   servo1.Home();
-  
+  encoder_turret = 0;  
   turret_motor.Control(FWD,255);
-  while(encoder_turret<TURRET_ANG2);
+  while(encoder_turret<TURRET_ANG2-TURRET_ANG1);
   turret_motor.Brake(255);
   
   Toggle_Wait();  

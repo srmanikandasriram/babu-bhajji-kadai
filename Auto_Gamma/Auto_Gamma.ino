@@ -243,10 +243,10 @@ class Custom_Servo{
 // for Array of Functions
 typedef void (*fn) (void);
 fn Transform[] = {Initialise, Pick_Leaves, Accelerate_Bot, Decelerate_Bot, Drop_First_Leaf, Drop_Second_Leaf, Soft_Turn, Auto_Stage_One_Complete, Auto_Stage_Two};
-fn Transform_Fallback[] = {Initialise, Pick_Leaves1, Accelerate_Bot1, Decelerate_Bot1, Detect_Line, Soft_Turn1, Auto_Fallback_Begin, LineFollow_Fallback};
+fn Transform_Fallback[] = {Initialise, Pick_Leaves1, Accelerate_Bot1, Decelerate_Bot1, Detect_Line, Auto_Fallback_Begin, LineFollow_Fallback};
 /** Configuration Constants: Affect behaviour **/
 uint16_t distances[26] = {0, 2930, 13880, 21650, 29100, 565, 150,100};
-uint16_t distances_fallback[26] = {0, 2930, 13880, 17000, 565, 150, 100};
+uint16_t distances_fallback[26] = {0, 2930, 13880, 17000, 700, 100};
 
 /** Global declarations **/
 Motor motor1, motor2, turret_motor(27, 26, 11); // the order of pin numbers determine the direction  left_motor(22, 23, 9), right_motor(25, 24, 10),
@@ -381,11 +381,11 @@ void loop(){
   Toggle_Wait();
   LCD.clear();
   LCD.print("Stage One:");
-  Move_Parallelogram(FWD,1);
+/*  Move_Parallelogram(FWD,1);
   Parallelogram_Up();
   delay(300);
   Parallelogram_Stop();
-
+*/
   if(digitalRead(A1)){
     Auto_Stage_One();
     LCD.clear();
