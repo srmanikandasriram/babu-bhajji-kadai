@@ -110,7 +110,7 @@ int LineFollow_Encoders(long int encoder_value, int curve_enable){
   LAPTOP.println(encoder_motor2);
   
   Query_Launchpad();
-  if( encoder_motor1<encoder_value ){
+  if( (encoder_motor1+encoder_motor2)/2 <encoder_value ){
      if(curve_enable == 1){
        LineFollow_Curve();
      }else if( curve_enable == 2 ){
@@ -210,7 +210,7 @@ int LineFollow12_Encoders(long int encoder_value){
   LAPTOP.print("\t");
   LAPTOP.println(encoder_motor2);
   Query_Launchpad();
-  if( encoder_motor1<encoder_value ){
+    if( (encoder_motor1+encoder_motor2)/2 <encoder_value ){
     LineFollow12();
     return 1;
   }
@@ -223,7 +223,7 @@ int LineFollow34_Encoders(long int encoder_value){
   LAPTOP.print("\t");
   LAPTOP.println(encoder_motor2);
   Query_Launchpad();
-  if( encoder_motor1<encoder_value ){
+    if( (encoder_motor1+encoder_motor2)/2 <encoder_value ){
     LineFollow34();
     return 1;
   }

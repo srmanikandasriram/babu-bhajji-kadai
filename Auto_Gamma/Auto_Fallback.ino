@@ -60,7 +60,7 @@ void Accelerate_Bot1(){
   actuation_phase++;
   LAPTOP.println("Acceleration begun");
   servo1.SetTargetAngle(3);
-  servo2.SetTargetAngle(4);
+  servo2.SetTargetAngle(3);
   while(base_pwm<maximum_pwm){
     base_pwm += acceleration;
     if(base_pwm == 36){
@@ -110,8 +110,8 @@ void Detect_Line(){
   LAPTOP.println("Waiting for turret to turn");
   while(encoder_turret<TURRET_ANG2);
   turret_motor.Brake(0);
-  Toggle_Wait();
-
+//  Toggle_Wait();
+  delay(400);
   LAPTOP.println("Moving forward slightly");
   Move_Forward(20,20);
   while(S2.Low()&&S3.Low());
@@ -146,7 +146,6 @@ void LineFollow_Fallback(){
       break;
   }
   Motors_Brake(255,255);
-  delay(5000);
   encoder_turret = 0;
   turret_motor.Control(Check_Mirror(FWD,BCK),255);
   while(encoder_turret<400);
@@ -157,14 +156,15 @@ void LineFollow_Fallback(){
   Actuate_High(LEFT_VG);
   Actuate_High(RIGHT_VG);
   delay(2000);  
-  servo1.Home();
-  servo2.Home();
   // Linefollow till fourth ring drop site. Drop third leaf. 
   Parameters_Reset();
   motor2.Control(FWD,100);
   delay(600);
+  servo1.Home();
+  servo2.Home();
   while(S4.Low()&&S3.Low()&&S1.Low()&&S2.Low());
   Motors_Brake(255,255);
+
   // Till Junction
   // NOTE: In first two while(1) loops, need to add turret angle change
   while(1){
@@ -176,7 +176,7 @@ void LineFollow_Fallback(){
   delay(50);
   motor1.Control(FWD,50);
   delay(600);
-  while(S1.Low()&&S2.Low());
+  while(S1.Low()&&S2.Low() &&S3.Low());
   Motors_Brake(255,255);
   encoder_turret = 0;
   turret_motor.Control(Check_Mirror(BCK,FWD),255);
@@ -213,7 +213,7 @@ void LineFollow_Fallback(){
   Parameters_Reset();
   while(1){
     //Parallelogram_Reached(2);
-    if(!LineFollow12_Encoders(5000)) //&& Parallelogram_Reached(2) && encoder_turret>TURRET_ANG5) 
+    if(!LineFollow12_Encoders(2000)) //&& Parallelogram_Reached(2) && encoder_turret>TURRET_ANG5) 
       break;    
   }
   while(LineFollow_Curve_Precision());
@@ -235,7 +235,7 @@ void LineFollow_Fallback(){
   
   Parameters_Reset();
   Move_Back(255,200);
-  Run_For_Encoder_Count(8000);
+  Run_For_Encoder_Count(9000);
   
   Motors_Brake(255,0);
   Parameters_Reset();
@@ -292,7 +292,7 @@ void LineFollow_Fallback(){
   for(int i = 0; i<2; i++){
     Parameters_Reset();                  
     Move_Back(125,225);
-    Run_For_Encoder_Count(3500); 
+    Run_For_Encoder_Count(4500); 
     LAPTOP.println("Part One done"); 
     
     ///Take Parallelogram to lowest position
@@ -338,11 +338,14 @@ void LineFollow_Fallback(){
     
 
     Move_Parallelogram(FWD,1);
-    Move_Back(170,255);
+    Parallelogram_Up();
+    delay(200);
+    Parallelogram_Stop();
+    Move_Back(150,255);
     if(i==1){
-      Run_For_Encoder_Count(9000);
+      Run_For_Encoder_Count(11000);
     }else{
-      Run_For_Encoder_Count(8500);
+      Run_For_Encoder_Count(10500);
     }
     Motors_Brake(255,0);
     Parameters_Reset();
