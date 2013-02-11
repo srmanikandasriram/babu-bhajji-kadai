@@ -156,9 +156,10 @@ void LineFollow_Fallback(){
   servo2.Extend();
   delay(1000);
   Actuate_High(LEFT_VG);
-  Actuate_High(GRIPPER);
+  Actuate_High(GRIPPER);//drop first two leaves
   Actuate_High(RIGHT_VG);
-  delay(2000);  
+  delay(2000); 
+  //Toggle_Wait(); 
   // Linefollow till fourth ring drop site. Drop third leaf. 
   Parameters_Reset();
   motor2.Control(FWD,100);
@@ -172,7 +173,7 @@ void LineFollow_Fallback(){
   // NOTE: In first two while(1) loops, need to add turret angle change
   while(1){
     LineFollow_Straight();
-    if(( S4.High() && S2.High() )||( S1.High() && S3.High() ))
+    if(( S4.High() && S2.High() && S3.High() )||( S1.High() && S3.High() &&S2.High()  ))
       break;
   }
   Motors_Brake(255,255);
@@ -239,12 +240,12 @@ void LineFollow_Fallback(){
 //  while(!Parallelogram_Reached(1));
   Move_Parallelogram(FWD,1);
   Parallelogram_Up();                                        //to raise para after black tape, to avoid count while shaking
-  delay(400);
+  delay(500);
   Parallelogram_Stop();
   Toggle_Wait();
   Parameters_Reset();
-  Move_Back(255,200);
-  Run_For_Encoder_Count(8750);
+  Move_Back(180,130);
+  Run_For_Encoder_Count(8400);
   
   Motors_Brake(255,0);
   Parameters_Reset();
@@ -303,7 +304,7 @@ void LineFollow_Fallback(){
   //Continue to pickup bud two and three
   for(int i = 0; i<2; i++){
     Parameters_Reset();                  
-    Move_Back(125,225);
+    Move_Back(100,200);
     Run_For_Encoder_Count(4500); 
     LAPTOP.println("Part One done"); 
     
@@ -314,13 +315,13 @@ void LineFollow_Fallback(){
 
       
     Motors_Brake(0,255);
-    motor1.Control(BCK,40);
+    motor1.Control(BCK,20);
     delay(600);
     while(S4.Low()&&S3.Low()&&S1.Low()&&S2.Low());
     
     Motors_Brake(255,255);
     Move_Parallelogram(BCK,1);
-    Move_Forward(30,30);
+    Move_Forward(20,20);
     
     Parameters_Reset();
     while(1){
@@ -365,7 +366,7 @@ void LineFollow_Fallback(){
   delay(400);
   Parallelogram_Stop();
     Toggle_Wait();
-    Move_Back(150,255);
+    Move_Back(120,200);
     if(i==1){
       Run_For_Encoder_Count(9000);
     }else{
@@ -377,7 +378,7 @@ void LineFollow_Fallback(){
     while(encoder_motor2<9000){ 
       Query_Launchpad();
       LAPTOP.println(encoder_motor2);
-      if(S4.High()&&encoder_motor2>2000){
+      if((S4.High()||S3.High())&&encoder_motor2>2000){
         LAPTOP.println("Line Detected");
         break;
       }

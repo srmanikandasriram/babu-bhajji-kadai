@@ -164,30 +164,30 @@ void LineFollow34(){
  Serial_Print_Sensors();
   if(S3.High()){
   if(S4.High()){
-   Move_Forward(40,30);
+   Move_Forward(35,25);
   }
   else{
-   Move_Forward(0,30); 
+   Move_Forward(0,25); 
    local_flag = 2;
   }
  }
  else if(S4.High()){
-   Move_Forward(40,0); 
+   Move_Forward(35,0); 
    local_flag = 1; 
  }
  else
  {
    if(local_flag == 2){
-     Move_Forward(0,30);
+     Move_Forward(0,25);
      motor1.Brake(255);
      local_flag = 0;
    }
    else if(local_flag == 1){
-     Move_Forward(40,0);
+     Move_Forward(35,0);
      motor2.Brake(255); 
      local_flag = 0; 
    }else{
-     Move_Forward(0,30); 
+     Move_Forward(0,25); 
      motor1.Brake(255);
 
    }
