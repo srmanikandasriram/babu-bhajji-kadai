@@ -45,6 +45,8 @@ void Accelerate_Bot1(){
     Move_Servo();
   }
   turret_motor.Brake(0);
+  Actuate_Low(GRIPPER);
+  Actuate_High(LEFT_VG);
   Actuate_High(V_PISTON);
   delay(1000);
   Actuate_Low(V_PISTON);
@@ -154,6 +156,7 @@ void LineFollow_Fallback(){
   servo2.Extend();
   delay(1000);
   Actuate_High(LEFT_VG);
+  Actuate_High(GRIPPER);
   Actuate_High(RIGHT_VG);
   delay(2000);  
   // Linefollow till fourth ring drop site. Drop third leaf. 
@@ -224,6 +227,7 @@ void LineFollow_Fallback(){
   ///May have to move forward slightly here. Parallelogram can alternatively be lowerd early in the previous while(1) loop
   
   Actuate_High(GRIPPER);
+  Actuate_Low(LEFT_VG);
   LAPTOP.println("Reverse");
   Toggle_Wait();
   
@@ -285,7 +289,8 @@ void LineFollow_Fallback(){
   
   //COMMS CODE COMES HERE DA!
     
-  Actuate_Low(GRIPPER);
+  Actuate_High(GRIPPER);
+  Actuate_High(LEFT_VG);
   LAPTOP.println("Ready to go for two and three");
  
   //Continue to pickup bud two and three
@@ -332,6 +337,7 @@ void LineFollow_Fallback(){
     LAPTOP.println("Reached bud 2");
     Toggle_Wait();
     Actuate_High(GRIPPER);
+    Actuate_Low(LEFT_VG);
 
     LAPTOP.println("Going to reverse");
     Parameters_Reset();
@@ -384,7 +390,8 @@ void LineFollow_Fallback(){
     LAPTOP.println("Meet the Manual Bot");
     Toggle_Wait();
          //COMMS AGAIN!! 
-    Actuate_Low(GRIPPER);
+    Actuate_High(GRIPPER);
+    Actuate_High(LEFT_VG);
     Serial.println("Reached da");
   }
   
