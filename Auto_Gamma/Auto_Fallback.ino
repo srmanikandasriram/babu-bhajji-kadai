@@ -204,11 +204,6 @@ void LineFollow_Fallback(){
   
   Toggle_Wait();  
 
-  ///Take Parallelogram to lowest position
-  parallelogram_count = 0;
-  Parallelogram_Down(); 
-  
-  while(!Parallelogram_Reached(2));
 
   Serial.println("Parallelogram should be down by now");
   
@@ -226,8 +221,15 @@ void LineFollow_Fallback(){
 //  while(!Parallelogram_Reached(1));
   ///May have to move forward slightly here. Parallelogram can alternatively be lowerd early in the previous while(1) loop
   
-  Actuate_High(GRIPPER);
-  Actuate_Low(LEFT_VG);
+  Actuate_High(GRIPPER);                               // to pick up bud 1
+  Actuate_Low(LEFT_VG);                                 
+    ///Take Parallelogram to lowest position
+  parallelogram_count = 0;
+  Parallelogram_Down(); 
+  
+  while(!Parallelogram_Reached(1));
+  delay(2000);
+
   LAPTOP.println("Reverse");
   Toggle_Wait();
   
@@ -236,14 +238,17 @@ void LineFollow_Fallback(){
 //  Parallelogram_Up(); 
 //  while(!Parallelogram_Reached(1));
   Move_Parallelogram(FWD,1);
-  
+  Parallelogram_Up();                                        //to raise para after black tape, to avoid count while shaking
+  delay(400);
+  Parallelogram_Stop();
+  Toggle_Wait();
   Parameters_Reset();
   Move_Back(255,200);
-  Run_For_Encoder_Count(9000);
+  Run_For_Encoder_Count(8750);
   
   Motors_Brake(255,0);
   Parameters_Reset();
-  motor2.Control(BCK,30);
+  motor2.Control(BCK,20);
   while(encoder_motor2<9000){ 
     Query_Launchpad();
     if(S2.High()&&encoder_motor2>2000){
@@ -255,8 +260,10 @@ void LineFollow_Fallback(){
   LAPTOP.println("Left Turn Done");
   delay(150);
   
-  motor2.Control(FWD,40); //To get back on track
+  motor2.Control(FWD,30); //To get back on track
   while(!S2.High());
+  Motors_Brake(255,255);
+  delay(500);
   
   ///Take Parallelogram to top position  
   parallelogram_count = 0;
@@ -267,7 +274,7 @@ void LineFollow_Fallback(){
   LAPTOP.println("Ready to linefollow");  
   while(1){
     LAPTOP.print("Linefollow ONE");
-    LineFollow_Straight();
+    LineFollow_Straight_Precision();
     if((S3.High() && S1.High()) || (S4.High() && S2.High()) || (S3.High() && S2.High()))
       break;
     Parallelogram_Reached(1);
@@ -292,7 +299,7 @@ void LineFollow_Fallback(){
   Actuate_High(GRIPPER);
   Actuate_High(LEFT_VG);
   LAPTOP.println("Ready to go for two and three");
- 
+  delay(2000);
   //Continue to pickup bud two and three
   for(int i = 0; i<2; i++){
     Parameters_Reset();                  
@@ -312,7 +319,7 @@ void LineFollow_Fallback(){
     while(S4.Low()&&S3.Low()&&S1.Low()&&S2.Low());
     
     Motors_Brake(255,255);
-    Move_Parallelogram(BCK,2);
+    Move_Parallelogram(BCK,1);
     Move_Forward(30,30);
     
     Parameters_Reset();
@@ -338,7 +345,14 @@ void LineFollow_Fallback(){
     Toggle_Wait();
     Actuate_High(GRIPPER);
     Actuate_Low(LEFT_VG);
-
+    delay(2000);
+      ///Take Parallelogram to lowest position
+    parallelogram_count = 0;
+    Parallelogram_Down(); 
+  
+    while(!Parallelogram_Reached(1));
+    delay(2000);
+    
     LAPTOP.println("Going to reverse");
     Parameters_Reset();
     
@@ -347,15 +361,19 @@ void LineFollow_Fallback(){
     Parallelogram_Up();
     delay(200);
     Parallelogram_Stop();
+     Parallelogram_Up();
+  delay(400);
+  Parallelogram_Stop();
+    Toggle_Wait();
     Move_Back(150,255);
     if(i==1){
-      Run_For_Encoder_Count(11000);
+      Run_For_Encoder_Count(9000);
     }else{
-      Run_For_Encoder_Count(10500);
+      Run_For_Encoder_Count(8500);
     }
     Motors_Brake(255,0);
     Parameters_Reset();
-    motor2.Control(BCK,40);
+    motor2.Control(BCK,20);
     while(encoder_motor2<9000){ 
       Query_Launchpad();
       LAPTOP.println(encoder_motor2);
@@ -393,6 +411,7 @@ void LineFollow_Fallback(){
     Actuate_High(GRIPPER);
     Actuate_High(LEFT_VG);
     Serial.println("Reached da");
+    delay(2000);
   }
   
   Move_Back(255,255);

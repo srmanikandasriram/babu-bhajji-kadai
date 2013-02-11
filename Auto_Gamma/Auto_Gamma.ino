@@ -180,8 +180,8 @@ class Custom_Servo{
 #define SERVO_ANG_R3 140
 
 #define SERVO_ANG_L1F 120
-#define SERVO_ANG_L2F 100
-#define SERVO_ANG_L3F 60
+#define SERVO_ANG_L2F 97
+#define SERVO_ANG_L3F 55
 #define SERVO_ANG_R1F 40
 #define SERVO_ANG_R2F 58
 #define SERVO_ANG_R3F 53

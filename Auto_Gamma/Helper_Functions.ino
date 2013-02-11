@@ -80,7 +80,7 @@ int Parallelogram_Reached(int count){
   Serial.print(" PARALLELOGRAM COUNT:");
   Serial.println(parallelogram_count);
   if( parallelogram_count >= count ){
-    Parallelogram_Stop();
+       Parallelogram_Stop();
     return 1;
   }
   return 0;
