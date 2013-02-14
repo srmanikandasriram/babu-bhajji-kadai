@@ -3,9 +3,10 @@
 
 void Auto_Fallback(){
   LAPTOP.println("\n Fallback! ");
-  //Parallelogram_Up();
-  //delay(300);
-  //Parallelogram_Stop();
+  Move_Parallelogram(FWD,1);
+Parallelogram_Up();
+delay(300);
+Parallelogram_Stop();
   while(1){
     //  prevmillis = millis();
     if( (encoder_motor1 < distances_fallback[path_phase]) && (encoder_motor2 < distances_fallback[path_phase]) ){
@@ -181,7 +182,7 @@ void LineFollow_Fallback(){
   Actuate_High(LEFT_VG);
   Actuate_High(RIGHT_VG);
   delay(1000); 
-  Toggle_Wait(); 
+  //Toggle_Wait(); 
   // Linefollow till fourth ring drop site. Drop third leaf. 
   Parameters_Reset();
   motor2.Control(FWD,100);
@@ -227,11 +228,11 @@ void LineFollow_Fallback(){
   }
   Motors_Brake(255,255);
   delay(500);
-  Toggle_Wait();
+  //Toggle_Wait();
   Actuate_High(MIDDLE_VG);
   delay(400);
   LAPTOP.println("Dropped Third Leaf");
-  Toggle_Wait();
+  //Toggle_Wait();
   servo1.Home();
   encoder_turret = 0;  
   turret_motor.Control(FWD,255);
@@ -261,17 +262,17 @@ void LineFollow_Fallback(){
   Actuate_Low(GRIPPER);                               // to pick up bud 1
 
   ///Take Parallelogram to lowest position
-  Toggle_Wait();
+  //Toggle_Wait();
 
   parallelogram_count = 0;
   Parallelogram_Down(); 
 
  // while(!Parallelogram_Reached(1));
-  delay(300);
+  delay(500);
   Parallelogram_Stop();
   Toggle_Wait();
   LAPTOP.println("Reverse");
-  Toggle_Wait();
+  //Toggle_Wait();
 
   ///Take Parallelogram to mid position before reverse
   //  parallelogram_count = 0;
@@ -282,7 +283,7 @@ void LineFollow_Fallback(){
   Parallelogram_Up();                                        //to raise para after black tape, to avoid count while shaking
   delay(500);
   Parallelogram_Stop();
-  Toggle_Wait();
+  //Toggle_Wait();
   Parameters_Reset();
   Move_Back(150,100);
   Run_For_Encoder_Count(8400);
@@ -379,7 +380,7 @@ void LineFollow_Fallback(){
     if(i==1){
       Parameters_Reset();
       while(1){
-        if(!LineFollow_Encoders(1000,1)) //Have to change 500 da!! 
+        if(!LineFollow_Encoders(2000,1)) //Have to change 500 da!! 
           break;
       }
       Motors_Brake(255,255);
@@ -387,8 +388,9 @@ void LineFollow_Fallback(){
     //Parallelogram_Stop();
     Motors_Brake(255,255);
     LAPTOP.println("Reached bud 2");
-    Toggle_Wait();
+    //Toggle_Wait();
     Actuate_Low(GRIPPER);
+    
     //delay(2000);
     ///Take Parallelogram to lowest position
     parallelogram_count = 0;
@@ -456,7 +458,7 @@ void LineFollow_Fallback(){
 
     Serial.println("Reached da");
     delay(2000);
-    Toggle_Wait();
+    
   }
 
   Move_Back(255,255);

@@ -179,12 +179,12 @@ class Custom_Servo{
 #define SERVO_ANG_R2 58
 #define SERVO_ANG_R3 140
 
-#define SERVO_ANG_L1F 120
-#define SERVO_ANG_L2F 99
-#define SERVO_ANG_L3F 52
-#define SERVO_ANG_R1F 40
-#define SERVO_ANG_R2F 58
-#define SERVO_ANG_R3F 53
+#define SERVO_ANG_L1F 135 // 135
+#define SERVO_ANG_L2F 90 // 99
+#define SERVO_ANG_L3F 52 // 52
+#define SERVO_ANG_R1F 10 // 20
+#define SERVO_ANG_R2F 58 // 58
+#define SERVO_ANG_R3F 53 // 53
 
 #define TURRET_SENSOR_PIN A10
 #define PARALLELOGRAM_SENSOR_PIN 1
