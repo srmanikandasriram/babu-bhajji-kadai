@@ -237,28 +237,31 @@ int LineFollow_Straight_Precision(){
     
     if(S2.High()){
        if(S1.High()){
-         Move_Forward(0,60); motor1.Brake(255);
+         Move_Forward(0,55); motor1.Brake(255);
+         
        }else{
-         Move_Forward(0,40); 
+         Move_Forward(0,35); 
        }
     }
     else if(S1.High()){
-      Move_Forward(0,40);
+      Move_Forward(0,35);
       motor1.Brake(255);
+
     }
     else if(S3.High()){
       if(S4.High()){
-        Move_Forward(60,0); motor2.Brake(255);
+        Move_Forward(55,0); motor2.Brake(255);
        }else{
-        Move_Forward(40,0);
+        Move_Forward(35,0);
        }  
     }
     else if(S4.High()){
-      Move_Forward(40,0);
+      Move_Forward(35,0);
       motor2.Brake(255);
+
     }
     else{
-     Move_Forward(40,40);
+     Move_Forward(35,35);
     }
     if(S2.High() && S3.High()){
       Motors_Brake(255,255);

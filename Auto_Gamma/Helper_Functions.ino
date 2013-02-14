@@ -32,10 +32,13 @@ void Serial_Print(){
   LAPTOP.print(encoder_motor2);  
   LAPTOP.print("\tenct: ");
   LAPTOP.print(encoder_turret);
-  LAPTOP.print("\tcsl: ");
+  /*LAPTOP.print("\tcsl: ");
   LAPTOP.print(servo1.GetAngle());
   LAPTOP.print("\tcsr: ");
   LAPTOP.print(servo2.GetAngle());
+  */
+  LAPTOP.print("\tsharp: ");
+  LAPTOP.print(analogRead(SHARP_SENSOR_PIN));
   if(pid_enable){
     LAPTOP.print("\t  Current Diff: ");
     LAPTOP.print(input - setpoint);

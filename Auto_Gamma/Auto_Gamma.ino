@@ -188,6 +188,9 @@ class Custom_Servo{
 
 #define TURRET_SENSOR_PIN A10
 #define PARALLELOGRAM_SENSOR_PIN 1
+#define SHARP_SENSOR_PIN A2
+
+
 
 #define LEFT_VG 41
 #define MIDDLE_VG 39
@@ -204,7 +207,7 @@ class Custom_Servo{
 #define HARDBRAKE 255
 
 #define TURRET_ANG1 1180
-#define TURRET_ANG2 2930
+#define TURRET_ANG2 1750
 #define TURRET_ANG3 4730
 #define TURRET_ANG4 6300
 #define TURRET_ANG5 10330
@@ -258,8 +261,8 @@ typedef void (*fn) (void);
 fn Transform[] = {Initialise, Pick_Leaves, Accelerate_Bot, Decelerate_Bot, Drop_First_Leaf, Drop_Second_Leaf, Soft_Turn, Auto_Stage_One_Complete, Auto_Stage_Two};
 fn Transform_Fallback[] = {Initialise, Pick_Leaves1, Accelerate_Bot1, Decelerate_Bot1, Detect_Line, Auto_Fallback_Begin, LineFollow_Fallback};
 /** Configuration Constants: Affect behaviour **/
-uint16_t distances[26] = {0, 2930, 13880, 21650, 29100, 565, 150,100};
-uint16_t distances_fallback[26] = {0, 2930, 13880, 17000, 700, 100};
+uint16_t distances[26] = {0, 2030, 13880, 21650, 29100, 565, 150,100};
+uint16_t distances_fallback[26] = {0, 2230, 13880, 17000, 700, 100};
 
 /** Global declarations **/
 Motor motor1, motor2, turret_motor(27, 26, 11); // the order of pin numbers determine the direction  left_motor(22, 23, 9), right_motor(25, 24, 10),
@@ -267,7 +270,7 @@ Motor motor1, motor2, turret_motor(27, 26, 11); // the order of pin numbers dete
 //Sensor L1(A13),L2(A14),R1(A12),R2(A11);
 Sensor S1, S2, S3, S4, SW;
 const int actuations[] = {0, 37, 40, 44, 39, 41, 48, 49};
-
+Sensor TURRET_SENSOR;
 int NORMAL = 60;
 int SLOW = 25;
 int SLOWEST = 0; 
@@ -319,6 +322,7 @@ void setup(){
   LCD.begin(20,4);
   LCD.print("Hello World!");
   attachInterrupt(0, Turret_ISR, RISING);
+
   attachInterrupt(PARALLELOGRAM_SENSOR_PIN, Parallelogram_ISR, FALLING);
   
   for(int i = 1; i<8; i++){
@@ -334,6 +338,8 @@ void setup(){
   // for Serial_Wait
   pinMode(A0, INPUT);
   pinMode(A1, INPUT);
+  pinMode(A2, INPUT);  // for sharp sensor
+  
   // for PID
   input = 0;
   setpoint = 0;  
@@ -345,7 +351,8 @@ void setup(){
   
 //  Handshake_Launchpad();
   LAPTOP.println("Initialised");
-  
+  if(digitalRead(A0))
+  {
   char temp = Serial_Wait();
   while( temp != 'q' ){
     if( temp == 't' ){
@@ -367,10 +374,18 @@ void setup(){
         Serial_Wait();
         Parallelogram_Stop();
       }
+    }
+     else if( temp == 'k'){
+        Actuate_High(GRIPPER);
+     }
+    else if( temp == 'l'){
+        Actuate_Low(GRIPPER);
+      
     }else{
       LAPTOP.println("Enter t for turret reset or p for parallelogram reset or q to continue");
     }
     temp = Serial_Wait();
+  }
   }
   Query_Launchpad();
   Serial_Print();
@@ -444,4 +459,5 @@ void Initialise(){
   servo2.SetTargetAngle(1);
   servo1.Home();
   servo2.Home();
+  TURRET_SENSOR.Attach(TURRET_SENSOR_PIN);
 }

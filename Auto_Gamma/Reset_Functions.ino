@@ -1,10 +1,14 @@
 
 /** Reset Functions **/
-
 void Turret_Reset(){
+  char temp = Serial_Wait();
+  Turret_Reset_char(temp);
+}
+
+void Turret_Reset_char(char sense){
   LAPTOP.println("Resetting Turret");
   turret_motor.pwm(150);
-  if(Serial_Wait() == 'c') {
+  if(sense == 'c') {
     turret_motor.Control(FWD);
   }else{
     turret_motor.Control(BCK);
