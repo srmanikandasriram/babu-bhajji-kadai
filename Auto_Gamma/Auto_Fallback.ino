@@ -3,10 +3,10 @@
 
 void Auto_Fallback(){
   LAPTOP.println("\n Fallback! ");
-  Move_Parallelogram(FWD,1);
-Parallelogram_Up();
-delay(300);
-Parallelogram_Stop();
+  //Move_Parallelogram(FWD,1);
+//Parallelogram_Up();
+//delay(300);
+//Parallelogram_Stop();
   while(1){
     //  prevmillis = millis();
     if( (encoder_motor1 < distances_fallback[path_phase]) && (encoder_motor2 < distances_fallback[path_phase]) ){
@@ -179,16 +179,16 @@ void LineFollow_Fallback(){
   servo1.Extend();
   servo2.Extend();
   delay(500);
-  Actuate_High(LEFT_VG);
+  Actuate_High(LEFT_VG);    //first two leaves dropped
   Actuate_High(RIGHT_VG);
   delay(1000); 
-  //Toggle_Wait(); 
+  Toggle_Wait(); 
   // Linefollow till fourth ring drop site. Drop third leaf. 
   Parameters_Reset();
   motor2.Control(FWD,100);
   delay(600);
-  servo1.Home();
-  servo2.Home();
+  servo1.Middle();
+  servo2.Middle();
   while(S4.Low()&&S3.Low()&&S1.Low()&&S2.Low());
   Motors_Brake(255,255);
 
@@ -232,7 +232,7 @@ void LineFollow_Fallback(){
   Actuate_High(MIDDLE_VG);
   delay(400);
   LAPTOP.println("Dropped Third Leaf");
-  //Toggle_Wait();
+  Toggle_Wait();
   servo1.Home();
   encoder_turret = 0;  
   turret_motor.Control(FWD,255);
@@ -258,7 +258,7 @@ void LineFollow_Fallback(){
 
   //  while(!Parallelogram_Reached(1));
   ///May have to move forward slightly here. Parallelogram can alternatively be lowerd early in the previous while(1) loop
-
+ delay(1000);
   Actuate_Low(GRIPPER);                               // to pick up bud 1
 
   ///Take Parallelogram to lowest position
@@ -323,7 +323,7 @@ void LineFollow_Fallback(){
     Parallelogram_Reached(1);
   }
   Move_Forward(40,40);  //To bypass junction
-  delay(200);
+  delay(300);
 
   while(1){
     LAPTOP.print("Linefollow Precision");
@@ -358,7 +358,7 @@ void LineFollow_Fallback(){
 
 
     Motors_Brake(0,255);
-    motor1.Control(BCK,20);
+    motor1.Control(BCK,30);
     delay(600);
     while(S4.Low()&&S3.Low()&&S1.Low()&&S2.Low());
 
@@ -420,10 +420,10 @@ void LineFollow_Fallback(){
     Motors_Brake(255,0);
     Parameters_Reset();
     motor2.Control(BCK,20);
-    while(encoder_motor2<9000){ 
+    while(encoder_motor2<7000){ 
       Query_Launchpad();
       LAPTOP.println(encoder_motor2);
-      if((S4.High()||S3.High())&&encoder_motor2>2000){
+      if(encoder_motor2>4500){// ths is the place where i have made changes
         LAPTOP.println("Line Detected");
         break;
       }

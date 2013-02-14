@@ -180,16 +180,15 @@ class Custom_Servo{
 #define SERVO_ANG_R3 140
 
 #define SERVO_ANG_L1F 135 // 135
-#define SERVO_ANG_L2F 90 // 99
-#define SERVO_ANG_L3F 52 // 52
+#define SERVO_ANG_L2F 97  // 99
+#define SERVO_ANG_L3F 55 // 52
 #define SERVO_ANG_R1F 10 // 20
-#define SERVO_ANG_R2F 58 // 58
-#define SERVO_ANG_R3F 53 // 53
+#define SERVO_ANG_R2F 55 // 58
+#define SERVO_ANG_R3F 50 // 53
 
 #define TURRET_SENSOR_PIN A10
 #define PARALLELOGRAM_SENSOR_PIN 1
 #define SHARP_SENSOR_PIN A2
-
 
 
 #define LEFT_VG 41
@@ -206,7 +205,7 @@ class Custom_Servo{
 #define VSOFTBRAKE 100
 #define HARDBRAKE 255
 
-#define TURRET_ANG1 1180
+#define TURRET_ANG1 950// 1180 before init angle of turret got changed
 #define TURRET_ANG2 1750
 #define TURRET_ANG3 4730
 #define TURRET_ANG4 6300
