@@ -1,4 +1,3 @@
-char foo;
 // Core AutoBot Code
 // 14-02-2013 06 07 PM
 
@@ -265,9 +264,12 @@ class Custom_Servo{
 
 #define TURRET_ANG1F 950
 #define TURRET_ANG2F 1750
-#define TURRET_ANG3F 4430
+#define TURRET_ANG3F 4630
 #define TURRET_ANG4F 6600
 #define TURRET_ANG5F 10330
+
+#define COMM_TSOP_1 4
+#define COMM_TSOP_2 5
 
 #define VSLOW 20
 #define FAST 100
@@ -276,6 +278,35 @@ class Custom_Servo{
 #define SLOW 25
 #define SLOWEST 0
 #define TURRET_PWM 150
+
+//LineFollow PWMs
+
+#define LINEFOLLOW_STRAIGHT_HIGH 60
+#define LINEFOLLOW_STRAIGHT_MODERATE 50
+#define LINEFOLLOW_STRAIGHT_LOW 10
+
+#define LINEFOLLOW_CURVE_HIGH 50
+#define LINEFOLLOW_CURVE_MODERATE 40
+#define LINEFOLLOW_CURVE_LOW 10
+
+#define LINEFOLLOW_CURVE2_HIGH 70
+#define LINEFOLLOW_CURVE2_MODERATE 40
+#define LINEFOLLOW_CURVE2_LOW 10
+
+#define LINEFOLLOW12_OUTER_MOTOR 35
+#define LINEFOLLOW12_INNER_MOTOR 25
+#define LINEFOLLOW12_34CORRECTION 15
+
+#define LINEFOLLOW34_OUTER_MOTOR 20
+#define LINEFOLLOW34_INNER_MOTOR 30
+#define LINEFOLLOW34_12CORRECTION 15
+
+#define LINEFOLLOW_STRAIGHT_PRECISION_HIGH 55
+#define LINEFOLLOW_STRAIGHT_PRECISION_LOW 35
+
+#define LINEFOLLOW_CURVE_PRECISION_HIGH 30 
+#define LINEFOLLOW_CURVE_PRECISION_LOW 20
+
 
 #define Move_Forward(pwm1, pwm2){\
   motor1.Control(FWD, pwm1);\
@@ -315,8 +346,8 @@ class Custom_Servo{
 // for Array of Functions
 typedef void (*fn) (void);
 fn Transform[] = {Initialise, Pick_Leaves, Accelerate_Bot, Decelerate_Bot, Drop_First_Leaf, Drop_Second_Leaf, Soft_Turn, Auto_Stage_One_Complete, Auto_Stage_Two};
-fn Transform_Fallback[] = {Initialise, Pick_LeavesF, Accelerate_BotF, Decelerate_BotF, Detect_Line,
-                           Turn_and_Align, First_LineFollow, Drop_Two_Leaves, To_Last_Leaf, Drop_Last_Leaf,
+fn Transform_Fallback[] = {Initialise, Pick_LeavesF, Initial_Straight_Line, Detect_Line,
+                           Turn_and_Align, First_LineFollow, Drop_Two_Leaves, To_Last_Leaf, Final_Run_To_Leaf3, Drop_Last_Leaf,
                            To_First_Bud, To_Junction, To_Bud_Transfer, Transfer_Bud, To_Curve2, To_Next_Bud,
                            Tokyo2, To_Bud_Transfer, Transfer_Bud, To_Curve2, To_Next_Bud, Tokyo2, To_Bud_Transfer,
                            Transfer_Bud, The_End, Toggle_Wait };
@@ -399,6 +430,27 @@ void setup(){
   // for strategy Switch
   pinMode(A1, INPUT);
   
+  // for communication TSOP
+  pinMode(4, INPUT);
+  pinMode(5, INPUT);
+  /*while(1) {
+    Serial.print(4);
+    Serial.print(" ");
+    Serial.print(digitalRead(4));
+    Serial.print("\t");
+    Serial.print(5);
+    Serial.print(" ");
+    Serial.print(digitalRead(5)); 
+    
+    Serial.print("\t");
+    Serial.print("Communication ");
+    if(digitalRead(4) == LOW || digitalRead(5) == LOW)
+      Serial.println("Yes");
+    else
+      Serial.println("No");
+    delay(100);
+  }*/
+  
   // for PID
   input = 0;
   setpoint = 0;  
@@ -431,9 +483,9 @@ void setup(){
           Serial_Wait();
           Parallelogram_Stop();
         }
-      }else if (input == 'm'){
+      }/*else if (input == 'm'){
         Auto_MSC();
-      }else if( input == 'k'){
+      }*/else if( input == 'k'){
         Actuate_High(GRIPPER);
       }else if( input == 'l'){
         Actuate_Low(GRIPPER);      
@@ -451,6 +503,7 @@ void setup(){
 
 void loop(){
   Toggle_Wait();
+  
   LCD.clear();
   LCD.print("Stage One:");
   
@@ -463,7 +516,7 @@ void loop(){
   
 
   Parallelogram_Up();
-  delay(200);
+  delay(150);
   Parallelogram_Stop();
 
   if(strategy == AUTO_PID ){
