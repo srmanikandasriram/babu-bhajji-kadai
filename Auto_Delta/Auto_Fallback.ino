@@ -27,7 +27,7 @@ void Pick_LeavesF(){
   }
 }
 
-void Accelerate_BotF(){
+void Initial_Straight_Line(){
   LAPTOP.println("Stopping to pick up leaves");
   while(analogRead(SHARP_SENSOR_PIN)<350){
     LAPTOP.print("SHARP Check running"); LAPTOP.println(analogRead(SHARP_SENSOR_PIN));
@@ -93,9 +93,7 @@ void Accelerate_BotF(){
     Check_Abort();
     PID_Adjust();
   }
-}
 
-void Decelerate_BotF(){
 
   LAPTOP.println("Deceleration begun!");
 
@@ -115,6 +113,7 @@ void Decelerate_BotF(){
   pid.SetOutputLimits(-35,35);
 
   while(encoder_motor1 < distances_fallback[path_phase] && encoder_motor2 < distances_fallback[path_phase]){
+    LAPTOP.println("Gen moving forward for an encoder value");
     Query_Launchpad();
     Move_TurretF();
     Move_Servo();
@@ -203,8 +202,11 @@ void To_Last_Leaf(){
   while(S1.Low()&&S2.Low()&&S3.Low()){
     Move_TurretF();
   }
-  Motors_Brake(255,255);
-  delay(1000);
+  
+  //Motors_Brake(255,255);
+  //delay(1000);
+}
+void Final_Run_To_Leaf3(){  
   LAPTOP.println("Moving to third leaf");
   Parameters_Reset();
   while(analogRead(SHARP_SENSOR_PIN)<300){
@@ -213,6 +215,7 @@ void To_Last_Leaf(){
     LineFollow12();
     Move_TurretF();
   }
+  LAPTOP.print("SHARP VALUE : "); LAPTOP.println(analogRead(SHARP_SENSOR_PIN));
   Motors_Brake(255,255);
   delay(500);  
   //Toggle_Wait();
@@ -333,6 +336,7 @@ void To_Bud_Transfer(){
 
 void Transfer_Bud(){
   // Communication Code
+
   /*long int temp_millis = millis();
   while ( 1 ) {
     if( !(digitalRead(COMM_TSOP_1) == LOW || digitalRead(COMM_TSOP_2) == LOW) ) { // if Comm is on
@@ -346,6 +350,9 @@ void Transfer_Bud(){
   };
 */
   Toggle_Wait();
+
+//  while ( !(digitalRead(COMM_TSOP_1) == LOW || digitalRead(COMM_TSOP_2) == LOW) ); //TSOP is inverted logic
+
   Actuate_High(GRIPPER);
   LAPTOP.println("Ready to go for two and three");
   delay(1000);

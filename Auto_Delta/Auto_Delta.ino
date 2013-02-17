@@ -1,5 +1,5 @@
 // Core AutoBot Code
-// 14-02-2013 06 07 PM
+// 1639 170213
 
 /**********************************************************************
   Bot Data:
@@ -279,6 +279,35 @@ class Custom_Servo{
 #define SLOWEST 0
 #define TURRET_PWM 150
 
+//LineFollow PWMs
+
+#define LINEFOLLOW_STRAIGHT_HIGH 60
+#define LINEFOLLOW_STRAIGHT_MODERATE 50
+#define LINEFOLLOW_STRAIGHT_LOW 10
+
+#define LINEFOLLOW_CURVE_HIGH 50
+#define LINEFOLLOW_CURVE_MODERATE 40
+#define LINEFOLLOW_CURVE_LOW 10
+
+#define LINEFOLLOW_CURVE2_HIGH 70
+#define LINEFOLLOW_CURVE2_MODERATE 40
+#define LINEFOLLOW_CURVE2_LOW 10
+
+#define LINEFOLLOW12_OUTER_MOTOR 35
+#define LINEFOLLOW12_INNER_MOTOR 25
+#define LINEFOLLOW12_34CORRECTION 15
+
+#define LINEFOLLOW34_OUTER_MOTOR 20
+#define LINEFOLLOW34_INNER_MOTOR 30
+#define LINEFOLLOW34_12CORRECTION 15
+
+#define LINEFOLLOW_STRAIGHT_PRECISION_HIGH 55
+#define LINEFOLLOW_STRAIGHT_PRECISION_LOW 35
+
+#define LINEFOLLOW_CURVE_PRECISION_HIGH 30 
+#define LINEFOLLOW_CURVE_PRECISION_LOW 20
+
+
 #define Move_Forward(pwm1, pwm2){\
   motor1.Control(FWD, pwm1);\
   motor2.Control(FWD, pwm2);\
@@ -323,8 +352,8 @@ class Custom_Servo{
 // for Array of Functions
 typedef void (*fn) (void);
 fn Transform[] = {Initialise, Pick_Leaves, Accelerate_Bot, Decelerate_Bot, Drop_First_Leaf, Drop_Second_Leaf, Soft_Turn, Auto_Stage_One_Complete, Auto_Stage_Two};
-fn Transform_Fallback[] = {Initialise, Pick_LeavesF, Accelerate_BotF, Decelerate_BotF, Detect_Line,
-                           Turn_and_Align, First_LineFollow, Drop_Two_Leaves, To_Last_Leaf, Drop_Last_Leaf,
+fn Transform_Fallback[] = {Initialise, Pick_LeavesF, Initial_Straight_Line, Detect_Line,
+                           Turn_and_Align, First_LineFollow, Drop_Two_Leaves, To_Last_Leaf, Final_Run_To_Leaf3, Drop_Last_Leaf,
                            To_First_Bud, To_Junction, To_Bud_Transfer, Transfer_Bud, To_Curve2, To_Next_Bud,
                            Tokyo2, To_Bud_Transfer, Transfer_Bud, To_Curve2, To_Next_Bud, Tokyo2, To_Bud_Transfer,
                            Transfer_Bud, The_End, Toggle_Wait };
