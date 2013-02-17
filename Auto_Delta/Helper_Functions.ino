@@ -7,8 +7,8 @@ int inline Check_Mirror(int a, int b){
 
 char Serial_Wait(){
   LAPTOP.println("Waiting for Serial Input ");
-  while(!LAPTOP.available())
-    LAPTOP.println(analogRead(A2));
+  while(!LAPTOP.available());
+//    LAPTOP.println(analogRead(A2)); // for sharp
   return LAPTOP.read();
 }
 

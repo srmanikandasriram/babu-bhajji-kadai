@@ -336,7 +336,9 @@ void To_Bud_Transfer(){
 
 void Transfer_Bud(){
   // Communication Code
+
   while ( !(digitalRead(COMM_TSOP_1) == LOW || digitalRead(COMM_TSOP_2) == LOW) ); //TSOP is inverted logic
+
   
   
   Toggle_Wait();  
