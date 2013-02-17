@@ -9,7 +9,7 @@ void Auto_Fallback(){
   }
 }
 
-void Pick_LeavesF(){
+void To_Pick_LeavesF(){
   LAPTOP.println("Going to pick up the leaves.");
   Move_Forward(15, 15);
   encoder_turret = 0;
@@ -27,7 +27,7 @@ void Pick_LeavesF(){
   }
 }
 
-void Initial_Straight_Line(){
+void Pick_LeavesF(){
   LAPTOP.println("Stopping to pick up leaves");
   while(analogRead(SHARP_SENSOR_PIN)<350){
     LAPTOP.print("SHARP Check running"); LAPTOP.println(analogRead(SHARP_SENSOR_PIN));
@@ -51,6 +51,9 @@ void Initial_Straight_Line(){
   Actuate_Low(V_PISTON);
   LAPTOP.println("Picked up leaves");
   Toggle_Wait();
+}
+
+void Initial_Straight_Line(){
   //Toggle_Wait(); //Double toggle_wait because it was generally being bypassed. 
   Parameters_Reset();
   pid_enable = true;
@@ -94,7 +97,8 @@ void Initial_Straight_Line(){
     PID_Adjust();
   }
 
-
+  path_phase++;
+  
   LAPTOP.println("Deceleration begun!");
 
   while(base_pwm > slowdown_pwm){
@@ -203,9 +207,10 @@ void To_Last_Leaf(){
     Move_TurretF();
   }
   
-  //Motors_Brake(255,255);
-  //delay(1000);
+  Motors_Brake(255,255);
+  delay(1000);
 }
+
 void Final_Run_To_Leaf3(){  
   LAPTOP.println("Moving to third leaf");
   Parameters_Reset();
@@ -220,6 +225,7 @@ void Final_Run_To_Leaf3(){
   delay(500);  
   //Toggle_Wait();
 }
+
 void Drop_Last_Leaf(){
   LAPTOP.println("Dropping Third Leaf");
 
@@ -251,22 +257,22 @@ void To_First_Bud(){
   
   Toggle_Wait();
 
-  parallelogram_count = 0;
-  Parallelogram_Down(); 
+  //parallelogram_count = 0;
+  parallelogram_Down(); 
   delay(300);
-  Parallelogram_Stop();
+  parallelogram_Stop();
   
   
-  //Toggle_Wait();
+  Toggle_Wait();
   LAPTOP.println("Reverse");
 }
 
 void To_Junction(){
   ///Take Parallelogram to mid position before reverse
-  Parallelogram_Up();                                        //to raise para after black tape, to avoid count while shaking
+  parallelogram_Up();                                        //to raise para after black tape, to avoid count while shaking
   delay(500);
-  Parallelogram_Stop();
-  parallelogram_count = 0;
+  parallelogram_Stop();
+  //parallelogram_count = 0;
   Parameters_Reset();
   Move_Back(150,100);
   Run_For_Encoder_Count(8400);
@@ -287,9 +293,9 @@ void To_Junction(){
   motor2.Control(FWD,30); //To get back on track
   while(!S2.High());
 
-  ///Take Parallelogram to top position  
-  parallelogram_count = 0;
-  Parallelogram_Up();
+  ///Take //parallelogram to top position  
+  //parallelogram_count = 0;
+  parallelogram_Up();
 
   //Line Follow to Manual Bot
   Parameters_Reset();  
@@ -297,7 +303,7 @@ void To_Junction(){
   while(1){
     LAPTOP.print("Linefollow ONE");
     LineFollow_Straight_Precision();
-    Parallelogram_Tripped();
+    parallelogram_Tripped();
     if((S3.High() && S1.High()) || (S4.High() && S2.High()) || (S3.High() && S2.High()))
       break;
   }
@@ -317,7 +323,7 @@ void To_Bud_Transfer(){
   }*/
   Parameters_Reset();
   while(1){
-    Parallelogram_Tripped();
+    parallelogram_Tripped();
     
     if(bud_count==0){
       LAPTOP.println("BUD ONE");
@@ -371,7 +377,7 @@ void To_Curve2(){
 void To_Next_Bud(){
   int local_flag = 0;
   Motors_Brake(255,255);
-  Parallelogram_Down();
+  //parallelogram_Down();
   /*
   delay(500);
   Parallelogram_Stop();
@@ -383,6 +389,7 @@ void To_Next_Bud(){
   Parameters_Reset();
   prevmillis = millis();
   while(1){
+    /*
     if(digitalRead(PARALLELOGRAM_TRIP_SWITCH_BOTTOM)){
       Parallelogram_Stop();   
       Parallelogram_Up();
@@ -393,12 +400,14 @@ void To_Next_Bud(){
         ( bud_count == 2 && millis() - prevmillis >= 300 ) )
                 && local_flag)
       Parallelogram_Stop(); 
+      */
     if(LineFollow_Encoders(9000,2))
       break;
   }
 
 
-  while(!LineFollow_Curve_Precision()){
+  while(!LineFollow_Curve_Precision());
+  /*{
     if(digitalRead(PARALLELOGRAM_TRIP_SWITCH_BOTTOM) && !local_flag){
       Parallelogram_Stop();   
       Parallelogram_Up();
@@ -409,9 +418,10 @@ void To_Next_Bud(){
         ( bud_count == 2 && millis() - prevmillis >= 300 ) )
                 && local_flag)
       Parallelogram_Stop();      
-  }
+  }*/
   Motors_Brake(255,255);
-   while(1){
+   /*while(1){
+   
     if(digitalRead(PARALLELOGRAM_TRIP_SWITCH_BOTTOM) && !local_flag){
       Parallelogram_Stop();   
       Parallelogram_Up();
@@ -424,8 +434,10 @@ void To_Next_Bud(){
       Parallelogram_Stop();      
       break;
     }
-  }
-  
+
+  }*/
+  Toggle_Wait();
+
   if(bud_count == 2){
     Parameters_Reset();
     while(1){
@@ -441,11 +453,11 @@ void To_Next_Bud(){
   Toggle_Wait();
   Actuate_Low(GRIPPER);
   
-  Move_Parallelogram(BCK,1);
-  Parallelogram_Down(); 
+  //Move_Parallelogram(BCK,1);
+  //parallelogram_Down(); 
   delay(300);
-  Parallelogram_Stop();
-  delay(500);
+//  Parallelogram_Stop();
+//  delay(500);
 }
 
 void Tokyo2(){
@@ -454,14 +466,14 @@ void Tokyo2(){
   LAPTOP.println("Going to reverse");
   Parameters_Reset();
 
-  Parallelogram_Up();
+  //parallelogram_Up();
   delay(100);
-  Parallelogram_Stop();
+  //parallelogram_Stop();
   Move_Back(30,30);
   Run_For_Encoder_Count(1000);
-  Parallelogram_Up();
+  //parallelogram_Up();
   delay(500);
-  Parallelogram_Stop();  
+  //parallelogram_Stop();  
 
   Move_Back(80,160);
   if(bud_count == 2){
@@ -488,22 +500,22 @@ void Tokyo2(){
   while(S2.Low()&&S3.Low());
 
   Motors_Brake(255,255);
-  
-  //Toggle_Wait();
-  parallelogram_count = 0;
-  Parallelogram_Up();
+  Toggle_Wait();
+  //parallelogram_count = 0;
+  //parallelogram_Up();
+
 }
 
 void The_End(){
   Move_Back(100,255);
   delay(700);
   Motors_Brake(100,100);
-  Move_Parallelogram(BCK,1);
+  //Move_Parallelogram(BCK,1);
   LAPTOP.println("Stage two completed");
   
   Toggle_Wait();
   Move_Turret_Dir('a');
-  Parallelogram_Reset();
+  //parallelogram_Reset();
 }
 
 void Move_TurretF(){

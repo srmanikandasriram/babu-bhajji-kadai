@@ -307,46 +307,10 @@ class Custom_Servo{
 #define LINEFOLLOW_CURVE_PRECISION_HIGH 30 
 #define LINEFOLLOW_CURVE_PRECISION_LOW 20
 
-
-#define Move_Forward(pwm1, pwm2){\
-  motor1.Control(FWD, pwm1);\
-  motor2.Control(FWD, pwm2);\
-}
-
-#define Move_Back(pwm1, pwm2){\
-  motor1.Control(BCK, pwm1);\
-  motor2.Control(BCK, pwm2);\
-}
-
-#define Motors_Brake(pwm1, pwm2){\
-  motor1.Brake(pwm1);\
-  motor2.Brake(pwm2);\
-}
-
-#define Parallelogram_Up(){\
-  digitalWrite(PARALLELOGRAM_PIN1, HIGH);\
-  digitalWrite(PARALLELOGRAM_PIN2, LOW);\
-}
-
-#define Parallelogram_Down(){\
-  digitalWrite(PARALLELOGRAM_PIN1, LOW);\
-  digitalWrite(PARALLELOGRAM_PIN2, HIGH);\
-}
-
-#define Parallelogram_Stop(){\
-  digitalWrite(PARALLELOGRAM_PIN1, LOW);\
-  digitalWrite(PARALLELOGRAM_PIN2, LOW);\
-}
-
-#define Check_Abort(){\
-  if( LAPTOP.available() )\
-    Abort();\
-}
-
 // for Array of Functions
 typedef void (*fn) (void);
 fn Transform[] = {Initialise, Pick_Leaves, Accelerate_Bot, Decelerate_Bot, Drop_First_Leaf, Drop_Second_Leaf, Soft_Turn, Auto_Stage_One_Complete, Auto_Stage_Two};
-fn Transform_Fallback[] = {Initialise, Pick_LeavesF, Initial_Straight_Line, Detect_Line,
+fn Transform_Fallback[] = {Initialise, To_Pick_LeavesF, Pick_LeavesF, Initial_Straight_Line, Detect_Line,
                            Turn_and_Align, First_LineFollow, Drop_Two_Leaves, To_Last_Leaf, Final_Run_To_Leaf3, Drop_Last_Leaf,
                            To_First_Bud, To_Junction, To_Bud_Transfer, Transfer_Bud, To_Curve2, To_Next_Bud,
                            Tokyo2, To_Bud_Transfer, Transfer_Bud, To_Curve2, To_Next_Bud, Tokyo2, To_Bud_Transfer,
@@ -354,11 +318,12 @@ fn Transform_Fallback[] = {Initialise, Pick_LeavesF, Initial_Straight_Line, Dete
 
 /** Configuration Constants: Affect behaviour **/
 uint16_t distances[26] = {0, 2030, 13880, 21650, 29100, 565, 150,100};
-uint16_t distances_fallback[26] = {0, 2930, 13880, 17000, 500, 100};
+uint16_t distances_fallback[26] = {0, 2930, 0,
+13880, 17000, 500, 100};
 
 /** Global declarations **/
 Motor motor1, motor2, turret_motor(27, 26, 11); // the order of pin numbers determine the direction
-Sensor S1(false), S2(false), S3(false), S4(false), turret_sensor(false), parallelogram_sensor(false);
+Sensor S1(false), S2(false), S3(false), S4(false), turret_sensor(false);// parallelogram_sensor(false);
 LiquidCrystal LCD(13, 34, 30, 31, 32, 33);
 Custom_Servo servo1, servo2;
 
@@ -416,7 +381,6 @@ void setup(){
   LCD.print("Hello World!");
 
   attachInterrupt(TURRET_ENCODER_PIN, Turret_ISR, RISING);
-  attachInterrupt(PARALLELOGRAM_SENSOR_PIN, Parallelogram_ISR, FALLING);
   turret_sensor.Attach(TURRET_SENSOR_PIN);
   parallelogram_sensor.Attach(PARALLELOGRAM_SENSOR_PIN);  
   for(int i = 1; i<8; i++){
@@ -512,11 +476,9 @@ void loop(){
   Parallelogram_Up();  
   while(digitalRead(PARALLELOGRAM_TRIP_SWITCH_BOTTOM));
   Parallelogram_Stop();
-  
-  
 
   Parallelogram_Up();
-  delay(150);
+  delay(200);
   Parallelogram_Stop();
 
   if(strategy == AUTO_PID ){

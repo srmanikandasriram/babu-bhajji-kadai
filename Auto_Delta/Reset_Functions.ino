@@ -37,7 +37,7 @@ void Parallelogram_Reset(){
   Parallelogram_Stop();
   LAPTOP.println("Parallelogram reset done");
 }
-
+/*
 void Parallelogram_Reset_Custom(){
   char input;
   do{
@@ -60,18 +60,26 @@ boolean Move_Parallelogram(char sense, int num){
   }
   Parallelogram_Stop();
 }
-
+*/
 void Turret_ISR(){
   encoder_turret++;
 }
-
+/*
 void Parallelogram_ISR(){
  parallelogram_count++;
 }
-
+*/
 void Parameters_Reset(){
   Query_Launchpad();
   Serial_Print();
   encoder_motor1 = encoder_motor2 = 0; 
   LAPTOP.println("Parameters have been reset");
+}
+
+void Parallelogram_Tripped_ISR(){
+  detachInterrupt(3);
+  LAPTOP.println("Tripped");
+  digitalWrite(PARALLELOGRAM_PIN1, LOW);
+  digitalWrite(PARALLELOGRAM_PIN2, LOW);
+  LAPTOP.println("Tripped done");
 }
