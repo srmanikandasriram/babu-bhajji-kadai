@@ -1,4 +1,3 @@
-char foo;
 // Core AutoBot Code
 // 14-02-2013 06 07 PM
 
@@ -265,9 +264,12 @@ class Custom_Servo{
 
 #define TURRET_ANG1F 950
 #define TURRET_ANG2F 1750
-#define TURRET_ANG3F 4430
+#define TURRET_ANG3F 4630
 #define TURRET_ANG4F 6600
 #define TURRET_ANG5F 10330
+
+#define COMM_TSOP_1 4
+#define COMM_TSOP_2 5
 
 #define VSLOW 20
 #define FAST 100
@@ -399,6 +401,27 @@ void setup(){
   // for strategy Switch
   pinMode(A1, INPUT);
   
+  // for communication TSOP
+  pinMode(4, INPUT);
+  pinMode(5, INPUT);
+  /*while(1) {
+    Serial.print(4);
+    Serial.print(" ");
+    Serial.print(digitalRead(4));
+    Serial.print("\t");
+    Serial.print(5);
+    Serial.print(" ");
+    Serial.print(digitalRead(5)); 
+    
+    Serial.print("\t");
+    Serial.print("Communication ");
+    if(digitalRead(4) == LOW || digitalRead(5) == LOW)
+      Serial.println("Yes");
+    else
+      Serial.println("No");
+    delay(100);
+  }*/
+  
   // for PID
   input = 0;
   setpoint = 0;  
@@ -431,9 +454,9 @@ void setup(){
           Serial_Wait();
           Parallelogram_Stop();
         }
-      }else if (input == 'm'){
+      }/*else if (input == 'm'){
         Auto_MSC();
-      }else if( input == 'k'){
+      }*/else if( input == 'k'){
         Actuate_High(GRIPPER);
       }else if( input == 'l'){
         Actuate_Low(GRIPPER);      
@@ -451,6 +474,7 @@ void setup(){
 
 void loop(){
   Toggle_Wait();
+  
   LCD.clear();
   LCD.print("Stage One:");
   
@@ -463,7 +487,7 @@ void loop(){
   
 
   Parallelogram_Up();
-  delay(200);
+  delay(150);
   Parallelogram_Stop();
 
   if(strategy == AUTO_PID ){
