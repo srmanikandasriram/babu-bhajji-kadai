@@ -160,7 +160,7 @@ void Auto_Stage_One_Complete(){
     Move_Servo();
   }
   turret_motor.Brake(0);
-  if( stratergy == 2 ){
+  if( strategy == 2 ){
     // Drop third leaf
   }
   LAPTOP.println("Stopping after turn to drop the third leaf.");  

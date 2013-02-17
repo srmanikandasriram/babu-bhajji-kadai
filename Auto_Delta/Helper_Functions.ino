@@ -7,7 +7,8 @@ int inline Check_Mirror(int a, int b){
 
 char Serial_Wait(){
   LAPTOP.println("Waiting for Serial Input ");
-  while(!LAPTOP.available());
+  while(!LAPTOP.available())
+    LAPTOP.println(analogRead(A2));
   return LAPTOP.read();
 }
 
@@ -70,10 +71,12 @@ void Serial_Print(){
 }
 
 void Serial_Print_Sensors(){
+  if(S1.High()||S2.High()||S3.High()||S4.High()){
   LAPTOP.print(S1.High()); 
   LAPTOP.print(S2.High()); 
   LAPTOP.print(S3.High());
   LAPTOP.println(S4.High());
+  }
 }
 
 void Handshake_Launchpad(){
@@ -88,6 +91,17 @@ void Handshake_Launchpad(){
   LAPTOP.println("Handshake completed");
 }
 
+// Function for stopping parallelogram at top position. Parallelogram will stop only if trip is switched else will continue to try to rise up.
+int Parallelogram_Tripped(){
+   if(digitalRead(PARALLELOGRAM_TRIP_SWITCH_TOP)){
+     Parallelogram_Stop();
+     return 1;
+   }else{
+     Parallelogram_Up(); // Case added to prevent / counter sagging
+     return 0;
+   }
+}
+
 int Parallelogram_Reached(int count){
   LAPTOP.print("PARALLELOGRAM COUNT:");
   LAPTOP.println(parallelogram_count);
@@ -95,8 +109,7 @@ int Parallelogram_Reached(int count){
     if(  parallelogram_sensor.Low() ){
       Parallelogram_Stop();
       return 1;
-    }else
-      parallelogram_count--;
+    }   
   }
   return 0;
 }

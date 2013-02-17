@@ -31,11 +31,9 @@ boolean Move_Turret_Dir(char sense){
 }
 
 void Parallelogram_Reset(){
-  int state = digitalRead(PARALLELOGRAM_TRIP_SWITCH);
-  
   Actuate_High(GRIPPER);
   Parallelogram_Down();
-  while(digitalRead(PARALLELOGRAM_TRIP_SWITCH)  == LOW);
+  while(!digitalRead(PARALLELOGRAM_TRIP_SWITCH_BOTTOM));
   Parallelogram_Stop();
   LAPTOP.println("Parallelogram reset done");
 }

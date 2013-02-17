@@ -1,3 +1,4 @@
+char foo;
 // Core AutoBot Code
 // 14-02-2013 06 07 PM
 
@@ -222,7 +223,8 @@ class Custom_Servo{
 #define TURRET_SENSOR_PIN A10
 #define PARALLELOGRAM_SENSOR_PIN 1
 #define SHARP_SENSOR_PIN A2
-#define PARALLELOGRAM_TRIP_SWITCH 20
+#define PARALLELOGRAM_TRIP_SWITCH_BOTTOM 20
+#define PARALLELOGRAM_TRIP_SWITCH_TOP A4
 
 #define LEFT_VG 44
 #define MIDDLE_VG 45
@@ -250,21 +252,21 @@ class Custom_Servo{
 
 #define SERVO_ANG_L1F 135
 #define SERVO_ANG_L2F 97
-#define SERVO_ANG_L3F 55
-#define SERVO_ANG_R1F 10
+#define SERVO_ANG_L3F 48
+#define SERVO_ANG_R1F 20
 #define SERVO_ANG_R2F 55
-#define SERVO_ANG_R3F 50
+#define SERVO_ANG_R3F 55
 
 #define TURRET_ANG1 1180
 #define TURRET_ANG2 1750
-#define TURRET_ANG3 4730
-#define TURRET_ANG4 6300
+#define TURRET_ANG3 4680
+#define TURRET_ANG4 6250
 #define TURRET_ANG5 10330
 
 #define TURRET_ANG1F 950
 #define TURRET_ANG2F 1750
-#define TURRET_ANG3F 4730
-#define TURRET_ANG4F 6300
+#define TURRET_ANG3F 4430
+#define TURRET_ANG4F 6600
 #define TURRET_ANG5F 10330
 
 #define VSLOW 20
@@ -339,7 +341,7 @@ float servo_speeds[] = {0, 0.5, 0.75, 1.5, 0.25, 0.25, 0.25, 0.375, 0.5, 0};
 const int mask = 0b11111000;
 
 // for behaviour
-int stratergy = 1;  // 1 for 1-2-4 and 2 for 1-2-3
+int strategy = 1;  // 1 for 1-2-4 and 2 for 1-2-3
 const int minimum_pwm = 20, maximum_pwm = 100, slowdown_pwm = 50;
 const int acceleration_delay = 2, acceleration = 2;
 const int deceleration_delay = 2, deceleration = 5;
@@ -394,7 +396,7 @@ void setup(){
   // for PWM
   TCCR1B = TCCR1B & mask | 0x02;
 
-  // for Stratergy Switch
+  // for strategy Switch
   pinMode(A1, INPUT);
   
   // for PID
@@ -429,6 +431,8 @@ void setup(){
           Serial_Wait();
           Parallelogram_Stop();
         }
+      }else if (input == 'm'){
+        Auto_MSC();
       }else if( input == 'k'){
         Actuate_High(GRIPPER);
       }else if( input == 'l'){
@@ -441,24 +445,34 @@ void setup(){
   }
   Parameters_Reset();
   LAPTOP.println("Here we begin =>");
+ 
+  
 }
 
 void loop(){
   Toggle_Wait();
   LCD.clear();
   LCD.print("Stage One:");
-  Move_Parallelogram(FWD,1);
+  
+  //code run in case parallelogram wire is unwound 
+  
+  Parallelogram_Up();  
+  while(digitalRead(PARALLELOGRAM_TRIP_SWITCH_BOTTOM));
+  Parallelogram_Stop();
+  
+  
+
   Parallelogram_Up();
-  delay(300);
+  delay(200);
   Parallelogram_Stop();
 
-  if(stratergy == AUTO_PID ){
+  if(strategy == AUTO_PID ){
     LAPTOP.println("Commencing Auto PID ");
     Auto_Stage_One();
     LCD.clear();
     LCD.print("Stage Two:");
     Auto_Stage_Two();
-  }else if( stratergy == AUTO_FALLBACK ){
+  }else if( strategy == AUTO_FALLBACK ){
     LAPTOP.println("Commencing Auto Fallback ");
     Auto_Fallback();
   }
@@ -485,11 +499,11 @@ void Read_External_Byte(){
     LAPTOP.println(" leaf3 to be omitted ");
   }
   if( digitalRead(50) == HIGH ){
-    stratergy = AUTO_PID;
-    LAPTOP.println(" Straight line PID stratergy ");
+    strategy = AUTO_PID;
+    LAPTOP.println(" Straight line PID strategy ");
   }else{
-    stratergy = AUTO_FALLBACK;
-    LAPTOP.println(" Fallback LineFollow stratergy ");
+    strategy = AUTO_FALLBACK;
+    LAPTOP.println(" Fallback LineFollow strategy ");
   }
   if( digitalRead(36) == HIGH ){
     skip_reset = true;
@@ -505,10 +519,10 @@ void Initialise(){
     motor2.Attach(22,23,9);
     servo1.Attach(SERVO_RGT);
     servo2.Attach(SERVO_LFT);
-    if( stratergy == AUTO_FALLBACK ){
+    if( strategy == AUTO_FALLBACK ){
       servo1.SetAngles(SERVO_ANG_R1F,SERVO_ANG_R2F,SERVO_ANG_R3F);
       servo2.SetAngles(SERVO_ANG_L1F,SERVO_ANG_L2F,SERVO_ANG_L3F);
-    }else if( stratergy == AUTO_PID ){
+    }else if( strategy == AUTO_PID ){
       servo1.SetAngles(SERVO_ANG_R1, SERVO_ANG_R2, SERVO_ANG_R3);
       servo2.SetAngles(SERVO_ANG_L1, SERVO_ANG_L2, SERVO_ANG_L3);
     }
@@ -521,10 +535,10 @@ void Initialise(){
     motor2.Attach(25,24,10);
     servo1.Attach(SERVO_LFT);
     servo2.Attach(SERVO_RGT);
-    if( stratergy == AUTO_FALLBACK ){
+    if( strategy == AUTO_FALLBACK ){
       servo1.SetAngles(SERVO_ANG_L1F, SERVO_ANG_L2F, SERVO_ANG_L3F);
       servo2.SetAngles(SERVO_ANG_R1F, SERVO_ANG_R2F, SERVO_ANG_R3F);
-    }else if( stratergy == AUTO_PID ){
+    }else if( strategy == AUTO_PID ){
       servo1.SetAngles(SERVO_ANG_L1, SERVO_ANG_L2, SERVO_ANG_L3);
       servo2.SetAngles(SERVO_ANG_R1, SERVO_ANG_R2, SERVO_ANG_R3);
     }
