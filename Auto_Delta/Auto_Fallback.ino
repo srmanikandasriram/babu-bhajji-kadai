@@ -333,7 +333,7 @@ void To_Bud_Transfer(){
 
 void Transfer_Bud(){
   // Communication Code
-  long int temp_millis = millis();
+  /*long int temp_millis = millis();
   while ( 1 ) {
     if( !(digitalRead(COMM_TSOP_1) == LOW || digitalRead(COMM_TSOP_2) == LOW) ) { // if Comm is on
       if( millis() - temp_millis > 500) { // AND for a long time
@@ -344,7 +344,7 @@ void Transfer_Bud(){
     else
       temp_millis = millis();
   };
-
+*/
   Toggle_Wait();
   Actuate_High(GRIPPER);
   LAPTOP.println("Ready to go for two and three");
