@@ -301,7 +301,7 @@ void To_Junction(){
   Move_Forward(40,40);  //To bypass junction
   delay(200);
 }
-
+    
 void To_Bud_Transfer(){
   /*
   // Old LineFollow
@@ -333,12 +333,20 @@ void To_Bud_Transfer(){
 
 void Transfer_Bud(){
   // Communication Code
-  while ( !(digitalRead(COMM_TSOP_1) == LOW || digitalRead(COMM_TSOP_2) == LOW) );
-  
-  
-  Toggle_Wait();  
-  Actuate_High(GRIPPER);
+  long int temp_millis = millis();
+  while ( 1 ) {
+    if( !(digitalRead(COMM_TSOP_1) == LOW || digitalRead(COMM_TSOP_2) == LOW) ) { // if Comm is on
+      if( millis() - temp_millis > 500) { // AND for a long time
+        Actuate_High(GRIPPER); // give bud !
+        break; /// lets go !
+      }
+    }
+    else
+      temp_millis = millis();
+  };
 
+  Toggle_Wait();
+  Actuate_High(GRIPPER);
   LAPTOP.println("Ready to go for two and three");
   delay(1000);
   bud_count++;
@@ -384,9 +392,7 @@ void To_Next_Bud(){
       local_flag = 1;
       prevmillis = millis();
     }
-    if( ( (bud_count == 1 && millis() - prevmillis >= 200 ) ||
-        ( bud_count == 2 && millis() - prevmillis >= 300 ) )
-                && local_flag)
+    if( parallelogram_sensor.High() && local_flag)
       Parallelogram_Stop(); 
     if(LineFollow_Encoders(9000,2))
       break;
@@ -400,9 +406,7 @@ void To_Next_Bud(){
       prevmillis = millis();
       local_flag = 1;
     }
-    if( ( (bud_count == 1 && millis() - prevmillis >= 200 ) ||
-        ( bud_count == 2 && millis() - prevmillis >= 300 ) )
-                && local_flag)
+    if( parallelogram_sensor.High() && local_flag)
       Parallelogram_Stop();      
   }
   Motors_Brake(255,255);
@@ -413,9 +417,7 @@ void To_Next_Bud(){
       prevmillis = millis();
       local_flag = 1;
     }
-    if( ( (bud_count == 1 && millis() - prevmillis >= 200 ) ||
-        ( bud_count == 2 && millis() - prevmillis >= 300 ) )
-                && local_flag) {
+    if( parallelogram_sensor.High() && local_flag) {
       Parallelogram_Stop();      
       break;
     }

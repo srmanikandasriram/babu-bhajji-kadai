@@ -220,7 +220,7 @@ class Custom_Servo{
 
 #define TURRET_ENCODER_PIN 0
 #define TURRET_SENSOR_PIN A10
-#define PARALLELOGRAM_SENSOR_PIN 1
+#define PARALLELOGRAM_SENSOR_PIN 3
 #define SHARP_SENSOR_PIN A2
 #define PARALLELOGRAM_TRIP_SWITCH_BOTTOM 20
 #define PARALLELOGRAM_TRIP_SWITCH_TOP A4
@@ -314,6 +314,12 @@ class Custom_Servo{
     Abort();\
 }
 
+#define Parallelogram_InverseLogic_Up() {\
+  Parallelogram_Up();\
+  while( !parallelogram_sensor.High() );\
+  Parallelogram_Stop();\
+}
+
 // for Array of Functions
 typedef void (*fn) (void);
 fn Transform[] = {Initialise, Pick_Leaves, Accelerate_Bot, Decelerate_Bot, Drop_First_Leaf, Drop_Second_Leaf, Soft_Turn, Auto_Stage_One_Complete, Auto_Stage_Two};
@@ -387,14 +393,14 @@ void setup(){
   LCD.print("Hello World!");
 
   attachInterrupt(TURRET_ENCODER_PIN, Turret_ISR, RISING);
-  attachInterrupt(PARALLELOGRAM_SENSOR_PIN, Parallelogram_ISR, FALLING);
+  //attachInterrupt(PARALLELOGRAM_SENSOR_PIN, Parallelogram_ISR, RISING);
   turret_sensor.Attach(TURRET_SENSOR_PIN);
   parallelogram_sensor.Attach(PARALLELOGRAM_SENSOR_PIN);  
   for(int i = 1; i<8; i++){
     pinMode(actuations[i], OUTPUT);
     pinMode(external_byte[i], INPUT);
   }
-
+  
   // for PWM
   TCCR1B = TCCR1B & mask | 0x02;
 
@@ -442,8 +448,19 @@ void setup(){
       }else if( input == 't' ){
         Turret_Reset();
       }else if( input == 'p' ){ 
-        Parallelogram_Reset();
-      }else if( input == 'P' ){
+       
+        input = Serial_Wait();
+        if( input == 'u' ) {
+          Parallelogram_Up();
+          while(!digitalRead(PARALLELOGRAM_TRIP_SWITCH_TOP));
+          Parallelogram_Stop();
+        }else if( input == 'd' ){
+          Parallelogram_Reset();
+        }else if( input == 'i' ){
+          Parallelogram_InverseLogic_Up();
+        }
+      }
+      else if( input == 'P' ){
         input = Serial_Wait();
         if( input == 'u' ) {
           Parallelogram_Up();
@@ -486,7 +503,7 @@ void loop(){
   
   
 
-  Parallelogram_Up();
+  Parallelogram_InverseLogic_Up();
   delay(150);
   Parallelogram_Stop();
 
