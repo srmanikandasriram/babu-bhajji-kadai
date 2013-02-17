@@ -53,6 +53,12 @@ inline void Parallelogram_Stop(){
   digitalWrite(PARALLELOGRAM_PIN2, LOW);
 }
 
+inline void Parallelogram_Sensor_Up(){
+  Parallelogram_Up();
+  while(!parallelogram_sensor.High());
+  Parallelogram_Stop();  
+}
+
 inline void Check_Abort(){
   if( LAPTOP.available() )
     Abort();

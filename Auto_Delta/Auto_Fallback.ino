@@ -258,9 +258,9 @@ void To_First_Bud(){
   Toggle_Wait();
 
   //parallelogram_count = 0;
-  parallelogram_Down(); 
+  Parallelogram_Down(); 
   delay(300);
-  parallelogram_Stop();
+  Parallelogram_Stop();
   
   
   Toggle_Wait();
@@ -269,9 +269,9 @@ void To_First_Bud(){
 
 void To_Junction(){
   ///Take Parallelogram to mid position before reverse
-  parallelogram_Up();                                        //to raise para after black tape, to avoid count while shaking
+  Parallelogram_Up();                                        //to raise para after black tape, to avoid count while shaking
   delay(500);
-  parallelogram_Stop();
+  Parallelogram_Stop();
   //parallelogram_count = 0;
   Parameters_Reset();
   Move_Back(150,100);
@@ -295,7 +295,7 @@ void To_Junction(){
 
   ///Take //parallelogram to top position  
   //parallelogram_count = 0;
-  parallelogram_Up();
+  Parallelogram_Up();
 
   //Line Follow to Manual Bot
   Parameters_Reset();  
@@ -303,14 +303,14 @@ void To_Junction(){
   while(1){
     LAPTOP.print("Linefollow ONE");
     LineFollow_Straight_Precision();
-    parallelogram_Tripped();
+    Parallelogram_Tripped();
     if((S3.High() && S1.High()) || (S4.High() && S2.High()) || (S3.High() && S2.High()))
       break;
   }
   Move_Forward(40,40);  //To bypass junction
   delay(200);
 }
-
+    
 void To_Bud_Transfer(){
   /*
   // Old LineFollow
@@ -323,7 +323,7 @@ void To_Bud_Transfer(){
   }*/
   Parameters_Reset();
   while(1){
-    parallelogram_Tripped();
+    Parallelogram_Tripped();
     
     if(bud_count==0){
       LAPTOP.println("BUD ONE");
@@ -343,13 +343,23 @@ void To_Bud_Transfer(){
 void Transfer_Bud(){
   // Communication Code
 
-  while ( !(digitalRead(COMM_TSOP_1) == LOW || digitalRead(COMM_TSOP_2) == LOW) ); //TSOP is inverted logic
+  /*long int temp_millis = millis();
+  while ( 1 ) {
+    if( !(digitalRead(COMM_TSOP_1) == LOW || digitalRead(COMM_TSOP_2) == LOW) ) { // if Comm is on
+      if( millis() - temp_millis > 500) { // AND for a long time
+        Actuate_High(GRIPPER); // give bud !
+        break; /// lets go !
+      }
+    }
+    else
+      temp_millis = millis();
+  };
+*/
+  Toggle_Wait();
 
-  
-  
-  Toggle_Wait();  
+//  while ( !(digitalRead(COMM_TSOP_1) == LOW || digitalRead(COMM_TSOP_2) == LOW) ); //TSOP is inverted logic
+
   Actuate_High(GRIPPER);
-
   LAPTOP.println("Ready to go for two and three");
   delay(1000);
   bud_count++;
@@ -377,50 +387,45 @@ void To_Curve2(){
 void To_Next_Bud(){
   int local_flag = 0;
   Motors_Brake(255,255);
-  //parallelogram_Down();
-  /*
+  Parallelogram_Down();
+  
   delay(500);
   Parallelogram_Stop();
   Toggle_Wait();
-  parallelogram_count = 0;
+  //parallelogram_count = 0;
   Parallelogram_Down();
-  */
+  
 
   Parameters_Reset();
   prevmillis = millis();
   while(1){
-    /*
-    if(digitalRead(PARALLELOGRAM_TRIP_SWITCH_BOTTOM)){
+    
+    if(digitalRead(PARALLELOGRAM_TRIP_SWITCH_BOTTOM)&&!local_flag){
       Parallelogram_Stop();   
       Parallelogram_Up();
       local_flag = 1;
       prevmillis = millis();
     }
-    if( ( (bud_count == 1 && millis() - prevmillis >= 200 ) ||
-        ( bud_count == 2 && millis() - prevmillis >= 300 ) )
-                && local_flag)
+    if( parallelogram_sensor.High() && local_flag)
       Parallelogram_Stop(); 
-      */
     if(LineFollow_Encoders(9000,2))
       break;
   }
 
 
-  while(!LineFollow_Curve_Precision());
-  /*{
+  while(!LineFollow_Curve_Precision())
+  {
     if(digitalRead(PARALLELOGRAM_TRIP_SWITCH_BOTTOM) && !local_flag){
       Parallelogram_Stop();   
       Parallelogram_Up();
       prevmillis = millis();
       local_flag = 1;
     }
-    if( ( (bud_count == 1 && millis() - prevmillis >= 200 ) ||
-        ( bud_count == 2 && millis() - prevmillis >= 300 ) )
-                && local_flag)
+    if( parallelogram_sensor.High() && local_flag)
       Parallelogram_Stop();      
-  }*/
+  }
   Motors_Brake(255,255);
-   /*while(1){
+  while(1){
    
     if(digitalRead(PARALLELOGRAM_TRIP_SWITCH_BOTTOM) && !local_flag){
       Parallelogram_Stop();   
@@ -428,14 +433,12 @@ void To_Next_Bud(){
       prevmillis = millis();
       local_flag = 1;
     }
-    if( ( (bud_count == 1 && millis() - prevmillis >= 200 ) ||
-        ( bud_count == 2 && millis() - prevmillis >= 300 ) )
-                && local_flag) {
+    if( parallelogram_sensor.High() && local_flag) {
       Parallelogram_Stop();      
       break;
     }
 
-  }*/
+  }
   Toggle_Wait();
 
   if(bud_count == 2){
@@ -454,10 +457,10 @@ void To_Next_Bud(){
   Actuate_Low(GRIPPER);
   
   //Move_Parallelogram(BCK,1);
-  //parallelogram_Down(); 
+  Parallelogram_Down(); 
   delay(300);
-//  Parallelogram_Stop();
-//  delay(500);
+  Parallelogram_Stop();
+  delay(500);
 }
 
 void Tokyo2(){
@@ -466,14 +469,14 @@ void Tokyo2(){
   LAPTOP.println("Going to reverse");
   Parameters_Reset();
 
-  //parallelogram_Up();
+  Parallelogram_Up();
   delay(100);
-  //parallelogram_Stop();
+  Parallelogram_Stop();
   Move_Back(30,30);
   Run_For_Encoder_Count(1000);
-  //parallelogram_Up();
+  Parallelogram_Up();
   delay(500);
-  //parallelogram_Stop();  
+  Parallelogram_Stop();  
 
   Move_Back(80,160);
   if(bud_count == 2){
@@ -502,7 +505,7 @@ void Tokyo2(){
   Motors_Brake(255,255);
   Toggle_Wait();
   //parallelogram_count = 0;
-  //parallelogram_Up();
+  Parallelogram_Up();
 
 }
 
@@ -515,7 +518,7 @@ void The_End(){
   
   Toggle_Wait();
   Move_Turret_Dir('a');
-  //parallelogram_Reset();
+  Parallelogram_Reset();
 }
 
 void Move_TurretF(){

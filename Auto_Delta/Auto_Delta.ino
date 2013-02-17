@@ -220,7 +220,7 @@ class Custom_Servo{
 
 #define TURRET_ENCODER_PIN 0
 #define TURRET_SENSOR_PIN A10
-#define PARALLELOGRAM_SENSOR_PIN 1
+#define PARALLELOGRAM_SENSOR_PIN 3
 #define SHARP_SENSOR_PIN A2
 #define PARALLELOGRAM_TRIP_SWITCH_BOTTOM 20
 #define PARALLELOGRAM_TRIP_SWITCH_TOP A4
@@ -323,7 +323,7 @@ uint16_t distances_fallback[26] = {0, 2930, 0,
 
 /** Global declarations **/
 Motor motor1, motor2, turret_motor(27, 26, 11); // the order of pin numbers determine the direction
-Sensor S1(false), S2(false), S3(false), S4(false), turret_sensor(false);// parallelogram_sensor(false);
+Sensor S1(false), S2(false), S3(false), S4(false), turret_sensor(false), parallelogram_sensor(false);
 LiquidCrystal LCD(13, 34, 30, 31, 32, 33);
 Custom_Servo servo1, servo2;
 
@@ -387,7 +387,7 @@ void setup(){
     pinMode(actuations[i], OUTPUT);
     pinMode(external_byte[i], INPUT);
   }
-
+  
   // for PWM
   TCCR1B = TCCR1B & mask | 0x02;
 
@@ -435,8 +435,19 @@ void setup(){
       }else if( input == 't' ){
         Turret_Reset();
       }else if( input == 'p' ){ 
-        Parallelogram_Reset();
-      }else if( input == 'P' ){
+       
+        input = Serial_Wait();
+        if( input == 'u' ) {
+          Parallelogram_Up();
+          while(!digitalRead(PARALLELOGRAM_TRIP_SWITCH_TOP));
+          Parallelogram_Stop();
+        }else if( input == 'd' ){
+          Parallelogram_Reset();
+        }else if( input == 'i' ){
+          Parallelogram_Sensor_Up();
+        }
+      }
+      else if( input == 'P' ){
         input = Serial_Wait();
         if( input == 'u' ) {
           Parallelogram_Up();
@@ -477,8 +488,8 @@ void loop(){
   while(digitalRead(PARALLELOGRAM_TRIP_SWITCH_BOTTOM));
   Parallelogram_Stop();
 
-  Parallelogram_Up();
-  delay(200);
+  Parallelogram_Sensor_Up();
+  delay(150);
   Parallelogram_Stop();
 
   if(strategy == AUTO_PID ){
