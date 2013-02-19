@@ -6,24 +6,24 @@ void LineFollow_Straight(){
   Serial_Print_Sensors();
   if(S2.High()){
     if(S1.High()){
-      Move_Forward(0,LINEFOLLOW_STRAIGHT_HIGH); 
+      Move_Forward(0,60); 
     }else{
-      Move_Forward(LINEFOLLOW_STRAIGHT_LOW,LINEFOLLOW_STRAIGHT_MODERATE); 
+      Move_Forward(10,50); 
     }
   }else if(S1.High()){
-    Move_Forward(0,LINEFOLLOW_STRAIGHT_MODERATE);
+    Move_Forward(0,50);
     motor1.Brake(255);
   }else if(S3.High()){
     if(S4.High()){
-      Move_Forward(LINEFOLLOW_STRAIGHT_MODERATE,0);
+      Move_Forward(50,0);
     }else{
-      Move_Forward(LINEFOLLOW_STRAIGHT_MODERATE,LINEFOLLOW_STRAIGHT_LOW);
+      Move_Forward(50,10);
     }  
   }else if(S4.High()){
-    Move_Forward(LINEFOLLOW_STRAIGHT_MODERATE,0);
+    Move_Forward(50,0);
     motor2.Brake(255);
   }else{
-    Move_Forward(LINEFOLLOW_STRAIGHT_MODERATE,LINEFOLLOW_STRAIGHT_MODERATE);
+    Move_Forward(50,50);
   }
 }
 
@@ -32,24 +32,24 @@ void LineFollow_Curve(){
   Serial_Print_Sensors();
   if(S2.High()){
     if(S1.High()){
-      Move_Forward(0,LINEFOLLOW_CURVE_HIGH); 
+      Move_Forward(0,50); 
     }else{
-      Move_Forward(LINEFOLLOW_CURVE_LOW,LINEFOLLOW_CURVE_HIGH); 
+      Move_Forward(10,50); 
     }
   }else if(S1.High()){
-    Move_Forward(0,LINEFOLLOW_CURVE_HIGH);
+    Move_Forward(0,50);
     motor1.Brake(255);
   }else if(S3.High()){
     if(S4.High()){
-      Move_Forward(LINEFOLLOW_CURVE_MODERATE,0);
+      Move_Forward(40,0);
     }else{
-      Move_Forward(LINEFOLLOW_CURVE_MODERATE,LINEFOLLOW_CURVE_LOW);
+      Move_Forward(40,10);
     }  
   }else if(S4.High()){
-    Move_Forward(LINEFOLLOW_CURVE_MODERATE,0);
+    Move_Forward(40,0);
     motor2.Brake(255);
   }else{
-    Move_Forward(LINEFOLLOW_CURVE_MODERATE,LINEFOLLOW_CURVE_HIGH);
+    Move_Forward(40,50);
   }
 }
 
@@ -58,24 +58,24 @@ void LineFollow_Curve2(){
   Serial_Print_Sensors();
   if(S2.High()){
     if(S1.High()){
-      Move_Forward(0,LINEFOLLOW_CURVE2_HIGH); 
+      Move_Forward(0,70); 
     }else{
-      Move_Forward(LINEFOLLOW_CURVE2_LOW,LINEFOLLOW_CURVE2_HIGH); 
+      Move_Forward(10,70); 
     }
   }else if(S1.High()){
-    Move_Forward(0,LINEFOLLOW_CURVE2_HIGH);
+    Move_Forward(0,70);
     motor1.Brake(255);
   }else if(S3.High()){
     if(S4.High()){
-      Move_Forward(LINEFOLLOW_CURVE2_MODERATE,0);
+      Move_Forward(40,0);
     }else{
-      Move_Forward(LINEFOLLOW_CURVE2_MODERATE,LINEFOLLOW_CURVE2_LOW);
+      Move_Forward(40,10);
     }  
   }else if(S4.High()){
-    Move_Forward(LINEFOLLOW_CURVE2_MODERATE,0);
+    Move_Forward(40,0);
     motor2.Brake(255);
   }else{
-   Move_Forward(LINEFOLLOW_CURVE2_MODERATE,LINEFOLLOW_CURVE2_HIGH);
+   Move_Forward(40,70);
   }
 }
 
@@ -102,31 +102,27 @@ void LineFollow12(){
   LAPTOP.println("LineFollow S1S2 ");
   static int local_flag = 0; 
   Serial_Print_Sensors();
-  if(S3.High()||S4.High()){
-    Move_Forward(LINEFOLLOW12_34CORRECTION,0);  
-  }
-
   if(S2.High()){
     if(S1.High()){
-      Move_Forward(LINEFOLLOW12_INNER_MOTOR,LINEFOLLOW12_OUTER_MOTOR);
+      Move_Forward(25,35);
     }else{
-      Move_Forward(LINEFOLLOW12_INNER_MOTOR,0); 
+      Move_Forward(25,0); 
       local_flag = 2;
     }
   }else if(S1.High()){
-    Move_Forward(0,LINEFOLLOW12_OUTER_MOTOR); 
+    Move_Forward(0,35); 
     local_flag = 1; 
   }else{
     if(local_flag == 2){
-      Move_Forward(LINEFOLLOW12_INNER_MOTOR,0);
+      Move_Forward(25,0);
       motor2.Brake(255);
       local_flag = 0;
     }else if(local_flag == 1){
-      Move_Forward(0,LINEFOLLOW12_OUTER_MOTOR);
+      Move_Forward(0,35);
       motor1.Brake(255); 
       local_flag = 0; 
     }else{
-      Move_Forward(LINEFOLLOW12_INNER_MOTOR,0); 
+      Move_Forward(25,0); 
       motor2.Brake(255);
     }
   } 
@@ -137,29 +133,29 @@ void LineFollow34(){
   static int local_flag = 0; 
   Serial_Print_Sensors();
   if(S1.High()||S2.High()){
-    Move_Forward(0,LINEFOLLOW34_12CORRECTION);  
+    Move_Forward(0,15);  
   }
   if(S3.High()){
     if(S4.High()){
-      Move_Forward(LINEFOLLOW34_INNER_MOTOR,LINEFOLLOW34_OUTER_MOTOR);
+      Move_Forward(30,20);
     }else{
-      Move_Forward(0,LINEFOLLOW34_OUTER_MOTOR); 
+      Move_Forward(0,20); 
       local_flag = 2;
     }
   }else if(S4.High()){
-    Move_Forward(LINEFOLLOW34_INNER_MOTOR,0); 
+    Move_Forward(30,0); 
     local_flag = 1; 
   }else{
     if(local_flag == 2){
-      Move_Forward(0,LINEFOLLOW34_OUTER_MOTOR - 5);
+      Move_Forward(0,15);
       motor1.Brake(255);
       local_flag = 0;
     }else if(local_flag == 1){
-      Move_Forward(LINEFOLLOW34_INNER_MOTOR -5 ,0);
+      Move_Forward(25,0);
       motor2.Brake(255); 
       local_flag = 0; 
     }else{
-      Move_Forward(0,LINEFOLLOW34_OUTER_MOTOR); 
+      Move_Forward(0,20); 
       motor1.Brake(255);
     }
   } 
@@ -194,26 +190,26 @@ int LineFollow_Straight_Precision(){
     
   if(S2.High()){
     if(S1.High()){
-      Move_Forward(0,LINEFOLLOW_STRAIGHT_PRECISION_HIGH);
+      Move_Forward(0,55);
       motor1.Brake(255);   
     }else{
-      Move_Forward(0,LINEFOLLOW_STRAIGHT_PRECISION_LOW); 
+      Move_Forward(0,35); 
     }
   }else if(S1.High()){
-    Move_Forward(0,LINEFOLLOW_STRAIGHT_PRECISION_LOW);
+    Move_Forward(0,35);
     motor1.Brake(255);
   }else if(S3.High()){
     if(S4.High()){
-      Move_Forward(LINEFOLLOW_STRAIGHT_PRECISION_HIGH,0);
+      Move_Forward(55,0);
       motor2.Brake(255);
     }else{
-      Move_Forward(LINEFOLLOW_STRAIGHT_PRECISION_LOW,0);
+      Move_Forward(35,0);
     }  
   }else if(S4.High()){
-    Move_Forward(LINEFOLLOW_STRAIGHT_PRECISION_LOW,0);
+    Move_Forward(35,0);
     motor2.Brake(255);
   }else{
-    Move_Forward(LINEFOLLOW_STRAIGHT_PRECISION_LOW,LINEFOLLOW_STRAIGHT_PRECISION_LOW);
+    Move_Forward(35,35);
   }
 
   if(S2.High() && S3.High()){
@@ -228,26 +224,26 @@ int LineFollow_Curve_Precision(){
   Serial_Print_Sensors();
   if(S2.High()){
     if(S1.High()){
-      Move_Forward(0,LINEFOLLOW_CURVE_PRECISION_HIGH);
+      Move_Forward(0,30);
       motor1.Brake(255);
     }else{
-      Move_Forward(0,LINEFOLLOW_CURVE_PRECISION_HIGH); 
+      Move_Forward(0,30); 
     }
   }else if(S1.High()){
-    Move_Forward(0,LINEFOLLOW_CURVE_PRECISION_HIGH);
+    Move_Forward(0,30);
     motor1.Brake(255);
   }else if(S3.High()){
     if(S4.High()){
-      Move_Forward(LINEFOLLOW_CURVE_PRECISION_LOW,0);
+      Move_Forward(20,0);
       motor2.Brake(255);
     }else{
-      Move_Forward(LINEFOLLOW_CURVE_PRECISION_LOW,0);
+      Move_Forward(20,0);
     }  
   }else if(S4.High()){
-    Move_Forward(LINEFOLLOW_CURVE_PRECISION_LOW,0);
+    Move_Forward(20,0);
     motor2.Brake(255);
   }else{
-    Move_Forward(LINEFOLLOW_CURVE_PRECISION_LOW,LINEFOLLOW_CURVE_PRECISION_HIGH);
+    Move_Forward(20,30);
   }
   if(S2.High() && S3.High()){
     Motors_Brake(255,255);
@@ -259,6 +255,8 @@ int LineFollow_Curve_Precision(){
 void Run_For_Encoder_Count(int encoder_count){
   int i = 0; 
   while(1){
+    if(bud_count)
+       Parallelogram_Tripped();
     Query_Launchpad();
     LAPTOP.print(encoder_motor1);   LAPTOP.print("\t");   LAPTOP.println(encoder_motor2);
     if((encoder_motor1+encoder_motor2)/2 > encoder_count)

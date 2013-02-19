@@ -1,67 +1,8 @@
 
 /** Helper functions **/
 
-inline int Check_Mirror(int a, int b){
+int inline Check_Mirror(int a, int b){
   return mirror?a:b;
-}
-
-inline void Move_Forward(uint8_t pwm1, uint8_t pwm2){
-  motor1.Control(FWD, pwm1);
-  motor2.Control(FWD, pwm2);
-}
-
-inline void Move_Back(uint8_t pwm1, uint8_t pwm2){
-  motor1.Control(BCK, pwm1);
-  motor2.Control(BCK, pwm2);
-}
-
-inline void Motors_Brake(uint8_t pwm1, uint8_t pwm2){\
-  motor1.Brake(pwm1);
-  motor2.Brake(pwm2);
-}
-
-inline void Parallelogram_Up_I(){
-  LAPTOP.println("UP");
-  if(!digitalRead(PARALLELOGRAM_TRIP_SWITCH_TOP)){
-    attachInterrupt(PARALLELOGRAM_TRIP_SWITCH_TOP, Parallelogram_Tripped_ISR, RISING);
-    digitalWrite(PARALLELOGRAM_PIN1, HIGH);
-    digitalWrite(PARALLELOGRAM_PIN2, LOW);
-  }
-}
-
-inline void Parallelogram_Down_I(){
-  LAPTOP.println("DOWN");
-  if(!digitalRead(PARALLELOGRAM_TRIP_SWITCH_BOTTOM)){
-    attachInterrupt(3, Parallelogram_Tripped_ISR, RISING);
-    digitalWrite(PARALLELOGRAM_PIN1, LOW);
-    digitalWrite(PARALLELOGRAM_PIN2, HIGH);
-  }
-}
-
-inline void Parallelogram_Up(){
-  digitalWrite(PARALLELOGRAM_PIN1, HIGH);
-  digitalWrite(PARALLELOGRAM_PIN2, LOW);
-}
-
-inline void Parallelogram_Down(){
-  digitalWrite(PARALLELOGRAM_PIN1, LOW);
-  digitalWrite(PARALLELOGRAM_PIN2, HIGH);
-}
-
-inline void Parallelogram_Stop(){
-  digitalWrite(PARALLELOGRAM_PIN1, LOW);
-  digitalWrite(PARALLELOGRAM_PIN2, LOW);
-}
-
-inline void Parallelogram_Sensor_Up(){
-  Parallelogram_Up();
-  while(!parallelogram_sensor.High());
-  Parallelogram_Stop();  
-}
-
-inline void Check_Abort(){
-  if( LAPTOP.available() )
-    Abort();
 }
 
 char Serial_Wait(){
@@ -160,7 +101,7 @@ int Parallelogram_Tripped(){
      return 0;
    }
 }
-/*
+
 int Parallelogram_Reached(int count){
   LAPTOP.print("PARALLELOGRAM COUNT:");
   LAPTOP.println(parallelogram_count);
@@ -172,7 +113,7 @@ int Parallelogram_Reached(int count){
   }
   return 0;
 }
-*/
+
 int Turret_Reached(int count){
   LAPTOP.print("TURRET COUNT:");
   LAPTOP.println(turret_count);

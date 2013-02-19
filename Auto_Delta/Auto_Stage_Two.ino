@@ -45,10 +45,10 @@ void Auto_Stage_Two(){
   Toggle_Wait();  
 
   ///Take Parallelogram to lowest position
-  //parallelogram_count = 0;
-  //parallelogram_Down(); 
+  parallelogram_count = 0;
+  Parallelogram_Down(); 
   
-  //while(!Parallelogram_Reached(2));
+  while(!Parallelogram_Reached(2));
 
   Serial.println("Parallelogram should be down by now");
   
@@ -74,7 +74,7 @@ void Auto_Stage_Two(){
 //  parallelogram_count = 0;
 //  Parallelogram_Up(); 
 //  while(!Parallelogram_Reached(1));
-  //Move_Parallelogram(FWD,1);
+  Move_Parallelogram(FWD,1);
   
   Parameters_Reset();
   Move_Back(255,200);
@@ -109,7 +109,7 @@ void Auto_Stage_Two(){
     LineFollow_Straight();
     if((S3.High() && S1.High()) || (S4.High() && S2.High()) || (S3.High() && S2.High()))
       break;
-    //Parallelogram_Reached(1);
+    Parallelogram_Reached(1);
   }
   Move_Forward(40,40);  //To bypass junction
   delay(200);
@@ -119,10 +119,10 @@ void Auto_Stage_Two(){
     LineFollow_Straight_Precision();
     if(( S3.High() && S1.High() )||( S4.High() && S2.High())||(S3.High() && S2.High() ))
       break;
-    //Parallelogram_Reached(1);
+    Parallelogram_Reached(1);
   }
   Motors_Brake(255,255);
-  //while(!Parallelogram_Reached(1));
+  while(!Parallelogram_Reached(1));
   LAPTOP.println("Meet the Manual Bot");
   Toggle_Wait();
   
@@ -150,7 +150,7 @@ void Auto_Stage_Two(){
     while(S4.Low()&&S3.Low()&&S1.Low()&&S2.Low());
     
     Motors_Brake(255,255);
-    //Move_Parallelogram(BCK,2);
+    Move_Parallelogram(BCK,2);
     Move_Forward(30,30);
     
     Parameters_Reset();
@@ -180,7 +180,7 @@ void Auto_Stage_Two(){
     Parameters_Reset();
     
 
-    //Move_Parallelogram(FWD,1);
+    Move_Parallelogram(FWD,1);
     Move_Back(170,255);
     if(i==1){
       Run_For_Encoder_Count(9000);
@@ -211,7 +211,7 @@ void Auto_Stage_Two(){
 //    parallelogram_count = 0;
 //    Parallelogram_Up();
 //    while(!Parallelogram_Reached(1));
-    //Move_Parallelogram(FWD,1);
+    Move_Parallelogram(FWD,1);
     Move_Forward(30,30);
     Parameters_Reset();
     while(1){

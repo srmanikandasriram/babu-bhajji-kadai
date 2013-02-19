@@ -1,10 +1,10 @@
 // Core AutoBot Code
-// 1639 170213
+// 1802213 0314
 
 /**********************************************************************
   Bot Data:
     wheel to wheel                                - 50cm
-    wheel dia                                     - 125mm
+    wheel dia                                     - 125mmt
     no.of interrupts per wheel rotation           - 2688
     no.of interrupts per one full turret rotation - 
 ***********************************************************************/
@@ -279,47 +279,59 @@ class Custom_Servo{
 #define SLOWEST 0
 #define TURRET_PWM 150
 
-//LineFollow PWMs
+#define Move_Forward(pwm1, pwm2){\
+  motor1.Control(FWD, pwm1);\
+  motor2.Control(FWD, pwm2);\
+}
 
-#define LINEFOLLOW_STRAIGHT_HIGH 60
-#define LINEFOLLOW_STRAIGHT_MODERATE 50
-#define LINEFOLLOW_STRAIGHT_LOW 10
+#define Move_Back(pwm1, pwm2){\
+  motor1.Control(BCK, pwm1);\
+  motor2.Control(BCK, pwm2);\
+}
 
-#define LINEFOLLOW_CURVE_HIGH 50
-#define LINEFOLLOW_CURVE_MODERATE 40
-#define LINEFOLLOW_CURVE_LOW 10
+#define Motors_Brake(pwm1, pwm2){\
+  motor1.Brake(pwm1);\
+  motor2.Brake(pwm2);\
+}
 
-#define LINEFOLLOW_CURVE2_HIGH 70
-#define LINEFOLLOW_CURVE2_MODERATE 40
-#define LINEFOLLOW_CURVE2_LOW 10
+#define Parallelogram_Up(){\
+  digitalWrite(PARALLELOGRAM_PIN1, HIGH);\
+  digitalWrite(PARALLELOGRAM_PIN2, LOW);\
+}
 
-#define LINEFOLLOW12_OUTER_MOTOR 35
-#define LINEFOLLOW12_INNER_MOTOR 25
-#define LINEFOLLOW12_34CORRECTION 15
+#define Parallelogram_Down(){\
+  digitalWrite(PARALLELOGRAM_PIN1, LOW);\
+  digitalWrite(PARALLELOGRAM_PIN2, HIGH);\
+}
 
-#define LINEFOLLOW34_OUTER_MOTOR 20
-#define LINEFOLLOW34_INNER_MOTOR 30
-#define LINEFOLLOW34_12CORRECTION 15
+#define Parallelogram_Stop(){\
+  digitalWrite(PARALLELOGRAM_PIN1, LOW);\
+  digitalWrite(PARALLELOGRAM_PIN2, LOW);\
+}
 
-#define LINEFOLLOW_STRAIGHT_PRECISION_HIGH 55
-#define LINEFOLLOW_STRAIGHT_PRECISION_LOW 35
+#define Check_Abort(){\
+  if( LAPTOP.available() )\
+    Abort();\
+}
 
-#define LINEFOLLOW_CURVE_PRECISION_HIGH 30 
-#define LINEFOLLOW_CURVE_PRECISION_LOW 20
+#define Parallelogram_InverseLogic_Up() {\
+  Parallelogram_Up();\
+  while( !parallelogram_sensor.High() );\
+  Parallelogram_Stop();\
+}
 
 // for Array of Functions
 typedef void (*fn) (void);
 fn Transform[] = {Initialise, Pick_Leaves, Accelerate_Bot, Decelerate_Bot, Drop_First_Leaf, Drop_Second_Leaf, Soft_Turn, Auto_Stage_One_Complete, Auto_Stage_Two};
-fn Transform_Fallback[] = {Initialise, To_Pick_LeavesF, Pick_LeavesF, Initial_Straight_Line, Detect_Line,
-                           Turn_and_Align, First_LineFollow, Drop_Two_Leaves, To_Last_Leaf, Final_Run_To_Leaf3, Drop_Last_Leaf,
+fn Transform_Fallback[] = {Initialise, Pick_LeavesF, Accelerate_BotF, Decelerate_BotF, Detect_Line,
+                           Turn_and_Align, First_LineFollow, Drop_Two_Leaves, To_Last_Leaf, Drop_Last_Leaf,
                            To_First_Bud, To_Junction, To_Bud_Transfer, Transfer_Bud, To_Curve2, To_Next_Bud,
                            Tokyo2, To_Bud_Transfer, Transfer_Bud, To_Curve2, To_Next_Bud, Tokyo2, To_Bud_Transfer,
                            Transfer_Bud, The_End, Toggle_Wait };
 
 /** Configuration Constants: Affect behaviour **/
 uint16_t distances[26] = {0, 2030, 13880, 21650, 29100, 565, 150,100};
-uint16_t distances_fallback[26] = {0, 2930, 0,
-13880, 17000, 500, 100};
+uint16_t distances_fallback[26] = {0, 2930, 13880, 17000, 500, 100};
 
 /** Global declarations **/
 Motor motor1, motor2, turret_motor(27, 26, 11); // the order of pin numbers determine the direction
@@ -344,7 +356,7 @@ const int deceleration_delay = 2, deceleration = 5;
 const int encoder_count = 22134;  // Encoder count for hard turn 5802
 const int delay_long = 5;
 boolean stage_one_complete = false, mirror, ps_complete = false;
-boolean skip_reset = false, omit_leaf1 = false, omit_leaf2 = false, omit_leaf3 = false;
+boolean skip_reset = false, omit_leaf1 = false, omit_leaf2 = false, omit_leaf3 = false, omit_bud1 = false, omit_bud2 = false, omit_bud3 = false;
 
 // For PID
 double setpoint, input, output;
@@ -381,6 +393,7 @@ void setup(){
   LCD.print("Hello World!");
 
   attachInterrupt(TURRET_ENCODER_PIN, Turret_ISR, RISING);
+  //attachInterrupt(PARALLELOGRAM_SENSOR_PIN, Parallelogram_ISR, RISING);
   turret_sensor.Attach(TURRET_SENSOR_PIN);
   parallelogram_sensor.Attach(PARALLELOGRAM_SENSOR_PIN);  
   for(int i = 1; i<8; i++){
@@ -444,7 +457,7 @@ void setup(){
         }else if( input == 'd' ){
           Parallelogram_Reset();
         }else if( input == 'i' ){
-          Parallelogram_Sensor_Up();
+          Parallelogram_InverseLogic_Up();
         }
       }
       else if( input == 'P' ){
@@ -458,9 +471,9 @@ void setup(){
           Serial_Wait();
           Parallelogram_Stop();
         }
-      }/*else if (input == 'm'){
+      }else if (input == 'm'){
         Auto_MSC();
-      }*/else if( input == 'k'){
+      }else if( input == 'k'){
         Actuate_High(GRIPPER);
       }else if( input == 'l'){
         Actuate_Low(GRIPPER);      
@@ -471,6 +484,7 @@ void setup(){
     }
   }
   Parameters_Reset();
+  Actuate_High(LEFT_VG); Actuate_High(MIDDLE_VG); Actuate_High(RIGHT_VG);
   LAPTOP.println("Here we begin =>");
  
   
@@ -487,8 +501,10 @@ void loop(){
   Parallelogram_Up();  
   while(digitalRead(PARALLELOGRAM_TRIP_SWITCH_BOTTOM));
   Parallelogram_Stop();
+  
+  
 
-  Parallelogram_Sensor_Up();
+  Parallelogram_InverseLogic_Up();
   delay(150);
   Parallelogram_Stop();
 
@@ -510,7 +526,7 @@ void Read_External_Byte(){
   LAPTOP.println(digitalRead(14));
   if( digitalRead(14) == HIGH ){
     mirror = true;
-    LAPTOP.println(" mirron arena ");
+    LAPTOP.println(" mirror arena ");
   }
   if( digitalRead(52) == HIGH ){
     omit_leaf1 = true;
@@ -524,6 +540,34 @@ void Read_External_Byte(){
     omit_leaf3 = true;
     LAPTOP.println(" leaf3 to be omitted ");
   }
+    /*
+  // Pins for pushbutton switches to set if bud is omitted or not
+  
+  if( digitalRead(!@#) == HIGH ){
+    omit_bud1 = true;
+    omit_leaf1 = true;
+    omit_leaf2 = true;
+    omit_leaf3 = true; 
+    LAPTOP.println(" bud1 to be omitted ");
+  }
+  if( digitalRead(!@#) == HIGH ){
+    omit_bud2 = true;
+    omit_leaf1 = true;
+    omit_leaf2 = true;
+    omit_leaf3 = true; 
+    LAPTOP.println(" bud2 to be omitted ");
+  }
+  if( digitalRead(!@#) == HIGH ){
+    omit_bud3 = true;
+    omit_leaf1 = true;
+    omit_leaf2 = true;
+    omit_leaf3 = true; 
+    LAPTOP.println(" bud3 to be omitted ");
+  }
+  
+  */
+    
+  
   if( digitalRead(50) == HIGH ){
     strategy = AUTO_PID;
     LAPTOP.println(" Straight line PID strategy ");
@@ -575,5 +619,9 @@ void Initialise(){
   }
   servo1.Home();
   servo2.Home();
+ if(omit_leaf3 && omit_bud1){
+    Transform_Fallback[8] = To_Next_Bud; Transform_Fallback[9] = Tokyo2; Transform_Fallback[10] =  To_Bud_Transfer;
+    Transform_Fallback[11] = Transfer_Bud; Transform_Fallback[12] =  The_End; Transform_Fallback[13] = Toggle_Wait;
+  }
 }
 
