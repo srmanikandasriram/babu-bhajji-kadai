@@ -222,7 +222,7 @@ class Custom_Servo{
 #define TURRET_SENSOR_PIN A10
 #define PARALLELOGRAM_SENSOR_PIN 3
 #define SHARPR_SENSOR_PIN A2
-#define SHARPL_SENSOR_PIN A0
+#define SHARPL_SENSOR_PIN A2
 #define PARALLELOGRAM_TRIP_SWITCH_BOTTOM 20
 #define PARALLELOGRAM_TRIP_SWITCH_TOP A4
 
@@ -252,10 +252,17 @@ class Custom_Servo{
 
 #define SERVO_ANG_L1F 135
 #define SERVO_ANG_L2F 97
-#define SERVO_ANG_L3F 48
+#define SERVO_ANG_L3F 110
 #define SERVO_ANG_R1F 20
 #define SERVO_ANG_R2F 55
-#define SERVO_ANG_R3F 105    /// change to new value
+#define SERVO_ANG_R3F 112    /// change to new value
+
+#define SERVO_ANG_L1MF 135
+#define SERVO_ANG_L2MF 97
+#define SERVO_ANG_L3MF 97
+#define SERVO_ANG_R1MF 20
+#define SERVO_ANG_R2MF 55
+#define SERVO_ANG_R3MF 112    /// change to new value
 
 #define TURRET_ANG1 1180
 #define TURRET_ANG2 1750
@@ -264,7 +271,7 @@ class Custom_Servo{
 #define TURRET_ANG5 10330
 
 #define TURRET_ANG1F 950
-#define TURRET_ANG2F 1750
+#define TURRET_ANG2F 1950
 #define TURRET_ANG3F 4630
 #define TURRET_ANG4F 6600
 #define TURRET_ANG5F 10330
@@ -327,6 +334,7 @@ fn Transform[] = {Initialise, Pick_Leaves, Accelerate_Bot, Decelerate_Bot, Drop_
 fn Transform_Fallback[] = {Initialise, To_Pick_LeavesF, Pick_LeavesF, Accelerate_BotF, Decelerate_BotF, Detect_Line,
                            Turn_and_Align, First_LineFollow, Drop_Two_Leaves, To_Last_Leaf, Drop_Last_Leaf,
                            To_First_Bud, To_Junction, To_Bud_Transfer, Transfer_Bud, To_Curve2, To_Next_Bud,
+                           Tokyo2, To_Bud_Transfer, Transfer_Bud, To_Curve2, To_Next_Bud,
                            Tokyo2, To_Bud_Transfer, Transfer_Bud, The_End, Toggle_Wait };
 fn Transform_L124_B123[] = {Initialise, To_Pick_LeavesF, Pick_LeavesF, Accelerate_BotF, Decelerate_BotF, Detect_Line,
                            Turn_and_Align, First_LineFollow, Drop_Two_Leaves, To_Last_Leaf, Drop_Last_Leaf,
@@ -351,7 +359,7 @@ fn Transform_L000_B023[] = {Initialise, To_Pick_LeavesF, Pick_LeavesF, Accelerat
 
 /** Configuration Constants: Affect behaviour **/
 uint16_t distances[26] = {0, 2030, 13880, 21650, 29100, 565, 150,100};
-uint16_t distances_fallback[26] = {0, 2930, 13880, 17000, 950, 100};
+uint16_t distances_fallback[26] = {0, 2930, 10880, 13800, 1500, 100};   ///{0, 2930, 13880, 15000, 950, 100};
 
 /** Global declarations **/
 Motor motor1, motor2, turret_motor(27, 26, 11); // the order of pin numbers determine the direction
@@ -459,8 +467,8 @@ void setup(){
     }
   }
 
-
-  /*if(!skip_reset){
+/*
+  if(!skip_reset){
     char input = Serial_Wait();
     while( input != 'q' ){
       if( input == 'c' ){
@@ -545,8 +553,8 @@ void loop(){
 void Read_External_Byte(){
   LAPTOP.println(digitalRead(14));
   if( digitalRead(14) == HIGH ){
-    mirror = true;
-    LAPTOP.println(" mirror arena ");
+    mirror = false;
+    LAPTOP.println(" not mirror arena ");
   }
   if( digitalRead(52) == HIGH ){
     omit_leaf1 = true;
@@ -610,8 +618,8 @@ void Initialise(){
     servo1.Attach(SERVO_RGT);
     servo2.Attach(SERVO_LFT);
     if( strategy == AUTO_FALLBACK ){
-      servo1.SetAngles(SERVO_ANG_R1F,SERVO_ANG_R2F,SERVO_ANG_R3F);
-      servo2.SetAngles(SERVO_ANG_L1F,SERVO_ANG_L2F,SERVO_ANG_L3F);
+      servo1.SetAngles(SERVO_ANG_R1MF,SERVO_ANG_R2MF,SERVO_ANG_R3MF);
+      servo2.SetAngles(SERVO_ANG_L1MF,SERVO_ANG_L2MF,SERVO_ANG_L3MF);
     }else if( strategy == AUTO_PID ){
       servo1.SetAngles(SERVO_ANG_R1, SERVO_ANG_R2, SERVO_ANG_R3);
       servo2.SetAngles(SERVO_ANG_L1, SERVO_ANG_L2, SERVO_ANG_L3);

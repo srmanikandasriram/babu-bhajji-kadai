@@ -55,8 +55,8 @@ void Pick_LeavesF(){
   delay(1000);
   Actuate_Low(V_PISTON);
   LAPTOP.println("Picked up leaves");
-  //Toggle_Wait(); // TMP
-  delay(1000);
+  Toggle_Wait(); // TMP
+  //delay(1000);
 }
 
 void Accelerate_BotF(){
@@ -69,7 +69,7 @@ void Accelerate_BotF(){
   turret_motor.Control(Check_Mirror(FWD,BCK), 220);
   encoder_turret_target = TURRET_ANG2F;
   LAPTOP.println("Acceleration begun");
-//  servo1.SetTargetAngle(3);
+  servo1.SetTargetAngle(3);
   servo2.SetTargetAngle(3);
   while(base_pwm < maximum_pwm){
     base_pwm += acceleration;
@@ -138,12 +138,13 @@ void Detect_Line(){
   LAPTOP.println("Waiting for turret to turn");
   while(encoder_turret < encoder_turret_target);
   turret_motor.Brake(0);
-  delay(500);
+  delay(200);
   LAPTOP.println("Moving forward slightly");
   Parameters_Reset();
   Move_Forward(20,20); 
   while(S2.Low()&&S3.Low());
   LAPTOP.println("Line detected");
+  Parameters_Reset();
   while(encoder_motor1 < distances_fallback[path_phase] && encoder_motor2 < distances_fallback[path_phase]){
     Query_Launchpad();
     Check_Abort();
@@ -180,10 +181,10 @@ void First_LineFollow(){
 void Drop_Two_Leaves(){
   LAPTOP.println("Dropping first two leaves");
   Motors_Brake(255,255);
-  while(turret_sensor.High());
-  turret_motor.Brake(255);
+  //while(turret_sensor.High());
+  //turret_motor.Brake(255);
   
-//  Toggle_Wait();
+  Toggle_Wait();
   delay(200);
   
   Actuate_High(LEFT_VG);
@@ -241,7 +242,7 @@ void Drop_Last_Leaf(){
 }
 
 void To_First_Bud(){
-  turret_motor.Control(FWD,255);
+  turret_motor.Control(Check_Mirror(FWD,BCK),255);
   while(turret_sensor.High());
   while(turret_sensor.Low());
   while(turret_sensor.High());  
@@ -260,13 +261,13 @@ void To_First_Bud(){
   Actuate_Low(GRIPPER);                               // to pick up bud 1
   ///Take Parallelogram to lowest position
   
-  //Toggle_Wait();
+  Toggle_Wait();
 
   parallelogram_count = 0;
   Parallelogram_Down(); 
   delay(800);
   Parallelogram_Stop();
-  delay(800);
+  //delay(800);
   
   //Toggle_Wait();
   LAPTOP.println("Reverse");
@@ -281,7 +282,7 @@ void To_Junction(){
   parallelogram_count = 0;
   Parameters_Reset();
   Move_Back(150,100);
-  Run_For_Encoder_Count(8400);
+  Run_For_Encoder_Count(Check_Mirror(8400,7400));
 
   Motors_Brake(255,0);
   Parameters_Reset();
@@ -370,20 +371,24 @@ void Transfer_Bud(){
   LAPTOP.println("Ready to go for two and three");
   delay(1000);
   bud_count++;
-  if( bud_count == 2)
-    path_phase -= 5;
+ // if( bud_count == 2)
+//    path_phase -= 5;
 }
 
 void To_Curve2(){
   LAPTOP.println("Goint to Curve2"); 
   Parameters_Reset();                  
   Move_Back(40,180);
-  Run_For_Encoder_Count(3800);
+  Run_For_Encoder_Count(Check_Mirror(3800,3000));
   
   Motors_Brake(0,255);
   motor1.Control(BCK,25);// latest change on 23rd feb it was 25
   delay(600);
-  while(S4.Low()&&S3.Low()&&S1.Low()&&S2.Low());
+  while(S1.Low());
+  while(S2.Low());
+  while(S3.Low());
+  while(S4.Low());
+//  while(S4.Low()&&S3.Low()&&S1.Low()&&S2.Low());
 
   Motors_Brake(255,255);
 
@@ -452,13 +457,15 @@ void To_Next_Bud(){
   
   LAPTOP.println("Reached next bud");
 
+  Toggle_Wait();
+  
   Actuate_Low(GRIPPER);
   
   Move_Parallelogram(BCK,1);
   Parallelogram_Down(); 
   delay(800);
   Parallelogram_Stop();
-  delay(800);
+  //delay(800);
 }
 
 void Tokyo2(){
@@ -479,10 +486,10 @@ void Tokyo2(){
 
   if(bud_count == 2){
     Move_Back(80,250);
-    Run_For_Encoder_Count(13000);
+    Run_For_Encoder_Count(Check_Mirror(13000,12000));
   }else{
     Move_Back(80,210);
-    Run_For_Encoder_Count(9500);
+    Run_For_Encoder_Count(Check_Mirror(9500,8500));
   }
   Motors_Brake(255,0);
   motor2.Control(BCK,20);// latest change on 23rd feb before it was 20
