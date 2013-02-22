@@ -134,3 +134,24 @@ void Check_Motors(int pwm){
     Serial_Print();
   }
 }
+
+void Check_TSOP(){
+  while(!LAPTOP.available()) {
+    LAPTOP.print(4);
+    LAPTOP.print(" ");
+    LAPTOP.print(digitalRead(4));
+    LAPTOP.print("\t");
+    LAPTOP.print(5);
+    LAPTOP.print(" ");
+    LAPTOP.print(digitalRead(5)); 
+    
+    LAPTOP.print("\t");
+    LAPTOP.print("Communication ");
+    if(digitalRead(4) == LOW || digitalRead(5) == LOW)
+      LAPTOP.println("Yes");
+    else
+      LAPTOP.println("No");
+    delay(100);
+  }
+  LAPTOP.read();
+}

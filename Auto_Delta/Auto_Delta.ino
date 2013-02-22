@@ -1,5 +1,5 @@
 // Core AutoBot Code
-// 1802213 0314
+// 22 02 2013 07 29 PM
 
 /**********************************************************************
   Bot Data:
@@ -221,7 +221,8 @@ class Custom_Servo{
 #define TURRET_ENCODER_PIN 0
 #define TURRET_SENSOR_PIN A10
 #define PARALLELOGRAM_SENSOR_PIN 3
-#define SHARP_SENSOR_PIN A2
+#define SHARPR_SENSOR_PIN A2
+#define SHARPL_SENSOR_PIN A0
 #define PARALLELOGRAM_TRIP_SWITCH_BOTTOM 20
 #define PARALLELOGRAM_TRIP_SWITCH_TOP A4
 
@@ -254,7 +255,7 @@ class Custom_Servo{
 #define SERVO_ANG_L3F 48
 #define SERVO_ANG_R1F 20
 #define SERVO_ANG_R2F 55
-#define SERVO_ANG_R3F 55
+#define SERVO_ANG_R3F 105    /// change to new value
 
 #define TURRET_ANG1 1180
 #define TURRET_ANG2 1750
@@ -323,15 +324,34 @@ class Custom_Servo{
 // for Array of Functions
 typedef void (*fn) (void);
 fn Transform[] = {Initialise, Pick_Leaves, Accelerate_Bot, Decelerate_Bot, Drop_First_Leaf, Drop_Second_Leaf, Soft_Turn, Auto_Stage_One_Complete, Auto_Stage_Two};
-fn Transform_Fallback[] = {Initialise, Pick_LeavesF, Accelerate_BotF, Decelerate_BotF, Detect_Line,
+fn Transform_Fallback[] = {Initialise, To_Pick_LeavesF, Pick_LeavesF, Accelerate_BotF, Decelerate_BotF, Detect_Line,
                            Turn_and_Align, First_LineFollow, Drop_Two_Leaves, To_Last_Leaf, Drop_Last_Leaf,
                            To_First_Bud, To_Junction, To_Bud_Transfer, Transfer_Bud, To_Curve2, To_Next_Bud,
-                           Tokyo2, To_Bud_Transfer, Transfer_Bud, To_Curve2, To_Next_Bud, Tokyo2, To_Bud_Transfer,
-                           Transfer_Bud, The_End, Toggle_Wait };
+                           Tokyo2, To_Bud_Transfer, Transfer_Bud, The_End, Toggle_Wait };
+fn Transform_L124_B123[] = {Initialise, To_Pick_LeavesF, Pick_LeavesF, Accelerate_BotF, Decelerate_BotF, Detect_Line,
+                           Turn_and_Align, First_LineFollow, Drop_Two_Leaves, To_Last_Leaf, Drop_Last_Leaf,
+                           To_First_Bud, To_Junction, To_Bud_Transfer, Transfer_Bud, To_Curve2, To_Next_Bud,
+                           Tokyo2, To_Bud_Transfer, Transfer_Bud, The_End, Toggle_Wait };
+fn Transform_L004_B123[] = {Initialise, To_Pick_LeavesF, Pick_LeavesF, Accelerate_BotF, Decelerate_BotF, Detect_Line,
+                           Turn_and_Align, First_LineFollow, Drop_Two_Leaves, To_Last_Leaf, Drop_Last_Leaf,
+                           To_First_Bud, To_Junction, To_Bud_Transfer, Transfer_Bud, To_Curve2, To_Next_Bud,
+                           Tokyo2, To_Bud_Transfer, Transfer_Bud, The_End, Toggle_Wait };
+fn Transform_L120_B123[] = {Initialise, To_Pick_LeavesF, Pick_LeavesF, Accelerate_BotF, Decelerate_BotF, Detect_Line,
+                           Turn_and_Align, First_LineFollow, Drop_Two_Leaves, To_Last_Leaf, Drop_Last_Leaf,
+                           To_First_Bud, To_Junction, To_Bud_Transfer, Transfer_Bud, To_Curve2, To_Next_Bud,
+                           Tokyo2, To_Bud_Transfer, Transfer_Bud, The_End, Toggle_Wait };
+fn Transform_L000_B123[] = {Initialise, To_Pick_LeavesF, Pick_LeavesF, Accelerate_BotF, Decelerate_BotF, Detect_Line,
+                           Turn_and_Align, First_LineFollow, Drop_Two_Leaves, To_Last_Leaf, Drop_Last_Leaf,
+                           To_First_Bud, To_Junction, To_Bud_Transfer, Transfer_Bud, To_Curve2, To_Next_Bud,
+                           Tokyo2, To_Bud_Transfer, Transfer_Bud, The_End, Toggle_Wait };
+fn Transform_L000_B023[] = {Initialise, To_Pick_LeavesF, Pick_LeavesF, Accelerate_BotF, Decelerate_BotF, Detect_Line,
+                           Turn_and_Align, First_LineFollow, Drop_Two_Leaves, To_Last_Leaf, Drop_Last_Leaf,
+                           To_First_Bud, To_Junction, To_Bud_Transfer, Transfer_Bud, To_Curve2, To_Next_Bud,
+                           Tokyo2, To_Bud_Transfer, Transfer_Bud, The_End, Toggle_Wait };
 
 /** Configuration Constants: Affect behaviour **/
 uint16_t distances[26] = {0, 2030, 13880, 21650, 29100, 565, 150,100};
-uint16_t distances_fallback[26] = {0, 2930, 13880, 17000, 500, 100};
+uint16_t distances_fallback[26] = {0, 2930, 13880, 17000, 950, 100};
 
 /** Global declarations **/
 Motor motor1, motor2, turret_motor(27, 26, 11); // the order of pin numbers determine the direction
@@ -373,7 +393,7 @@ long int volatile encoder_turret = 0;
 
 // for line sensors
 boolean linefollow_enable = false, line_detected = false;
-
+int SHARP_SENSOR_PIN;
 // Core phase variables
 int actuation_phase = 0, path_phase = 0;
 
@@ -395,7 +415,8 @@ void setup(){
   attachInterrupt(TURRET_ENCODER_PIN, Turret_ISR, RISING);
   //attachInterrupt(PARALLELOGRAM_SENSOR_PIN, Parallelogram_ISR, RISING);
   turret_sensor.Attach(TURRET_SENSOR_PIN);
-  parallelogram_sensor.Attach(PARALLELOGRAM_SENSOR_PIN);  
+  parallelogram_sensor.Attach(PARALLELOGRAM_SENSOR_PIN);
+  
   for(int i = 1; i<8; i++){
     pinMode(actuations[i], OUTPUT);
     pinMode(external_byte[i], INPUT);
@@ -403,30 +424,10 @@ void setup(){
   
   // for PWM
   TCCR1B = TCCR1B & mask | 0x02;
-
-  // for strategy Switch
-  pinMode(A1, INPUT);
   
   // for communication TSOP
   pinMode(4, INPUT);
   pinMode(5, INPUT);
-  /*while(1) {
-    Serial.print(4);
-    Serial.print(" ");
-    Serial.print(digitalRead(4));
-    Serial.print("\t");
-    Serial.print(5);
-    Serial.print(" ");
-    Serial.print(digitalRead(5)); 
-    
-    Serial.print("\t");
-    Serial.print("Communication ");
-    if(digitalRead(4) == LOW || digitalRead(5) == LOW)
-      Serial.println("Yes");
-    else
-      Serial.println("No");
-    delay(100);
-  }*/
   
   // for PID
   input = 0;
@@ -440,31 +441,22 @@ void setup(){
   Initialise();
   LAPTOP.println("Initialised");
 
-while(skip_reset)
-  {
-
-    LAPTOP.println(analogRead(A2)); // for sharp
-    if(digitalRead(50))
-      {
-        Parallelogram_Reset();
-      }
-    if(digitalRead(52))
-      {
-         Parallelogram_Up();
-          while(!digitalRead(PARALLELOGRAM_TRIP_SWITCH_TOP));
-          Parallelogram_Stop();
-      }
-      
-    if(digitalRead(53))
-       {
-         Move_Turret_Dir('a');
-       }
-       
-    if(digitalRead(51))
-    {
-        Move_Turret_Dir('c');
+  while(skip_reset){
+    LAPTOP.println(analogRead(SHARP_SENSOR_PIN)); // for sharp
+    if(digitalRead(50)){
+      Parallelogram_Reset();
     }
-
+    if(digitalRead(52)){
+      Parallelogram_Up();
+      while(!digitalRead(PARALLELOGRAM_TRIP_SWITCH_TOP));
+      Parallelogram_Stop();
+    }      
+    if(digitalRead(53)){
+      Move_Turret_Dir('a');
+    }       
+    if(digitalRead(51)){
+      Move_Turret_Dir('c');
+    }
   }
 
 
@@ -647,9 +639,16 @@ void Initialise(){
   }
   servo1.Home();
   servo2.Home();
- if(omit_leaf3 && omit_bud1){
+/* if(omit_leaf3 && omit_bud1){
     Transform_Fallback[8] = To_Next_Bud; Transform_Fallback[9] = Tokyo2; Transform_Fallback[10] =  To_Bud_Transfer;
-    Transform_Fallback[11] = Transfer_Bud; Transform_Fallback[12] =  The_End; Transform_Fallback[13] = Toggle_Wait;
-  }
+    Transform_Fallback[11] = Transfer_Bud;
+    if( omit_bud2){
+      Transform_Fallback[12] =  The_End; Transform_Fallback[13] = Toggle_Wait;
+    }else{
+      Transform_Fallback[12] =  To_Curve2; Transform_Fallback[13] = To_Next_Bud; Transform_Fallback[14] = Tokyo2; Transform_Fallback[15] =  To_Bud_Transfer;
+      Transform_Fallback[16] = Transfer_Bud; Transform_Fallback[17] =  The_End; Transform_Fallback[18] = Toggle_Wait;
+    }
+  }*/
+  SHARP_SENSOR_PIN = Check_Mirror(SHARPR_SENSOR_PIN, SHARPL_SENSOR_PIN);
 }
 

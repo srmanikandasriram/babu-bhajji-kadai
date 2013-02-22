@@ -9,7 +9,7 @@ void Auto_Fallback(){
   }
 }
 
-void Pick_LeavesF(){
+void To_Pick_LeavesF(){
   LAPTOP.println("Going to pick up the leaves.");
   Move_Forward(15, 15);
   encoder_turret = 0;
@@ -27,7 +27,7 @@ void Pick_LeavesF(){
   }
 }
 
-void Accelerate_BotF(){
+void Pick_LeavesF(){
   LAPTOP.println("Stopping to pick up leaves");
   while(analogRead(SHARP_SENSOR_PIN)<350){
     LAPTOP.print("SHARP Check running"); LAPTOP.println(analogRead(SHARP_SENSOR_PIN));
@@ -57,6 +57,9 @@ void Accelerate_BotF(){
   LAPTOP.println("Picked up leaves");
   //Toggle_Wait(); // TMP
   delay(1000);
+}
+
+void Accelerate_BotF(){
   //Toggle_Wait(); //Double toggle_wait because it was generally being bypassed. 
   Parameters_Reset();
   pid_enable = true;
@@ -66,7 +69,7 @@ void Accelerate_BotF(){
   turret_motor.Control(Check_Mirror(FWD,BCK), 220);
   encoder_turret_target = TURRET_ANG2F;
   LAPTOP.println("Acceleration begun");
-  servo1.SetTargetAngle(3);
+//  servo1.SetTargetAngle(3);
   servo2.SetTargetAngle(3);
   while(base_pwm < maximum_pwm){
     base_pwm += acceleration;
@@ -137,10 +140,14 @@ void Detect_Line(){
   turret_motor.Brake(0);
   delay(500);
   LAPTOP.println("Moving forward slightly");
+  Parameters_Reset();
   Move_Forward(20,20); 
   while(S2.Low()&&S3.Low());
   LAPTOP.println("Line detected");
-  delay(100);
+  while(encoder_motor1 < distances_fallback[path_phase] && encoder_motor2 < distances_fallback[path_phase]){
+    Query_Launchpad();
+    Check_Abort();
+  }
 }
 
 void Turn_and_Align(){
@@ -363,18 +370,16 @@ void Transfer_Bud(){
   LAPTOP.println("Ready to go for two and three");
   delay(1000);
   bud_count++;
+  if( bud_count == 2)
+    path_phase -= 5;
 }
 
 void To_Curve2(){
   LAPTOP.println("Goint to Curve2"); 
   Parameters_Reset();                  
   Move_Back(40,180);
-  if(bud_count == 1){
-    Run_For_Encoder_Count(3800); 
-  }else{
-    Run_For_Encoder_Count(3800);
-  }
-
+  Run_For_Encoder_Count(3800);
+  
   Motors_Brake(0,255);
   motor1.Control(BCK,25);// latest change on 23rd feb it was 25
   delay(600);
@@ -527,13 +532,15 @@ void The_End(){
 }
 
 void Move_TurretF(){
-  static int turret_enable = 1; 
+  /*static int turret_enable = 1; 
   if(omit_leaf3 && turret_enable){
      if(turret_sensor.Low()){
         turret_motor.Brake(255);
         turret_enable = 0; 
      }
   }    
-  else if(encoder_turret > encoder_turret_target && turret_enable)
+  else 
+  */
+  if(encoder_turret > encoder_turret_target)
     turret_motor.Brake(255);
 }
