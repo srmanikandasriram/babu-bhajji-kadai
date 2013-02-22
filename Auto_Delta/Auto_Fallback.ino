@@ -55,7 +55,8 @@ void Accelerate_BotF(){
   delay(1000);
   Actuate_Low(V_PISTON);
   LAPTOP.println("Picked up leaves");
-  Toggle_Wait();
+  //Toggle_Wait(); // TMP
+  delay(1000);
   //Toggle_Wait(); //Double toggle_wait because it was generally being bypassed. 
   Parameters_Reset();
   pid_enable = true;
@@ -134,9 +135,9 @@ void Detect_Line(){
   LAPTOP.println("Waiting for turret to turn");
   while(encoder_turret < encoder_turret_target);
   turret_motor.Brake(0);
-  delay(400);
+  delay(500);
   LAPTOP.println("Moving forward slightly");
-  Move_Forward(20,20);
+  Move_Forward(20,20); 
   while(S2.Low()&&S3.Low());
   LAPTOP.println("Line detected");
   delay(100);
@@ -180,10 +181,11 @@ void Drop_Two_Leaves(){
   
   Actuate_High(LEFT_VG);
   Actuate_High(RIGHT_VG);
- // delay(1000);
+  delay(300);
 }
 
 void To_Last_Leaf(){
+
   Parameters_Reset();
   motor1.Brake(255);
   motor2.Control(FWD,50);
@@ -202,7 +204,7 @@ void To_Last_Leaf(){
       break;
   }
   Serial_Print_Sensors();
-  motor1.Control(FWD,30);
+  motor1.Control(FWD,30);//latest change on 23rd fwb before it was 30
   motor2.Brake(255);
   delay(600);
   while(S1.Low()&&S2.Low()&&S3.Low()){
@@ -219,15 +221,15 @@ void To_Last_Leaf(){
     Move_TurretF();
   }
   Motors_Brake(255,255);
-  delay(500);  
+  //delay(200); // latest change on 23rd feb it was 500  
   //Toggle_Wait();
 }
 void Drop_Last_Leaf(){
   LAPTOP.println("Dropping Third Leaf");
 
-  //delay(500);
+  delay(200);
   Actuate_High(MIDDLE_VG);
-  delay(400);
+  delay(200); //latest change on 23rd feb delay was there before 400
  
 }
 
@@ -251,7 +253,7 @@ void To_First_Bud(){
   Actuate_Low(GRIPPER);                               // to pick up bud 1
   ///Take Parallelogram to lowest position
   
-  Toggle_Wait();
+  //Toggle_Wait();
 
   parallelogram_count = 0;
   Parallelogram_Down(); 
@@ -285,11 +287,12 @@ void To_Junction(){
   }  
   Motors_Brake(255,255);
   LAPTOP.println("Left Turn Done");
-  delay(150);
+  delay(100);
 
   motor2.Control(FWD,30); //To get back on track
-  while(!S2.High());
-
+  while(S2.Low());
+  while(S3.Low());
+  
   ///Take Parallelogram to top position  
   parallelogram_count = 0;
   Parallelogram_Up();
@@ -337,21 +340,23 @@ void To_Bud_Transfer(){
   LAPTOP.println("Meet the Manual Bot");
 }
 
-void Transfer_Bud(){
+void Wait_For_TSOP(){
   // Communication Code
   long int temp_millis = millis();
   while ( 1 ) {
     if( (digitalRead(COMM_TSOP_1) == LOW || digitalRead(COMM_TSOP_2) == LOW) ) { // if Comm is on
       if( millis() - temp_millis > 0) { // AND for a long time
-        Actuate_High(GRIPPER); // give bud !
         break; /// lets go !
       }
     }
     else
       temp_millis = millis();
   }
+}
 
-  
+void Transfer_Bud(){
+
+  Wait_For_TSOP();
 //  while( !(digitalRead(COMM_TSOP_1) == LOW || digitalRead(COMM_TSOP_2) == LOW) );
   //Toggle_Wait();
   Actuate_High(GRIPPER);
@@ -363,7 +368,7 @@ void Transfer_Bud(){
 void To_Curve2(){
   LAPTOP.println("Goint to Curve2"); 
   Parameters_Reset();                  
-  Move_Back(80,240);
+  Move_Back(40,180);
   if(bud_count == 1){
     Run_For_Encoder_Count(3800); 
   }else{
@@ -371,7 +376,7 @@ void To_Curve2(){
   }
 
   Motors_Brake(0,255);
-  motor1.Control(BCK,25);
+  motor1.Control(BCK,25);// latest change on 23rd feb it was 25
   delay(600);
   while(S4.Low()&&S3.Low()&&S1.Low()&&S2.Low());
 
@@ -442,8 +447,6 @@ void To_Next_Bud(){
   
   LAPTOP.println("Reached next bud");
 
-  
-  Toggle_Wait();
   Actuate_Low(GRIPPER);
   
   Move_Parallelogram(BCK,1);
@@ -469,22 +472,29 @@ void Tokyo2(){
   //delay(500);
   //Parallelogram_Stop();  
 
-  Move_Back(80,160);
   if(bud_count == 2){
-    Run_For_Encoder_Count(13500);
+    Move_Back(80,250);
+    Run_For_Encoder_Count(13000);
   }else{
-    Run_For_Encoder_Count(10500);
+    Move_Back(80,210);
+    Run_For_Encoder_Count(9500);
   }
   Motors_Brake(255,0);
-  motor2.Control(BCK,20);
+  motor2.Control(BCK,20);// latest change on 23rd feb before it was 20
+  //delay(400);
+  int local_flag = 0;
   Parameters_Reset();
   while(encoder_motor2<9000){ 
     Query_Launchpad();
     LAPTOP.println(encoder_motor2);
     Parallelogram_Tripped();
-    if((S4.High()||S3.High())&&encoder_motor2>2000){
-      LAPTOP.println("Line Detected");
-      break;
+    if(encoder_motor2>2000){//latest change on 23rd fwb earlier it was s3 or s4 now only s3
+      if(S4.High())
+        local_flag = 1;
+      if(S3.High() && local_flag){ 
+        LAPTOP.println("Line Detected");
+        break;
+     }
     }
   }  
   Motors_Brake(255,255);
@@ -492,12 +502,13 @@ void Tokyo2(){
   delay(200);
 
   motor2.Control(FWD,60);
-  while(S2.Low()&&S3.Low()){
+  while(S3.Low()&&S4.Low()){
     Parallelogram_Tripped();
   }
 
   Motors_Brake(255,255);
   
+  Wait_For_TSOP();
   //Toggle_Wait();
   //parallelogram_count = 0;
   //Parallelogram_Up();

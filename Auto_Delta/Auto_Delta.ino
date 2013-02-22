@@ -350,7 +350,7 @@ const int mask = 0b11111000;
 
 // for behaviour
 int strategy = 1;  // 1 for 1-2-4 and 2 for 1-2-3
-const int minimum_pwm = 20, maximum_pwm = 100, slowdown_pwm = 50;
+const int minimum_pwm = 70, maximum_pwm = 200, slowdown_pwm = 50;
 const int acceleration_delay = 2, acceleration = 2;
 const int deceleration_delay = 2, deceleration = 5;
 const int encoder_count = 22134;  // Encoder count for hard turn 5802
@@ -440,7 +440,35 @@ void setup(){
   Initialise();
   LAPTOP.println("Initialised");
 
-  if(!skip_reset){
+while(skip_reset)
+  {
+
+    LAPTOP.println(analogRead(A2)); // for sharp
+    if(digitalRead(50))
+      {
+        Parallelogram_Reset();
+      }
+    if(digitalRead(52))
+      {
+         Parallelogram_Up();
+          while(!digitalRead(PARALLELOGRAM_TRIP_SWITCH_TOP));
+          Parallelogram_Stop();
+      }
+      
+    if(digitalRead(53))
+       {
+         Move_Turret_Dir('a');
+       }
+       
+    if(digitalRead(51))
+    {
+        Move_Turret_Dir('c');
+    }
+
+  }
+
+
+  /*if(!skip_reset){
     char input = Serial_Wait();
     while( input != 'q' ){
       if( input == 'c' ){
@@ -482,9 +510,9 @@ void setup(){
       }
       input = Serial_Wait();
     }
-  }
+  }*/
   Parameters_Reset();
-  Actuate_High(LEFT_VG); Actuate_High(MIDDLE_VG); Actuate_High(RIGHT_VG);
+  //Actuate_High(LEFT_VG); Actuate_High(MIDDLE_VG); Actuate_High(RIGHT_VG);
   LAPTOP.println("Here we begin =>");
  
   
