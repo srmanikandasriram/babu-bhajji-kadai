@@ -498,8 +498,9 @@ void Tokyo2(){
     }
   }  
   Motors_Brake(255,255);
+  Wait_For_TSOP();
   LAPTOP.println("Right turn completed");
-  delay(200);
+
 
   motor2.Control(FWD,60);
   while(S3.Low()&&S4.Low()){
@@ -508,7 +509,6 @@ void Tokyo2(){
 
   Motors_Brake(255,255);
   
-  Wait_For_TSOP();
   //Toggle_Wait();
   //parallelogram_count = 0;
   //Parallelogram_Up();
