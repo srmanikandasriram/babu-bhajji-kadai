@@ -10,6 +10,8 @@ void Auto_Fallback(){
 }
 
 void To_Pick_LeavesF(){
+  LCD.clear();
+  LCD.print("To Pick Leaves");
   LAPTOP.println("Going to pick up the leaves.");
   Move_Forward(15, 15);
   encoder_turret = 0;
@@ -28,6 +30,8 @@ void To_Pick_LeavesF(){
 }
 
 void Pick_LeavesF(){
+  LCD.clear();
+  LCD.print("Pick Leaves");
   LAPTOP.println("Stopping to pick up leaves");
   int threshold = Check_Mirror(350, 250);
   if(mirror) { // right sharp is being used // NEEDS TO BE CHANGED
@@ -56,7 +60,6 @@ void Pick_LeavesF(){
     Move_Servo();
     Serial_Print();
   }
-  turret_motor.Brake(255);
 
   if(omit_leaf1) 
     Actuate_High(LEFT_VG);
@@ -71,6 +74,26 @@ void Pick_LeavesF(){
   LAPTOP.println("Picked up leaves");
   Toggle_Wait(); // TMP
   //delay(1000);
+}
+
+void Move_Straight_FastF(){
+  LCD.clear();
+  LCD.print("Move Straight");
+  Parameters_Reset();
+  Move_Forward(255,255);
+  encoder_turret = 0;
+  turret_motor.Control(Check_Mirror(FWD,BCK), 220);
+  encoder_turret_target = Check_Mirror(TURRET_ANG2MF, TURRET_ANG2F);
+  LAPTOP.println("Moving forward fast");
+  servo1.SetTargetAngle(3);
+  servo2.SetTargetAngle(3);
+
+  while(encoder_motor1 < distances_fallback[path_phase] && encoder_motor2 < distances_fallback[path_phase]){
+    Query_Launchpad();
+    Move_TurretF();
+    Move_Servo();
+    Serial_Print();
+  }  
 }
 
 void Accelerate_BotF(){
@@ -156,44 +179,44 @@ void Decelerate_BotF(){
 }
 
 void Detect_Line(){
- Motors_Brake(HARDBRAKE, HARDBRAKE);
-  LAPTOP.println("Waiting for turret to turn");
-  while(encoder_turret < encoder_turret_target);
-  turret_motor.Brake(0);
-  delay(200);
-  //while(1);
-  if (mirror )
-  {
-    delay(200);
-  }
-  
+  LCD.clear();
+  LCD.print("Detect Line");
+  Motors_Brake(100, 100);
+  delay(350);
   LAPTOP.println("Moving forward slightly");
-  Parameters_Reset();
-  Move_Forward(20,20); 
-  while(S2.Low()&&S3.Low());
+  Move_Forward(35,35);
+  while(S2.Low()&&S3.Low()){
+    Move_TurretF();
+  }
   LAPTOP.println("Line detected");
-  //Motors_Brake(HARDBRAKE, HARDBRAKE);
   
   Parameters_Reset();
   while(encoder_motor1 < distances_fallback[path_phase] && encoder_motor2 < distances_fallback[path_phase]){
     Query_Launchpad();
     Check_Abort();
+    Move_TurretF();
   }
+  Motors_Brake(255,255);
+  delay(400);
 }
 
 void Turn_and_Align(){
+  LCD.clear();
+  LCD.print("Soft Turn");
   LAPTOP.println("Going into soft turn");
-  motor1.pwm(30); //Changed from 40 to 30 because of overshoot on correction
-  motor2.Brake(HARDBRAKE);
-  delay(500);
+  motor1.Control(FWD,100);
+  motor2.Control(BCK,75);
+  delay(200);
   while(S1.Low()&&S2.Low()&&S3.Low()&&S4.Low());
-  Motors_Brake(255,255);
-  delay(500);//delay added to increase precision
+//  Motors_Brake(255,255);
+//  delay(100);//delay added to increase precision
   // code for correcting and aligning back on to the line
   LAPTOP.println("Aligned onto the line");
 }
 
 void First_LineFollow(){
+  LCD.clear();
+  LCD.print("LF to Line1");
   LAPTOP.println("LineFollow to 1st Latitude");
   Parameters_Reset();
   int flag_turret = Check_Mirror(1, 0);
@@ -212,6 +235,8 @@ void First_LineFollow(){
 }
 
 void Drop_Two_Leaves(){
+  LCD.clear();
+  LCD.print("Drop 2 leaves");
   LAPTOP.println("Dropping first two leaves");
   Motors_Brake(255,255);
   //while(turret_sensor.High());
@@ -226,6 +251,8 @@ void Drop_Two_Leaves(){
 }
 
 void To_Last_Leaf(){
+  LCD.clear();
+  LCD.print("To last leaf");
 
   Parameters_Reset();
   motor1.Brake(255);
@@ -276,6 +303,8 @@ void To_Last_Leaf(){
   Toggle_Wait();
 }
 void Drop_Last_Leaf(){
+  LCD.clear();
+  LCD.print("Drop last leaf");
   LAPTOP.println("Dropping Third Leaf");
 
   delay(200);
@@ -285,6 +314,8 @@ void Drop_Last_Leaf(){
 }
 
 void To_First_Bud(){
+  LCD.clear();
+  LCD.print("to first bud");
   /*turret_motor.Control(Check_Mirror(FWD,BCK),255);
   while(turret_sensor.High());
   while(turret_sensor.Low());
@@ -389,6 +420,8 @@ void To_First_Bud(){
 }
 
 void To_Junction(){
+  LCD.clear();
+  LCD.print("To junction");
   ///Take Parallelogram to mid position before reverse
   Parallelogram_Up();                                        //to raise para after black tape, to avoid count while shaking
   while(parallelogram_sensor.Low());
@@ -435,6 +468,8 @@ void To_Junction(){
 }
     
 void To_Bud_Transfer(){
+  LCD.clear();
+  LCD.print("to Bud transfer");
   /*
   // Old LineFollow
   while(1){
@@ -478,7 +513,8 @@ void Wait_For_TSOP(){
 }
 
 void Transfer_Bud(){
-
+  LCD.clear();
+  LCD.print("Transfering bud");
   Wait_For_TSOP();
 //  while( !(digitalRead(COMM_TSOP_1) == LOW || digitalRead(COMM_TSOP_2) == LOW) );
   //Toggle_Wait();
@@ -491,6 +527,8 @@ void Transfer_Bud(){
 }
 
 void To_Curve2(){
+  LCD.clear();
+  LCD.print("To curve2");
   LAPTOP.println("Goint to Curve2"); 
   Parameters_Reset();                  
   Move_Back(40,180);
@@ -530,6 +568,9 @@ void To_Curve2(){
 }
 
 void To_Next_Bud(){
+  LCD.clear();
+  LCD.print("To next bud");
+
   int local_flag = 0;
   Motors_Brake(255,255);
   Parallelogram_Down();
@@ -604,7 +645,9 @@ void To_Next_Bud(){
 }
 
 void Tokyo2(){
-  
+  LCD.clear();
+  LCD.print("Tokyo2");
+
   //Toggle_Wait();
   LAPTOP.println("Going to reverse");
   Parameters_Reset();
@@ -673,15 +716,6 @@ void The_End(){
 }
 
 void Move_TurretF(){
-  /*static int turret_enable = 1; 
-  if(omit_leaf3 && turret_enable){
-     if(turret_sensor.Low()){
-        turret_motor.Brake(255);
-        turret_enable = 0; 
-     }
-  }    
-  else 
-  */
-  if(encoder_turret > encoder_turret_target)
+  if( encoder_turret>encoder_turret_target )
     turret_motor.Brake(255);
 }

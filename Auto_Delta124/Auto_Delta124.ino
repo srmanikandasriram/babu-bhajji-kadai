@@ -1,5 +1,5 @@
 // Core AutoBot Code//mirror is true for blue arena, it is not for red arena
-// 22 02 2013 07 29 PM
+// 27 03 2013 02 35 PM
 
 /**********************************************************************
   Bot Data:
@@ -338,7 +338,7 @@ class Custom_Servo{
 // for Array of Functions
 typedef void (*fn) (void);
 fn Transform[] = {Initialise, Pick_Leaves, Accelerate_Bot, Decelerate_Bot, Drop_First_Leaf, Drop_Second_Leaf, Soft_Turn, Auto_Stage_One_Complete, Auto_Stage_Two};
-fn Transform_Fallback[] = {Initialise, To_Pick_LeavesF, Pick_LeavesF, Accelerate_BotF, Decelerate_BotF, Detect_Line,
+fn Transform_Fallback[] = {Initialise, To_Pick_LeavesF, Pick_LeavesF, Move_Straight_FastF, Detect_Line,
                            Turn_and_Align, First_LineFollow, Drop_Two_Leaves, To_Last_Leaf, Drop_Last_Leaf,
                            To_First_Bud, To_Junction, To_Bud_Transfer, Transfer_Bud, To_Curve2, To_Next_Bud,
                            Tokyo2, To_Bud_Transfer, Transfer_Bud, To_Curve2, To_Next_Bud,
@@ -366,7 +366,7 @@ fn Transform_L000_B023[] = {Initialise, To_Pick_LeavesF, Pick_LeavesF, Accelerat
 
 /** Configuration Constants: Affect behaviour **/
 uint16_t distances[26] = {0, 2030, 13880, 21650, 29100, 565, 150,100};
-uint16_t distances_fallback[26] = {0, 2930, 10880, 13800, 1500, 100};   ///{0, 2930, 13880, 15000, 950, 100};
+uint16_t distances_fallback[26] = {0, 2930, 0, 18000, 500, 100};   ///{0, 2930, 13880, 15000, 950, 100};
 
 /** Global declarations **/
 Motor motor1, motor2, turret_motor(27, 26, 11); // the order of pin numbers determine the direction
@@ -425,7 +425,7 @@ void setup(){
   LAPTOP.begin(115200);
   LAUNCHPAD.begin(115200);
 
-  LCD.begin(20,4);
+  LCD.begin(16,2);
   LCD.print("Hello World!");
 
   attachInterrupt(TURRET_ENCODER_PIN, Turret_ISR, RISING);
@@ -672,4 +672,3 @@ void Initialise(){
   }*/
   SHARP_SENSOR_PIN = Check_Mirror(SHARPR_SENSOR_PIN, SHARPL_SENSOR_PIN);
 }
-

@@ -185,33 +185,33 @@ void LineFollow12(){
 }
 
 void LineFollow34(){
-  LAPTOP.println("LineFollow S3S4 ");
+  LAPTOP.println("LineFollow S3S4 ");//increased all pwms by 20
   static int local_flag = 0; 
   Serial_Print_Sensors();
   if(S1.High()||S2.High()){
-    Move_Forward(0,15);  
+    Move_Forward(0,35);  
   }
   if(S3.High()){
     if(S4.High()){
-      Move_Forward(30,20);
+      Move_Forward(50,40);
     }else{
-      Move_Forward(0,20); 
+      Move_Forward(0,40); 
       local_flag = 2;
     }
   }else if(S4.High()){
-    Move_Forward(30,0); 
+    Move_Forward(50,0); 
     local_flag = 1; 
   }else{
     if(local_flag == 2){
-      Move_Forward(0,15);
+      Move_Forward(0,35);
       motor1.Brake(255);
       local_flag = 0;
     }else if(local_flag == 1){
-      Move_Forward(25,0);
+      Move_Forward(45,0);
       motor2.Brake(255); 
       local_flag = 0; 
     }else{
-      Move_Forward(0,20); 
+      Move_Forward(0,40); 
       motor1.Brake(255);
     }
   } 
