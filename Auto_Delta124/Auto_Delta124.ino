@@ -238,7 +238,8 @@ class Custom_Servo{
 #define HARDBRAKE 255
 
 #define STRAIGHT_LINE_PID 1
-#define SOFT_TURN_PID 2
+#define SOFT_TURN_PIDL 2
+#define SOFT_TURN_PIDR 3
 
 #define AUTO_PID 1
 #define AUTO_FALLBACK 2
@@ -263,7 +264,7 @@ class Custom_Servo{
 #define SERVO_ANG_L3MF 63// position for dropping two leaves
 #define SERVO_ANG_R1MF 20
 #define SERVO_ANG_R2MF 55
-#define SERVO_ANG_R3MF 60    /// change to new value
+#define SERVO_ANG_R3MF 55    /// change to new value
 
 #define TURRET_ANG1 1180
 #define TURRET_ANG2 1750
@@ -273,8 +274,8 @@ class Custom_Servo{
 
 #define TURRET_ANG1MF 950
 #define TURRET_ANG2MF 1950
-#define TURRET_ANG3MF 4630
-#define TURRET_ANG4MF 6600
+#define TURRET_ANG3MF 1400
+#define TURRET_ANG4MF 1100
 #define TURRET_ANG5MF 10330
 
 #define TURRET_ANG1F 950
@@ -338,11 +339,12 @@ class Custom_Servo{
 // for Array of Functions
 typedef void (*fn) (void);
 fn Transform[] = {Initialise, Pick_Leaves, Accelerate_Bot, Decelerate_Bot, Drop_First_Leaf, Drop_Second_Leaf, Soft_Turn, Auto_Stage_One_Complete, Auto_Stage_Two};
-fn Transform_Fallback[] = {Initialise, To_Pick_LeavesF, Pick_LeavesF, Move_Straight_FastF, Detect_Line,
-                           Turn_and_Align, First_LineFollow, Drop_Two_Leaves, To_Last_Leaf, Drop_Last_Leaf,
+fn Transform_Fallback[] = {Initialise, To_Pick_LeavesF, Pick_LeavesF, Move_Straight_FastF,
+                           First_LineFollow, Drop_Two_Leaves, To_Last_Leaf, Drop_Last_Leaf,
                            To_First_Bud, To_Junction, To_Bud_Transfer, Transfer_Bud, To_Curve2, To_Next_Bud,
                            Tokyo2, To_Bud_Transfer, Transfer_Bud, To_Curve2, To_Next_Bud,
                            Tokyo2, To_Bud_Transfer, Transfer_Bud, The_End, Toggle_Wait };
+                           /*
 fn Transform_L124_B123[] = {Initialise, To_Pick_LeavesF, Pick_LeavesF, Accelerate_BotF, Decelerate_BotF, Detect_Line,
                            Turn_and_Align, First_LineFollow, Drop_Two_Leaves, To_Last_Leaf, Drop_Last_Leaf,
                            To_First_Bud, To_Junction, To_Bud_Transfer, Transfer_Bud, To_Curve2, To_Next_Bud,
@@ -363,10 +365,10 @@ fn Transform_L000_B023[] = {Initialise, To_Pick_LeavesF, Pick_LeavesF, Accelerat
                            Turn_and_Align, First_LineFollow, Drop_Two_Leaves, To_Last_Leaf, Drop_Last_Leaf,
                            To_First_Bud, To_Junction, To_Bud_Transfer, Transfer_Bud, To_Curve2, To_Next_Bud,
                            Tokyo2, To_Bud_Transfer, Transfer_Bud, The_End, Toggle_Wait };
-
+*/
 /** Configuration Constants: Affect behaviour **/
 uint16_t distances[26] = {0, 2030, 13880, 21650, 29100, 565, 150,100};
-uint16_t distances_fallback[26] = {0, 2930, 0, 18000, 500, 100};   ///{0, 2930, 13880, 15000, 950, 100};
+uint16_t distances_fallback[26] = {0, 2930, 0, 23000, 250, 100};   ///{0, 2930, 13880, 15000, 950, 100};
 
 /** Global declarations **/
 Motor motor1, motor2, turret_motor(27, 26, 11); // the order of pin numbers determine the direction
@@ -478,8 +480,11 @@ void setup(){
       Move_Turret_Dir('c');
     }
   }
-
+//  while(1){
+//    Serial.println(analogRead(SHARP_SENSOR_PIN));
+//  }
 /*
+
   if(!skip_reset){
     char input = Serial_Wait();
     while( input != 'q' ){
@@ -539,16 +544,16 @@ void loop(){
   
   //code run in case parallelogram wire is unwound 
   
-  Parallelogram_Up();  
-  while(digitalRead(PARALLELOGRAM_TRIP_SWITCH_BOTTOM));
-  Parallelogram_Stop();
+//  Parallelogram_Up();  
+//  while(digitalRead(PARALLELOGRAM_TRIP_SWITCH_BOTTOM));
+//  Parallelogram_Stop();
   
   
 
-  Parallelogram_InverseLogic_Up();
+/*  Parallelogram_InverseLogic_Up();
   delay(150);
   Parallelogram_Stop();
-
+*/
   if(strategy == AUTO_PID ){
     LAPTOP.println("Commencing Auto PID ");
     Auto_Stage_One();

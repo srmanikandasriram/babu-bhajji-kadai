@@ -146,7 +146,7 @@ void Soft_Turn(){
   LAPTOP.println("Going into soft turn");
   motor1.pwm(150);
   motor2.Brake(HARDBRAKE);
-  pid_type = SOFT_TURN_PID;
+  pid_type = SOFT_TURN_PIDL;
   pid_enable = true;
   Set_Turn(distances[path_phase]);
   Launchpad_Reset();
@@ -190,21 +190,35 @@ void PID_Adjust(){
     motor1.pwm(base_pwm + output);
     motor2.pwm(base_pwm - output);
     
-  }else if( pid_type == SOFT_TURN_PID ){
+  }else if( pid_type == SOFT_TURN_PIDL ){
     /** soft turn PID **/
     input = encoder_motor1;
     pid.Compute();
-    if(output>100)
-      motor1.pwm(100);
-    else if(output>55){
+    if(output>35){
       motor1.pwm(output);
     }else{
       motor1.pwm(20);
     }
     if(S1.High()||S2.High()||S3.High()||S4.High()){
       LAPTOP.println("\n DETECTED LINE");
-      path_phase++;
-      Transform[path_phase]();
+      line_detected = true;
+ //     path_phase++;
+//      Transform[path_phase]();
+    }
+  }else if( pid_type == SOFT_TURN_PIDR ){
+    /** soft turn PID **/
+    input = encoder_motor2;
+    pid.Compute();
+    if(output>45){
+      motor2.pwm(output);
+    }else{
+      motor2.pwm(15);
+    }
+    if(S1.High()||S2.High()||S3.High()||S4.High()){
+      LAPTOP.println("\n DETECTED LINE");
+      line_detected = true;
+ //     path_phase++;
+//      Transform[path_phase]();
     }
   }
 }
