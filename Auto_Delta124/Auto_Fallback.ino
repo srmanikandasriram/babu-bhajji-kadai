@@ -14,9 +14,11 @@ void To_Pick_LeavesF(){
   LCD.print("To Pick Leaves");
   LAPTOP.println("Going to pick up the leaves.");
   Move_Forward(15, 15);
+  
   encoder_turret = 0;
   turret_motor.Control(Check_Mirror(BCK,FWD),255);
   encoder_turret_target = Check_Mirror(TURRET_ANG1MF, TURRET_ANG1F);
+  
   servo1.SetTargetAngle(2);
   servo2.SetTargetAngle(2);
   
@@ -224,6 +226,7 @@ void First_LineFollow(){
   while(1){
     LineFollow34();
     Move_Servo();
+    
     if(flag_turret == 1 || turret_sensor.Low()) {
       turret_motor.Brake(255);
       flag_turret = 1;
@@ -331,7 +334,24 @@ void To_First_Bud(){
   */
   //Linefollowing centred on S2 and S1. Linefollowing with brake till bud junction
   Parameters_Reset();
+  encoder_turret = 0;
+  encoder_turret_target = Check_Mirror(TURRET_ANG4MF, TURRET_ANG4F);
   turret_motor.Control(Check_Mirror(FWD,BCK),255); 
+  while(!LineFollow12_Encoders(2000)){
+    Move_TurretF();
+  }
+  while(!LineFollow_Curve_Precision()){
+    Move_TurretF();
+  }
+  
+  while(!Move_TurretF());
+
+  
+   
+   
+  
+  
+/*  
   int flag_turret = 0;
   while(1){
     if(flag_turret == 0 && turret_sensor.Low())
@@ -400,9 +420,10 @@ void To_First_Bud(){
     }
       
 }
+*/
   Motors_Brake(255,255);  
   //Pick up, reverse and Go to Tokyo
-  ///May have to move forward slightly here. Parallelogram can alternatively be lowerd early in the previous while(1) loop
+
 
   Actuate_Low(GRIPPER);                               // to pick up bud 1
   ///Take Parallelogram to lowest position
@@ -715,7 +736,13 @@ void The_End(){
   Parallelogram_Reset();
 }
 
-void Move_TurretF(){
-  if( encoder_turret>encoder_turret_target )
-    turret_motor.Brake(255);
+int Move_TurretF(){
+  if(encoder_turret>encoder_turret_target){
+   if(turret_sensor.Low()){
+     turret_motor.Brake(255);
+     return 1;
+   }
+  }
+  return 0;
 }
+
