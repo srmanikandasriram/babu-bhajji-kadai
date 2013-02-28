@@ -224,10 +224,13 @@ void Turn_and_Align(int dir, int angle){
     PID_Adjust();
     Serial_Print();
     if( line_detected)
-      if(dir == 1 && distances_fallback[path_phase]-encoder_motor1<1500)
+      if(dir == 1 && distances_fallback[path_phase]-encoder_motor1<1500)//check and decide
+        break;
+      else if(dir == 3 && distances_fallback[path_phase]-encoder_motor1<400)//check and decide
         break;
       else if(dir == 2 && distances_fallback[path_phase]-encoder_motor2<1500)
         break;
+     
   }
 //  Motors_Brake(255,255);
 //  delay(1000);
@@ -242,7 +245,7 @@ void First_LineFollow(){
   delay(400);
   motor1.Control(FWD,0);
   turret_motor.Control(Check_Mirror(FWD,BCK),255);
-  Turn_and_Align(1, 130);
+  Turn_and_Align(1, 130);//changed in the morning
   LCD.clear();
   LCD.print("LF to Line1");
   LAPTOP.println("LineFollow to 1st Latitude");
@@ -301,7 +304,7 @@ void To_Last_Leaf(){
   delay(500);
   servo1.Middle();
   servo2.Middle();
-  while(S4.Low()&&S3.Low()&&S1.Low()&&S2.Low());
+  while(S4.Low()&&S3.Low());/*&&S1.Low()&&S2.Low());*/
   LAPTOP.println("Aligned to straight line");
   encoder_turret = 0;
   encoder_turret_target = Check_Mirror(TURRET_ANG3MF, TURRET_ANG3F);
@@ -314,8 +317,9 @@ void To_Last_Leaf(){
       break;
   }*/
   Parameters_Reset();
-  Move_Forward(100,150);
-  while((encoder_motor1 + encoder_motor2)/2 < 3000){
+  Move_Forward(50,70);
+  //while(!(S1.High()&&S2.High()&&S3.High()) || (!(S4.High()&&S2.High()&&S3.High()))){
+  while((encoder_motor1 + encoder_motor2)/2 < 2300){
     Query_Launchpad();
     Move_TurretF();
   }
@@ -329,29 +333,41 @@ void To_Last_Leaf(){
   }*/
   
   turret_motor.Brake(0);
-  Motors_Brake(200,255);
+  Motors_Brake(255,255);
   delay(300);
   motor1.Control(FWD,100);
   turret_motor.Control(Check_Mirror(BCK,FWD),255);
-  Turn_and_Align(1,130);
+  Turn_and_Align(3,110);
   Motors_Brake(255,255);
-  while(S2.Low()&&S3.Low()){
+  delay(200);
+  while(S2.Low() && S3.Low() && S1.Low() && S4.Low()){
     if(line_detected)
-      motor2.Control(FWD,30);
+      motor2.Control(FWD,20);
     else
-      motor1.Control(FWD,30);
+      motor1.Control(FWD,20);
     Move_TurretF();
   }
+  Motors_Brake(255,255);
+  delay(100);
   LAPTOP.println("Moving to third leaf");
   Parameters_Reset();
-  int threshold = Check_Mirror(200, 350), previous_sharp_value; // NEED TO CHANGE
+  int threshold = Check_Mirror(300, 350), 
+      range = Check_Mirror(40, 40),
+      prev_sharp_value = analogRead(SHARP_SENSOR_PIN),
+      next_sharp_value = analogRead(SHARP_SENSOR_PIN),
+      sharp_flag = 0;
   do{
-    previous_sharp_value = analogRead(SHARP_SENSOR_PIN);
-    LAPTOP.print("SHARP VALUE : "); LAPTOP.println(previous_sharp_value);
+    next_sharp_value = analogRead(SHARP_SENSOR_PIN);
+    if( next_sharp_value > threshold && ( next_sharp_value - prev_sharp_value < range || next_sharp_value - prev_sharp_value > -range )) {
+      sharp_flag += 1; // this part makes sure that the discrete values i'm getting are somewhat continuous. (wont be true for random values, which are actually spikes.)
+      prev_sharp_value = next_sharp_value;
+    } else
+      sharp_flag = 0; // reset
+    LAPTOP.print("SHARP VALUE : "); LAPTOP.println(prev_sharp_value);
     Query_Launchpad();
     LineFollow12();
     Move_TurretF();
-  }while(abs(previous_sharp_value - analogRead(SHARP_SENSOR_PIN)) < threshold);
+  }while(sharp_flag < 10);//abs(previous_sharp_value - analogRead(SHARP_SENSOR_PIN)) < threshold);
   Motors_Brake(255,255);
   //delay(200); // latest change on 23rd feb it was 500  
   while(!Move_TurretF());
@@ -427,10 +443,10 @@ void To_First_Bud(){
       turret_motor.Brake(255);
     }
       
-    if(LineFollow12_Encoders(3500))
+    if(LineFollow12_fast())
       break;    
   }
-  while(!LineFollow_Curve_Precision()) {
+  /*while(!LineFollow12()) {
     if(flag_turret == 0 && turret_sensor.Low())
       flag_turret += 1;
     else if(flag_turret == 1 && turret_sensor.High())
@@ -449,7 +465,7 @@ void To_First_Bud(){
       flag_turret += 1;
       turret_motor.Brake(255);
     }
-  }
+  }*/
   while ((flag_turret <=4 && !mirror) || (flag_turret<=6 && mirror))
 {
     

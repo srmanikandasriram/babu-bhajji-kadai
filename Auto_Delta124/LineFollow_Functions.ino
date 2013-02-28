@@ -154,7 +154,7 @@ int LineFollow_Encoders(long int encoder_value, int curve_id){
   return 1;
 }
 
-void LineFollow12(){
+int LineFollow12(){
   LAPTOP.println("LineFollow S1S2 ");
   static int local_flag = 0; 
   Serial_Print_Sensors();
@@ -183,6 +183,77 @@ void LineFollow12(){
     }
   } 
 }
+
+int LineFollow12_new(){
+  LAPTOP.println("LineFollow S1S2 ");
+  static int local_flag = 0; 
+  Serial_Print_Sensors();
+  if(S2.High()){
+    if(S1.High()){
+      Move_Forward(25,35);
+    }else{
+      Move_Forward(25,0); 
+      local_flag = 2;
+    }
+  }else if(S1.High()){
+    Move_Forward(0,35); 
+    local_flag = 1; 
+  }else{
+    if(local_flag == 2){
+      Move_Forward(25,0);
+      motor2.Brake(255);
+      local_flag = 0;
+    }else if(local_flag == 1){
+      Move_Forward(0,35);
+      motor1.Brake(255); 
+      local_flag = 0; 
+    }else{
+      Move_Forward(25,0); 
+      motor2.Brake(255);
+    }
+  } 
+  if (S2.High()&&S3.High()){
+    Motors_Brake(255,255); 
+    return 1; 
+    }
+    return 0 ;
+}
+
+int LineFollow12_fast(){
+  LAPTOP.println("LineFollow S1S2 ");
+  static int local_flag = 0; 
+  Serial_Print_Sensors();
+  if(S2.High()){
+    if(S1.High()){
+      Move_Forward(40,50);
+    }else{
+      Move_Forward(40,0); 
+      local_flag = 2;
+    }
+  }else if(S1.High()){
+    Move_Forward(0,50); 
+    local_flag = 1; 
+  }else{
+    if(local_flag == 2){
+      Move_Forward(40,0);
+      motor2.Brake(255);
+      local_flag = 0;
+    }else if(local_flag == 1){
+      Move_Forward(0,50);
+      motor1.Brake(255); 
+      local_flag = 0; 
+    }else{
+      Move_Forward(40,0); 
+      motor2.Brake(255);
+    }
+  } 
+  if (S2.High()&&S3.High()){
+    Motors_Brake(255,255); 
+    return 1; 
+    }
+    return 0 ;
+}
+
 
 void LineFollow34(){
   LAPTOP.println("LineFollow S3S4 ");//increased all pwms by 20

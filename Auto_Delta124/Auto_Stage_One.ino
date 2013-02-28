@@ -259,7 +259,7 @@ void Move_Turret(){
 
 float calculate_x(){
     int delta_left = encoder_motor1 - prev_left_counts, delta_right = encoder_motor2 - prev_right_counts;
-    float delta_distance = (float )(delta_left + delta_right)*0.5f*distance_per_count;
+    float delta_distance = (float )(delta_left + delta_right)*0.5*distance_per_count;
     float delta_heading = (float )(delta_left - delta_right)*radians_per_count;
     mx += delta_distance*(float)cos(motor_heading);
     motor_heading += delta_heading;

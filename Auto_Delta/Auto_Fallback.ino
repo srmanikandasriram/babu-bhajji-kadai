@@ -14,7 +14,7 @@ void To_Pick_LeavesF(){
   Move_Forward(15, 15);
   encoder_turret = 0;
   turret_motor.Control(Check_Mirror(BCK,FWD),255);
-  encoder_turret_target = TURRET_ANG1F;
+  encoder_turret_target = Check_Mirror(TURRET_ANG1MF, TURRET_ANG1F);
   servo1.SetTargetAngle(2);
   servo2.SetTargetAngle(2);
   
@@ -29,13 +29,27 @@ void To_Pick_LeavesF(){
 
 void Pick_LeavesF(){
   LAPTOP.println("Stopping to pick up leaves");
-  while(analogRead(SHARP_SENSOR_PIN)<350){
-    LAPTOP.print("SHARP Check running"); LAPTOP.println(analogRead(SHARP_SENSOR_PIN));
+  int threshold = Check_Mirror(350, 250);
+  if(mirror) { // right sharp is being used // NEEDS TO BE CHANGED
+  
+    while(analogRead(SHARP_SENSOR_PIN) < threshold){
+      LAPTOP.print("SHARP Check running"); LAPTOP.println(analogRead(SHARP_SENSOR_PIN));
     
-    Query_Launchpad();
-    Move_Servo();
-    Move_TurretF();
-    Serial_Print();
+      Query_Launchpad();
+      Move_Servo();
+      Move_TurretF();
+      Serial_Print();
+    }
+  } else {
+    
+    while(analogRead(SHARP_SENSOR_PIN) < threshold){
+      LAPTOP.print("SHARP Check running"); LAPTOP.println(analogRead(SHARP_SENSOR_PIN));
+    
+      Query_Launchpad();
+      Move_Servo();
+      Move_TurretF();
+      Serial_Print();
+    }
   }
   Motors_Brake(HARDBRAKE, HARDBRAKE);
   while(encoder_turret < encoder_turret_target){
@@ -67,11 +81,12 @@ void Accelerate_BotF(){
   Move_Forward(minimum_pwm, minimum_pwm);
   encoder_turret = 0;
   turret_motor.Control(Check_Mirror(FWD,BCK), 220);
-  encoder_turret_target = TURRET_ANG2F;
+  encoder_turret_target = Check_Mirror(TURRET_ANG2MF, TURRET_ANG2F);
   LAPTOP.println("Acceleration begun");
   servo1.SetTargetAngle(3);
   servo2.SetTargetAngle(3);
   while(base_pwm < maximum_pwm){
+    LAPTOP.println(encoder_motor1);
     base_pwm += acceleration;
     if(base_pwm == 36){
       LAPTOP.println("\n PID begun \n");    /// indicate start of PID
@@ -94,7 +109,9 @@ void Accelerate_BotF(){
   pid.SetTunings(cons_kp,cons_ki,cons_kd);
   pid.SetOutputLimits(-45,45);
 
-  while(encoder_motor1 < distances_fallback[path_phase] && encoder_motor2 < distances_fallback[path_phase]){
+  while(encoder_motor1 < (distances_fallback[path_phase]) && encoder_motor2 < (distances_fallback[path_phase])){
+ //   while(encoder_motor1 < 3880 && encoder_motor2 < 3880){
+   LAPTOP.println(encoder_motor1);
     Query_Launchpad();
     Move_TurretF();
     Move_Servo();
@@ -109,6 +126,7 @@ void Decelerate_BotF(){
   LAPTOP.println("Deceleration begun!");
 
   while(base_pwm > slowdown_pwm){
+    LAPTOP.println(encoder_motor1);
     base_pwm -= deceleration;
     Query_Launchpad();
     PID_Adjust();
@@ -123,7 +141,11 @@ void Decelerate_BotF(){
   base_pwm = slowdown_pwm;
   pid.SetOutputLimits(-35,35);
 
-  while(encoder_motor1 < distances_fallback[path_phase] && encoder_motor2 < distances_fallback[path_phase]){
+  while(encoder_motor1 < (distances_fallback[path_phase]) && encoder_motor2 < (distances_fallback[path_phase])){
+  
+
+  //while(encoder_motor1 < 5800 && encoder_motor2 < 5800){
+    LAPTOP.println(encoder_motor1);
     Query_Launchpad();
     Move_TurretF();
     Move_Servo();
@@ -134,16 +156,24 @@ void Decelerate_BotF(){
 }
 
 void Detect_Line(){
-  Motors_Brake(HARDBRAKE, HARDBRAKE);
+ Motors_Brake(HARDBRAKE, HARDBRAKE);
   LAPTOP.println("Waiting for turret to turn");
   while(encoder_turret < encoder_turret_target);
   turret_motor.Brake(0);
   delay(200);
+  //while(1);
+  if (mirror )
+  {
+    delay(200);
+  }
+  
   LAPTOP.println("Moving forward slightly");
   Parameters_Reset();
   Move_Forward(20,20); 
   while(S2.Low()&&S3.Low());
   LAPTOP.println("Line detected");
+  //Motors_Brake(HARDBRAKE, HARDBRAKE);
+  
   Parameters_Reset();
   while(encoder_motor1 < distances_fallback[path_phase] && encoder_motor2 < distances_fallback[path_phase]){
     Query_Launchpad();
@@ -166,16 +196,19 @@ void Turn_and_Align(){
 void First_LineFollow(){
   LAPTOP.println("LineFollow to 1st Latitude");
   Parameters_Reset();
-  
+  int flag_turret = Check_Mirror(1, 0);
   turret_motor.Control(Check_Mirror(FWD,BCK),255);
   while(1){
     LineFollow34();
     Move_Servo();
-    if(turret_sensor.Low())
+    if(flag_turret == 1 || turret_sensor.Low()) {
       turret_motor.Brake(255);
+      flag_turret = 1;
+    }
     if(( S4.High() && S2.High() )||( S1.High() && S3.High() ))
       break;
   }
+  
 }
 
 void Drop_Two_Leaves(){
@@ -202,7 +235,7 @@ void To_Last_Leaf(){
   servo2.Middle();
   while(S4.Low()&&S3.Low()&&S1.Low()&&S2.Low());
   LAPTOP.println("Aligned to straight line");
-  encoder_turret_target = TURRET_ANG3F;
+  encoder_turret_target = Check_Mirror(TURRET_ANG3MF, TURRET_ANG3F);
   turret_motor.Control(Check_Mirror(BCK,FWD),255);
   LAPTOP.println("Line following to next junction");
   while(1){
@@ -222,15 +255,25 @@ void To_Last_Leaf(){
   delay(200);
   LAPTOP.println("Moving to third leaf");
   Parameters_Reset();
-  while(analogRead(SHARP_SENSOR_PIN)<300){
-    LAPTOP.print("SHARP VALUE : "); LAPTOP.println(analogRead(SHARP_SENSOR_PIN));
-    Query_Launchpad();
-    LineFollow12();
-    Move_TurretF();
+  int threshold = Check_Mirror(200, 350); // NEED TO CHANGE
+  if(mirror) { // right sensor is being used
+    while(analogRead(SHARP_SENSOR_PIN) < threshold){
+      LAPTOP.print("SHARP VALUE : "); LAPTOP.println(analogRead(SHARP_SENSOR_PIN));
+      Query_Launchpad();
+      LineFollow12();
+      Move_TurretF();
+    }
+  } else {
+    while(analogRead(SHARP_SENSOR_PIN)< threshold){
+      LAPTOP.print("SHARP VALUE : "); LAPTOP.println(analogRead(SHARP_SENSOR_PIN));
+      Query_Launchpad();
+      LineFollow12();
+      Move_TurretF();
+    }
   }
   Motors_Brake(255,255);
   //delay(200); // latest change on 23rd feb it was 500  
-  //Toggle_Wait();
+  Toggle_Wait();
 }
 void Drop_Last_Leaf(){
   LAPTOP.println("Dropping Third Leaf");
@@ -242,18 +285,90 @@ void Drop_Last_Leaf(){
 }
 
 void To_First_Bud(){
-  turret_motor.Control(Check_Mirror(FWD,BCK),255);
+  /*turret_motor.Control(Check_Mirror(FWD,BCK),255);
   while(turret_sensor.High());
   while(turret_sensor.Low());
-  while(turret_sensor.High());  
+  while(turret_sensor.High());
+  while(turret_sensor.Low());
+  while(turret_sensor.High());
+  if(mirror) {
+    while(turret_sensor.Low());
+    while(turret_sensor.High());
+  }  
+  
   turret_motor.Brake(255);
+  */
   //Linefollowing centred on S2 and S1. Linefollowing with brake till bud junction
   Parameters_Reset();
+  turret_motor.Control(Check_Mirror(FWD,BCK),255); 
+  int flag_turret = 0;
   while(1){
+    if(flag_turret == 0 && turret_sensor.Low())
+      flag_turret += 1;
+    else if(flag_turret == 1 && turret_sensor.High())
+      flag_turret += 1;
+    else if(flag_turret == 2 && turret_sensor.Low())
+      flag_turret += 1;
+    else if(flag_turret == 3 && turret_sensor.High())
+      flag_turret += 1;
+    else if(flag_turret == 4 && turret_sensor.Low()) {
+      flag_turret += 1;
+      if(!mirror)
+        turret_motor.Brake(255);
+    } else if(flag_turret == 5 && turret_sensor.High() && mirror)
+      flag_turret += 1;
+    else if(flag_turret == 6 && turret_sensor.Low() && mirror) {
+      flag_turret += 1;
+      turret_motor.Brake(255);
+    }
+      
     if(LineFollow12_Encoders(2000))
       break;    
   }
-  while(!LineFollow_Curve_Precision());
+  while(!LineFollow_Curve_Precision()) {
+    if(flag_turret == 0 && turret_sensor.Low())
+      flag_turret += 1;
+    else if(flag_turret == 1 && turret_sensor.High())
+      flag_turret += 1;
+    else if(flag_turret == 2 && turret_sensor.Low())
+      flag_turret += 1;
+    else if(flag_turret == 3 && turret_sensor.High())
+      flag_turret += 1;
+    else if(flag_turret == 4 && turret_sensor.Low()) {
+      flag_turret += 1;
+      if(!mirror)
+        turret_motor.Brake(255);
+    } else if(flag_turret == 5 && turret_sensor.High() && mirror)
+      flag_turret += 1;
+    else if(flag_turret == 6 && turret_sensor.Low() && mirror) {
+      flag_turret += 1;
+      turret_motor.Brake(255);
+    }
+  }
+  while ((flag_turret <=4 && !mirror) || (flag_turret<=6 && mirror))
+{
+    
+    if(flag_turret == 0 && turret_sensor.Low())
+      flag_turret += 1;
+    else if(flag_turret == 1 && turret_sensor.High())
+      flag_turret += 1;
+    else if(flag_turret == 2 && turret_sensor.Low())
+      flag_turret += 1;
+    else if(flag_turret == 3 && turret_sensor.High())
+      flag_turret += 1;
+    else if(flag_turret == 4 && turret_sensor.Low()) {
+      flag_turret += 1;
+      if(!mirror)
+        turret_motor.Brake(255);
+    } else if(flag_turret == 5 && turret_sensor.High() && mirror)
+      flag_turret += 1;
+    else if(flag_turret == 6 && turret_sensor.Low() && mirror) {
+      flag_turret += 1;
+      turret_motor.Brake(255);
+      
+    }
+      
+}
   Motors_Brake(255,255);  
   //Pick up, reverse and Go to Tokyo
   ///May have to move forward slightly here. Parallelogram can alternatively be lowerd early in the previous while(1) loop
@@ -282,8 +397,7 @@ void To_Junction(){
   parallelogram_count = 0;
   Parameters_Reset();
   Move_Back(150,100);
-  Run_For_Encoder_Count(Check_Mirror(8400,7400));
-
+  Run_For_Encoder_Count(Check_Mirror(8400,7100));
   Motors_Brake(255,0);
   Parameters_Reset();
   motor2.Control(BCK,30);
@@ -300,7 +414,8 @@ void To_Junction(){
   motor2.Control(FWD,30); //To get back on track
   while(S2.Low());
   while(S3.Low());
-  
+  Motors_Brake(255,255);
+  delay(100);
   ///Take Parallelogram to top position  
   parallelogram_count = 0;
   Parallelogram_Up();
@@ -310,7 +425,7 @@ void To_Junction(){
   LAPTOP.println("Ready to linefollow");  
   while(1){
     LAPTOP.print("Linefollow ONE");
-    LineFollow_Straight_Precision();
+    LineFollow_Straight_fast1();
     Parallelogram_Tripped();
     if((S3.High() && S1.High()) || (S4.High() && S2.High()) || (S3.High() && S2.High()))
       break;
@@ -335,7 +450,7 @@ void To_Bud_Transfer(){
     
     if(bud_count==0){
       LAPTOP.println("BUD ONE");
-      if(LineFollow_Encoders(5600,3))
+      if(LineFollow_Encoders(2500,4))
        break;
     }else{
       LAPTOP.println("BUD TWO OR THREE");
@@ -379,18 +494,38 @@ void To_Curve2(){
   LAPTOP.println("Goint to Curve2"); 
   Parameters_Reset();                  
   Move_Back(40,180);
-  Run_For_Encoder_Count(Check_Mirror(3800,3000));
-  
+  if(bud_count == 2)
+  {
+    Run_For_Encoder_Count(Check_Mirror(3800,2000));// to check
+  }
+  else
+  {
+    Run_For_Encoder_Count(Check_Mirror(3800,2800));
+  }
   Motors_Brake(0,255);
-  motor1.Control(BCK,25);// latest change on 23rd feb it was 25
+  if (!mirror)
+    {
+      motor1.Control(BCK,25);
+    }
+   else
+     {
+       motor1.Control(BCK,25);
+     }
+  
   delay(600);
   while(S1.Low());
   while(S2.Low());
+  //while(S3.Low());
+  
+  if (!mirror)
+  {
   while(S3.Low());
-  while(S4.Low());
+    while(S4.Low());
+  }
 //  while(S4.Low()&&S3.Low()&&S1.Low()&&S2.Low());
 
   Motors_Brake(255,255);
+  delay(200);
 
 }
 
@@ -483,12 +618,11 @@ void Tokyo2(){
   Parallelogram_Up();
   //delay(500);
   //Parallelogram_Stop();  
-
   if(bud_count == 2){
-    Move_Back(80,250);
-    Run_For_Encoder_Count(Check_Mirror(13000,12000));
+    Move_Back(Check_Mirror(80,60), Check_Mirror(250,180));
+    Run_For_Encoder_Count(Check_Mirror(13000,10700));
   }else{
-    Move_Back(80,210);
+    Move_Back(Check_Mirror(80,60), Check_Mirror(210,180));
     Run_For_Encoder_Count(Check_Mirror(9500,8500));
   }
   Motors_Brake(255,0);

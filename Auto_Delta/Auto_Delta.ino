@@ -1,4 +1,4 @@
-// Core AutoBot Code
+// Core AutoBot Code//mirror is true for blue arena, it is not for red arena
 // 22 02 2013 07 29 PM
 
 /**********************************************************************
@@ -221,7 +221,7 @@ class Custom_Servo{
 #define TURRET_ENCODER_PIN 0
 #define TURRET_SENSOR_PIN A10
 #define PARALLELOGRAM_SENSOR_PIN 3
-#define SHARPR_SENSOR_PIN A2
+#define SHARPR_SENSOR_PIN A0
 #define SHARPL_SENSOR_PIN A2
 #define PARALLELOGRAM_TRIP_SWITCH_BOTTOM 20
 #define PARALLELOGRAM_TRIP_SWITCH_TOP A4
@@ -250,19 +250,20 @@ class Custom_Servo{
 #define SERVO_ANG_R2 58
 #define SERVO_ANG_R3 140
 
-#define SERVO_ANG_L1F 135
-#define SERVO_ANG_L2F 97
+#define SERVO_ANG_L1F 135 // these values are for red arena
+#define SERVO_ANG_L2F 107
 #define SERVO_ANG_L3F 110
 #define SERVO_ANG_R1F 20
 #define SERVO_ANG_R2F 55
 #define SERVO_ANG_R3F 112    /// change to new value
 
-#define SERVO_ANG_L1MF 135
-#define SERVO_ANG_L2MF 97
-#define SERVO_ANG_L3MF 97
+// mirror true is for blue arena
+#define SERVO_ANG_L1MF 135 // reset position, left is the one which drops first
+#define SERVO_ANG_L2MF 107// piking up leaves position
+#define SERVO_ANG_L3MF 63// position for dropping two leaves
 #define SERVO_ANG_R1MF 20
 #define SERVO_ANG_R2MF 55
-#define SERVO_ANG_R3MF 112    /// change to new value
+#define SERVO_ANG_R3MF 60    /// change to new value
 
 #define TURRET_ANG1 1180
 #define TURRET_ANG2 1750
@@ -270,9 +271,15 @@ class Custom_Servo{
 #define TURRET_ANG4 6250
 #define TURRET_ANG5 10330
 
+#define TURRET_ANG1MF 950
+#define TURRET_ANG2MF 1950
+#define TURRET_ANG3MF 4630
+#define TURRET_ANG4MF 6600
+#define TURRET_ANG5MF 10330
+
 #define TURRET_ANG1F 950
 #define TURRET_ANG2F 1950
-#define TURRET_ANG3F 4630
+#define TURRET_ANG3F 4950
 #define TURRET_ANG4F 6600
 #define TURRET_ANG5F 10330
 
@@ -377,7 +384,7 @@ float servo_speeds[] = {0, 0.5, 0.75, 1.5, 0.25, 0.25, 0.25, 0.375, 0.5, 0};
 const int mask = 0b11111000;
 
 // for behaviour
-int strategy = 1;  // 1 for 1-2-4 and 2 for 1-2-3
+int strategy = 2;  // 1 for 1-2-4 and 2 for 1-2-3
 const int minimum_pwm = 70, maximum_pwm = 200, slowdown_pwm = 50;
 const int acceleration_delay = 2, acceleration = 2;
 const int deceleration_delay = 2, deceleration = 5;
@@ -436,6 +443,10 @@ void setup(){
   // for communication TSOP
   pinMode(4, INPUT);
   pinMode(5, INPUT);
+  
+  pinMode(A2, INPUT);
+  pinMode(A0, INPUT);
+  pinMode(38, OUTPUT);
   
   // for PID
   input = 0;
@@ -514,7 +525,8 @@ void setup(){
   Parameters_Reset();
   //Actuate_High(LEFT_VG); Actuate_High(MIDDLE_VG); Actuate_High(RIGHT_VG);
   LAPTOP.println("Here we begin =>");
- 
+  
+  digitalWrite(38, Check_Mirror(LOW, HIGH)); 
   
 }
 
@@ -553,7 +565,7 @@ void loop(){
 void Read_External_Byte(){
   LAPTOP.println(digitalRead(14));
   if( digitalRead(14) == HIGH ){
-    mirror = false;
+    mirror = true;
     LAPTOP.println(" not mirror arena ");
   }
   if( digitalRead(52) == HIGH ){

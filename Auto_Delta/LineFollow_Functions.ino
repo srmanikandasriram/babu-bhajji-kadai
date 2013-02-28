@@ -27,6 +27,60 @@ void LineFollow_Straight(){
   }
 }
 
+void LineFollow_Straight_fast(){
+  LAPTOP.println("LineFollow Straight ");
+  Serial_Print_Sensors();
+  if(S2.High()){
+    if(S1.High()){
+      Move_Forward(0,80); 
+    }else{
+      Move_Forward(10,60); 
+    }
+  }else if(S1.High()){
+    Move_Forward(0,60);
+    motor1.Brake(255);
+  }else if(S3.High()){
+    if(S4.High()){
+      Move_Forward(80,0);
+    }else{
+      Move_Forward(60,10);
+    }  
+  }else if(S4.High()){
+    Move_Forward(60,0);
+    motor2.Brake(255);
+  }else{
+    Move_Forward(80,80);
+  }
+}
+
+void LineFollow_Straight_fast1(){
+  LAPTOP.println("LineFollow Straight ");
+  Serial_Print_Sensors();
+  if(S2.High()){
+    if(S1.High()){
+      Move_Forward(0,110); 
+    }else{
+      Move_Forward(20,90); 
+    }
+  }else if(S1.High()){
+    Move_Forward(0,90);
+    motor1.Brake(255);
+  }else if(S3.High()){
+    if(S4.High()){
+      Move_Forward(110,0);
+    }else{
+      Move_Forward(90,20);
+    }  
+  }else if(S4.High()){
+    Move_Forward(90,0);
+    motor2.Brake(255);
+  }else{
+    Move_Forward(110,110);
+  }
+}
+
+
+
 void LineFollow_Curve(){
   LAPTOP.println("LineFollow Curve");
   Serial_Print_Sensors();
@@ -89,7 +143,9 @@ int LineFollow_Encoders(long int encoder_value, int curve_id){
     }else if(curve_id == 2){
       LineFollow_Curve2();
     }else if(curve_id == 3){
-      LineFollow_Straight_Precision();      
+      LineFollow_Straight_Precision(); 
+    }else if(curve_id == 4){
+     LineFollow_Straight_fast();
     }else{
       LineFollow_Straight();
     }
@@ -218,6 +274,77 @@ int LineFollow_Straight_Precision(){
   }
   return 0;
 }
+
+int LineFollow_Straight_Precision_fast(){
+  LAPTOP.println("LineFollow Straight Precision ");
+  Serial_Print_Sensors();
+    
+  if(S2.High()){
+    if(S1.High()){
+      Move_Forward(0,85);
+      motor1.Brake(255);   
+    }else{
+      Move_Forward(0,65); 
+    }
+  }else if(S1.High()){
+    Move_Forward(0,65);
+    motor1.Brake(255);
+  }else if(S3.High()){
+    if(S4.High()){
+      Move_Forward(85,0);
+      motor2.Brake(255);
+    }else{
+      Move_Forward(65,0);
+    }  
+  }else if(S4.High()){
+    Move_Forward(65,0);
+    motor2.Brake(255);
+  }else{
+    Move_Forward(85,85);
+  }
+
+  if(S2.High() && S3.High()){
+    Motors_Brake(255,255);
+    return 1;
+  }
+  return 0;
+}
+
+int LineFollow_Straight_Precision_fast1(){
+  LAPTOP.println("LineFollow Straight Precision ");
+  Serial_Print_Sensors();
+    
+  if(S2.High()){
+    if(S1.High()){
+      Move_Forward(0,115);
+      motor1.Brake(255);   
+    }else{
+      Move_Forward(0,85); 
+    }
+  }else if(S1.High()){
+    Move_Forward(0,85);
+    motor1.Brake(255);
+  }else if(S3.High()){
+    if(S4.High()){
+      Move_Forward(115,0);
+      motor2.Brake(255);
+    }else{
+      Move_Forward(85,0);
+    }  
+  }else if(S4.High()){
+    Move_Forward(85,0);
+    motor2.Brake(255);
+  }else{
+    Move_Forward(115,115);
+  }
+
+  if(S2.High() && S3.High()){
+    Motors_Brake(255,255);
+    return 1;
+  }
+  return 0;
+}
+
 
 int LineFollow_Curve_Precision(){
   LAPTOP.println("LineFollow Curve Precision ");

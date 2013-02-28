@@ -5,3 +5,11 @@
  * Check Mirror Arena
  * Check Fallback stratergies
  **** End of Things to be done ****/
+ 
+ //increased acceleration pwm
+ //
+ //while(encoder_motor1 < (distances_fallback[path_phase]) && encoder_motor2 < (distances_fallback[path_phase])){
+ 
+ 
+ 
+ /* Servo - Right angle */

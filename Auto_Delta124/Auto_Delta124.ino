@@ -462,7 +462,7 @@ void setup(){
 
   Initialise();
   LAPTOP.println("Initialised");
-
+  delay(100);
   while(skip_reset){
     LAPTOP.println(analogRead(SHARP_SENSOR_PIN)); // for sharp
     if(digitalRead(50)){
