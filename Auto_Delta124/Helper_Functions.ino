@@ -25,7 +25,7 @@ void Toggle_Wait(){
     delay(200);
     while(digitalRead(15));
   }
-  delay(1000);
+//  delay(1000);
 }
 
 void Abort(){

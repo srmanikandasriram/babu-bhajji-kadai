@@ -264,24 +264,24 @@ class Custom_Servo{
 #define SERVO_ANG_L3MF 63// position for dropping two leaves
 #define SERVO_ANG_R1MF 20
 #define SERVO_ANG_R2MF 55
-#define SERVO_ANG_R3MF 55    /// change to new value
+#define SERVO_ANG_R3MF 57    /// change to new value
 
 #define TURRET_ANG1 1180
 #define TURRET_ANG2 1750
-#define TURRET_ANG3 4680
-#define TURRET_ANG4 6250
+#define TURRET_ANG3 1000
+#define TURRET_ANG4 1900
 #define TURRET_ANG5 10330
 
 #define TURRET_ANG1MF 950
 #define TURRET_ANG2MF 1950
-#define TURRET_ANG3MF 1400
-#define TURRET_ANG4MF 1100
+#define TURRET_ANG3MF 1800
+#define TURRET_ANG4MF 1900
 #define TURRET_ANG5MF 10330
 
 #define TURRET_ANG1F 950
 #define TURRET_ANG2F 1950
-#define TURRET_ANG3F 4950
-#define TURRET_ANG4F 6600
+#define TURRET_ANG3F 1750
+#define TURRET_ANG4F 1900
 #define TURRET_ANG5F 10330
 
 #define COMM_TSOP_1 4
@@ -368,7 +368,7 @@ fn Transform_L000_B023[] = {Initialise, To_Pick_LeavesF, Pick_LeavesF, Accelerat
 */
 /** Configuration Constants: Affect behaviour **/
 uint16_t distances[26] = {0, 2030, 13880, 21650, 29100, 565, 150,100};
-uint16_t distances_fallback[26] = {0, 2930, 0, 23000, 250, 100};   ///{0, 2930, 13880, 15000, 950, 100};
+uint16_t distances_fallback[26] = {0, 2930, 0, 23250, 250, 100};   ///{0, 2930, 13880, 15000, 950, 100};
 
 /** Global declarations **/
 Motor motor1, motor2, turret_motor(27, 26, 11); // the order of pin numbers determine the direction
@@ -450,6 +450,9 @@ void setup(){
   pinMode(A2, INPUT);
   pinMode(A0, INPUT);
   pinMode(38, OUTPUT);
+
+  // for Sharp sensor
+  digitalWrite(38, Check_Mirror(LOW, HIGH)); 
   
   // for PID
   input = 0;
@@ -481,10 +484,10 @@ void setup(){
     }
   }
 //  while(1){
-//    Serial.println(analogRead(SHARP_SENSOR_PIN));
+ //   Serial.println(analogRead(SHARP_SENSOR_PIN));
 //  }
-/*
 
+/*
   if(!skip_reset){
     char input = Serial_Wait();
     while( input != 'q' ){
@@ -530,10 +533,8 @@ void setup(){
   }*/
   Parameters_Reset();
   //Actuate_High(LEFT_VG); Actuate_High(MIDDLE_VG); Actuate_High(RIGHT_VG);
-  LAPTOP.println("Here we begin =>");
-  
-  digitalWrite(38, Check_Mirror(LOW, HIGH)); 
-  
+  Actuate_High(GRIPPER);
+  LAPTOP.println("Here we begin =>");  
 }
 
 void loop(){
@@ -571,7 +572,7 @@ void loop(){
 void Read_External_Byte(){
   LAPTOP.println(digitalRead(14));
   if( digitalRead(14) == HIGH ){
-    mirror = true;
+    mirror = false;
     LAPTOP.println(" not mirror arena ");
   }
   if( digitalRead(52) == HIGH ){
@@ -676,4 +677,5 @@ void Initialise(){
     }
   }*/
   SHARP_SENSOR_PIN = Check_Mirror(SHARPR_SENSOR_PIN, SHARPL_SENSOR_PIN);
+  distances_fallback[3] = Check_Mirror(23250, 24250);
 }

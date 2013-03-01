@@ -52,16 +52,20 @@ void MSC_Servos(){
 
 void MSC_Turret(){
   char local_flag = 'a';
-  LAPTOP.println(" a. Clockwise \n s. Anticlockwise \n d. Stop \n f. Clockwise till next strip \n g. Anticlockwise till next strip");
+  LAPTOP.println(" a. Clockwise \n s. Anticlockwise \n d. Stop \n f. Clockwise till next strip \n g. Anticlockwise till next strip \n h. Clockwise for 1700 Encoder counts");
 
   while(local_flag!='q'){
     local_flag = Serial_Wait();
     switch(local_flag){
-      case 'a': turret_motor.Control(FWD,75); break;
-      case 's': turret_motor.Control(BCK,75); break;
+      case 'a': turret_motor.Control(FWD,100); break;
+      case 's': turret_motor.Control(BCK,100); break;
       case 'd': turret_motor.Brake(255); break;
       case 'f': Move_Turret_Dir('c'); break;
       case 'g': Move_Turret_Dir('a'); break;
+      case 'h': turret_motor.Control(FWD,100);
+                encoder_turret = 0;
+                while(encoder_turret<1700);
+                turret_motor.Brake(255); break;
     }
   }  
 }
@@ -98,7 +102,7 @@ void MSC_Parallelogram(){
 
 void MSC_Solenoids(){
   char local_flag = 'a';
-  LAPTOP.println(" a. Switch on Left \n s. Switch on Middle \n d. Switch on Right \n f. Switch on Gripper \n g. Switch off all");
+  LAPTOP.println(" a. Switch on Left \n s. Switch on Middle \n d. Switch on Right \n f. Switch on Gripper \n g. Switch off all \nh. High V Piston \n j. Low V Piston");
 
   while(local_flag!='q'){
   local_flag = Serial_Wait();
@@ -108,6 +112,8 @@ void MSC_Solenoids(){
       case 'd': Actuate_Low(RIGHT_VG); break;
       case 'f': Actuate_Low(GRIPPER); break;
       case 'g': Actuate_High(LEFT_VG); Actuate_High(MIDDLE_VG); Actuate_High(RIGHT_VG); Actuate_High(GRIPPER); break;
+      case 'h': Actuate_High(V_PISTON); break;
+      case 'j': Actuate_Low(V_PISTON); break;
     }
   }  
 }
