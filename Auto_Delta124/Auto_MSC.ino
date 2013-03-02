@@ -52,7 +52,7 @@ void MSC_Servos(){
 
 void MSC_Turret(){
   char local_flag = 'a';
-  LAPTOP.println(" a. Clockwise \n s. Anticlockwise \n d. Stop \n f. Clockwise till next strip \n g. Anticlockwise till next strip \n h. Clockwise for 1700 Encoder counts");
+  LAPTOP.println(" a. Clockwise \n s. Anticlockwise \n d. Stop \n f. Clockwise till next strip \n g. Anticlockwise till next strip \n h. Clockwise for 1700 Encoder counts \n i. Anticlockwise for 1950 Encoder counts");
 
   while(local_flag!='q'){
     local_flag = Serial_Wait();
@@ -65,6 +65,10 @@ void MSC_Turret(){
       case 'h': turret_motor.Control(FWD,100);
                 encoder_turret = 0;
                 while(encoder_turret<1700);
+                turret_motor.Brake(255); break;
+      case 'i': turret_motor.Control(BCK,100);
+                encoder_turret = 0;
+                while(encoder_turret<1950);
                 turret_motor.Brake(255); break;
     }
   }  

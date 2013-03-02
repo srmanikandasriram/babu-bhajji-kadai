@@ -264,9 +264,7 @@ void First_LineFollow(){
   turret_motor.Brake(0);
   Motors_Brake(255,255);
   delay(800);
-  motor1.Control(FWD,0);
-  turret_motor.Control(Check_Mirror(FWD,BCK),255);
-  
+  motor1.Control(FWD,0);  
   Turn_and_Align(1, Check_Mirror(140,100));//changed in the morning
   Motors_Brake(255,255);
   delay(100);
@@ -296,6 +294,7 @@ void First_LineFollow(){
     if(( S4.High() && S2.High() )||( S1.High() && S3.High() ))
       break;
   }*/
+  turret_motor.Control(Check_Mirror(FWD,BCK),255);
   while(1){
     LineFollow34_Slow();
     Move_Servo();
@@ -355,35 +354,28 @@ void To_Last_Leaf(){
   servo1.Middle();
   servo2.Middle();
   while(S4.Low()&&S3.Low()&&S1.Low()&&S2.Low()){
+    Serial_Print();
     Move_TurretF();
   }
   LAPTOP.println("Aligned to straight line");
   LAPTOP.println("Line following to next junction");
   while(1){
-    LineFollow_Straight_Precision_Fast(); //for latitude
+    LineFollow_Straight_Precision_slow(); //for latitude
+    Serial_Print();
     Move_TurretF();
     if(( S4.High() && S3.High() && S2.High() )||( S1.High() && S2.High() && S3.High()  ))
       break;
-  }  
-  turret_motor.Brake(0);
+  }
+
   Motors_Brake(255,255);
-//  Toggle_Wait();
-//  turret_motor.Control(Check_Mirror(BCK,FWD),255);
-//  while(!Move_TurretF());
-//  while(1){
-//    Move_TurretF();
-//  }
+  turret_motor.Brake(0);
   delay(200);
   turret_motor.Control(Check_Mirror(BCK,FWD),255);
   motor1.Control(FWD,100);
-  
   Turn_and_Align(1,110);
-//  Motors_Brake(255,255);
-//  turret_motor.Brake(0);
-//  delay(200);
-//  turret_motor.Control(Check_Mirror(BCK,FWD),255);
   while(S2.Low() && S3.Low() && S1.Low() && S4.Low()){
-/*    if(encoder_turret_flag == 0 && Move_TurretF() == 1) {
+    Serial_Print();
+    /*    if(encoder_turret_flag == 0 && Move_TurretF() == 1) {
       encoder_turret = 0; // reset turret
       encoder_turret_flag = 1;
       encoder_turret_target = 200;
@@ -401,15 +393,15 @@ void To_Last_Leaf(){
   LAPTOP.println("Moving to third leaf");
   Parameters_Reset();
 
-  encoder_turret = 0;
-  encoder_turret_target = 450;
-  turret_motor.Control(Check_Mirror(FWD,BCK),255);
   int threshold_edge = Check_Mirror(490,350), threshold_mid = Check_Mirror(425, 430);
   while(analogRead(SHARP_SENSOR_PIN)<threshold_edge){
     Query_Launchpad();
     LineFollow12();
-    Move_Turret_EncoderF();
+    Move_TurretF();
   }
+  encoder_turret = 0;
+  encoder_turret_target = 450;
+  turret_motor.Control(Check_Mirror(FWD,BCK),255);
   if(mirror){
     while(analogRead(SHARP_SENSOR_PIN)>threshold_mid){
       Query_Launchpad();
@@ -653,9 +645,9 @@ void Wait_For_TSOP(){
   long int temp_millis = millis();
   while ( 1 ) {
     if( (digitalRead(COMM_TSOP_1) == LOW || digitalRead(COMM_TSOP_2) == LOW) ) { // if Comm is on
-      if( millis() - temp_millis > 0) { // AND for a long time
+      //if( millis() - temp_millis > 0) { // AND for a long time
         break; /// lets go !
-      }
+      //}
     }
     else
       temp_millis = millis();
@@ -665,9 +657,9 @@ void Wait_For_TSOP(){
 void Transfer_Bud(){
   LCD.clear();
   LCD.print("Transfering bud");
-  Wait_For_TSOP();
+ Wait_For_TSOP();
 //  while( !(digitalRead(COMM_TSOP_1) == LOW || digitalRead(COMM_TSOP_2) == LOW) );
-//  Toggle_Wait();
+ // Toggle_Wait();
   Actuate_High(GRIPPER);
   LAPTOP.println("Ready to go for two and three");
   delay(1000);
@@ -685,11 +677,11 @@ void To_Curve2(){
   if(bud_count == 2){
     Run_For_Encoder_Count(Check_Mirror(3800,2000));// to check
   }else{
-    Run_For_Encoder_Count(Check_Mirror(3200,2800));
+    Run_For_Encoder_Count(Check_Mirror(3200,3200));
   }
   Motors_Brake(0,255);
   motor1.Control(BCK,255);
-  Turn_and_Align(1,100);
+  Turn_and_Align(1,Check_Mirror(100,115));
   Motors_Brake(255,255);
   delay(200);
   if(line_detected){
@@ -807,10 +799,10 @@ void Tokyo2(){
   while(!parallelogram_sensor.High());  //to take the parallelogram up till the tape
   delay(300);
   Parallelogram_Stop();
-  Move_Back(0,100);
+  Move_Back(40,40);
   Run_For_Encoder_Count(1000);
   Parallelogram_Up();
-  Move_Back(Check_Mirror(80,60), Check_Mirror(250,180));
+  Move_Back(Check_Mirror(80,80), Check_Mirror(250,160));
   if(bud_count == 2){
     Run_For_Encoder_Count(Check_Mirror(15000,10700));
   }else{

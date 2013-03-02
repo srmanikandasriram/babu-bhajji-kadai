@@ -280,7 +280,7 @@ class Custom_Servo{
 
 #define TURRET_ANG1F 950
 #define TURRET_ANG2F 1950
-#define TURRET_ANG3F 1750
+#define TURRET_ANG3F 2000
 #define TURRET_ANG4F 1900
 #define TURRET_ANG5F 10330
 
@@ -530,7 +530,8 @@ void setup(){
       }
       input = Serial_Wait();
     }
-  }*/
+  }
+*/  
   Parameters_Reset();
   //Actuate_High(LEFT_VG); Actuate_High(MIDDLE_VG); Actuate_High(RIGHT_VG);
   Actuate_High(GRIPPER);
