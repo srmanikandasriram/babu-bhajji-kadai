@@ -468,22 +468,23 @@ void setup(){
 
   Switch_To_Sharp_1();
   while(skip_reset){
-    LAPTOP.print(analogRead(A2)); // for sharp
-    LAPTOP.print("    "); // for sharp
-    LAPTOP.println(analogRead(A0)); // for sharp
-    delay(100);
-    if(digitalRead(50)){
+//    LAPTOP.print(analogRead(A2)); // for sharp
+//    LAPTOP.print("    "); // for sharp
+//    LAPTOP.println(analogRead(A0)); // for sharp
+//    delay(100);
+    skip_reset = digitalRead(35);
+    if(digitalRead(A1)){
       Parallelogram_Reset();
     }
-    if(digitalRead(52)){
+    if(digitalRead(8)){
       Parallelogram_Up();
       while(!digitalRead(PARALLELOGRAM_TRIP_SWITCH_TOP));
       Parallelogram_Stop();
     }      
-    if(digitalRead(53)){
+    if(digitalRead(A4)){
       Move_Turret_Dir('a');
     }       
-    if(digitalRead(51)){
+    if(digitalRead(A0)){
       Move_Turret_Dir('c');
     }
   }
@@ -572,20 +573,24 @@ void loop(){
 }
 
 void Read_External_Byte(){
-  LAPTOP.println(digitalRead(14));
-  if( digitalRead(14) == HIGH ){
+//  LAPTOP.println(digitalRead(14));
+  if( digitalRead(A3) == HIGH ){
     mirror = true;
     LAPTOP.println(" not mirror arena ");
   }
-  if( digitalRead(52) == HIGH ){
+  else {
+    mirror = false;
+    LAPTOP.println(" mirror arena ");
+  }
+  if( digitalRead(A0) == HIGH ){
     omit_leaf1 = true;
     LAPTOP.println(" leaf1 to be omitted ");
   }
-  if( digitalRead(53) == HIGH ){
+  if( digitalRead(A1) == HIGH ){
     omit_leaf2 = true;
     LAPTOP.println(" leaf2 to be omitted ");
   }
-  if( digitalRead(51) == HIGH ){
+  if( digitalRead(A4) == HIGH ){
     omit_leaf3 = true;
     LAPTOP.println(" leaf3 to be omitted ");
   }
@@ -617,14 +622,14 @@ void Read_External_Byte(){
   */
     
   
-  if( digitalRead(50) == HIGH ){
+  if( digitalRead(53) == HIGH ){
     strategy = AUTO_PID;
     LAPTOP.println(" Straight line PID strategy ");
   }else{
     strategy = AUTO_FALLBACK;
     LAPTOP.println(" Fallback LineFollow strategy ");
   }
-  if( digitalRead(36) == HIGH ){
+  if( digitalRead(35) == HIGH ){
     skip_reset = true;
     LAPTOP.println(" Skip reset ");
   }

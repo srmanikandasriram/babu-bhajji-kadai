@@ -13,17 +13,20 @@ char Serial_Wait(){
 }
 
 void Toggle_Wait(){
-  int static pin_state = digitalRead(15);
+  if( do_toggle == false)
+    return;
+  int toggle_pin = 52;
+  int static pin_state = digitalRead(toggle_pin);
   if(pin_state == HIGH){
-    while(digitalRead(15));
+    while(digitalRead(toggle_pin));
     delay(200);
-    while(!digitalRead(15));
+    while(!digitalRead(toggle_pin));
     delay(200);
-    while(digitalRead(15));    
+    while(digitalRead(toggle_pin));    
   }else{
-    while(!digitalRead(15));
+    while(!digitalRead(toggle_pin));
     delay(200);
-    while(digitalRead(15));
+    while(digitalRead(toggle_pin));
   }
 //  delay(1000);
 }

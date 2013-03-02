@@ -221,10 +221,10 @@ class Custom_Servo{
 #define TURRET_ENCODER_PIN 0
 #define TURRET_SENSOR_PIN A10
 #define PARALLELOGRAM_SENSOR_PIN 3
-#define SHARPR_SENSOR_PIN A0
+#define SHARPR_SENSOR_PIN A6
 #define SHARPL_SENSOR_PIN A2
 #define PARALLELOGRAM_TRIP_SWITCH_BOTTOM 20
-#define PARALLELOGRAM_TRIP_SWITCH_TOP A4
+#define PARALLELOGRAM_TRIP_SWITCH_TOP A7
 
 #define LEFT_VG 44
 #define MIDDLE_VG 45
@@ -284,8 +284,10 @@ class Custom_Servo{
 #define TURRET_ANG4F 1900
 #define TURRET_ANG5F 10330
 
-#define COMM_TSOP_1 4
-#define COMM_TSOP_2 5
+#define COMM_TSOP_1 16
+#define COMM_TSOP_2 17
+#define COMM_TSOP_M1 14
+#define COMM_TSOP_M2 15
 
 #define VSLOW 20
 #define FAST 100
@@ -340,10 +342,16 @@ class Custom_Servo{
 typedef void (*fn) (void);
 fn Transform[] = {Initialise, Pick_Leaves, Accelerate_Bot, Decelerate_Bot, Drop_First_Leaf, Drop_Second_Leaf, Soft_Turn, Auto_Stage_One_Complete, Auto_Stage_Two};
 fn Transform_Fallback[] = {Initialise, To_Pick_LeavesF, Pick_LeavesF, Move_Straight_FastF,
-                           First_LineFollow, Drop_Two_Leaves, To_Last_Leaf, Drop_Last_Leaf,
+                           First_LineFollow, Drop_Two_Leaves, Latitude_To_Last_Leaf, To_Last_Leaf, Drop_Last_Leaf,
                            To_First_Bud, To_Junction, To_Bud_Transfer, Transfer_Bud, To_Curve2, To_Next_Bud,
                            Tokyo2, To_Bud_Transfer, Transfer_Bud, To_Curve2, To_Next_Bud,
                            Tokyo2, To_Bud_Transfer, Transfer_Bud, The_End, Toggle_Wait };
+fn Transform_3L_B1[] = {Initialise, To_Pick_LeavesF, Pick_LeavesF, Move_Straight_FastF,
+                           First_LineFollow, To_Last_Leaf, Drop_Last_Leaf,
+                           To_First_Bud, To_Junction, To_Bud_Transfer, Transfer_Bud, To_Curve2, To_Next_Bud,
+                           Tokyo2, To_Bud_Transfer, Transfer_Bud, To_Curve2, To_Next_Bud,
+                           Tokyo2, To_Bud_Transfer, Transfer_Bud, The_End, Toggle_Wait }; 
+                           
                            /*
 fn Transform_L124_B123[] = {Initialise, To_Pick_LeavesF, Pick_LeavesF, Accelerate_BotF, Decelerate_BotF, Detect_Line,
                            Turn_and_Align, First_LineFollow, Drop_Two_Leaves, To_Last_Leaf, Drop_Last_Leaf,
@@ -377,7 +385,7 @@ LiquidCrystal LCD(13, 34, 30, 31, 32, 33);
 Custom_Servo servo1, servo2;
 
 const int actuations[] = {0, 39, 40, 42, 43, 44, 45, 46};
-const int external_byte[] = {0, 14, 50, 52, 53, 51, 36, 15};
+const int external_byte[] = {0, A3, 53, 52, 35, 8, A4, A1, 51, 21, A0, 50};
 
 // for Servo
 float servo_speeds[] = {0, 0.5, 0.75, 1.5, 0.25, 0.25, 0.25, 0.375, 0.5, 0};
@@ -420,6 +428,8 @@ int parallelogram_count = 0, turret_count = 0;
 int encoder_turret_target = 0;
 int bud_count = 0;
 
+int do_toggle = true;
+
 long int prevmillis = 0;
 
 void setup(){
@@ -444,12 +454,18 @@ void setup(){
   TCCR1B = TCCR1B & mask | 0x02;
   
   // for communication TSOP
-  pinMode(4, INPUT);
-  pinMode(5, INPUT);
+  pinMode(14, INPUT);
+  pinMode(15, INPUT);
+  pinMode(17, INPUT);
+  pinMode(16, INPUT);
   
+  // sharp sensors and trip switches
   pinMode(A2, INPUT);
-  pinMode(A0, INPUT);
+  pinMode(A6, INPUT);
+  pinMode(20, INPUT);
+  pinMode(A7, INPUT);
   pinMode(38, OUTPUT);
+  do_toggle = true;
 
   // for Sharp sensor
   digitalWrite(38, Check_Mirror(LOW, HIGH)); 
@@ -468,18 +484,19 @@ void setup(){
   delay(100);
   while(skip_reset){
     LAPTOP.println(analogRead(SHARP_SENSOR_PIN)); // for sharp
-    if(digitalRead(50)){
+    
+    if(digitalRead(A1)){
       Parallelogram_Reset();
     }
-    if(digitalRead(52)){
+    if(digitalRead(8)){
       Parallelogram_Up();
       while(!digitalRead(PARALLELOGRAM_TRIP_SWITCH_TOP));
       Parallelogram_Stop();
     }      
-    if(digitalRead(53)){
+    if(digitalRead(A0)){
       Move_Turret_Dir('a');
     }       
-    if(digitalRead(51)){
+    if(digitalRead(A4)){
       Move_Turret_Dir('c');
     }
   }
@@ -571,20 +588,35 @@ void loop(){
 }
 
 void Read_External_Byte(){
-  LAPTOP.println(digitalRead(14));
-  if( digitalRead(14) == HIGH ){
-    mirror = false;
-    LAPTOP.println(" not mirror arena ");
+//  LAPTOP.println(digitalRead(14));
+  if( digitalRead(53) == HIGH) {
+    do_toggle = false;
+    LAPTOP.println(" Toggles are gonna be skipped ");
+  } else {
+    do_toggle = true;
+    LAPTOP.println(" We have toggles ! ");
   }
-  if( digitalRead(52) == HIGH ){
+
+  if( digitalRead(35) == HIGH) {
+    skip_reset = true;
+    LAPTOP.println(" Skip reset ");
+  }
+  if( digitalRead(21) == HIGH ){
+    mirror = false;
+    LAPTOP.println(" not mirror arena - blue ");
+  } else if( digitalRead(51) == HIGH) {
+    mirror = true;
+    LAPTOP.println(" mirror arena - red ");
+  }
+  if( digitalRead(A0) == HIGH ){
     omit_leaf1 = true;
     LAPTOP.println(" leaf1 to be omitted ");
   }
-  if( digitalRead(53) == HIGH ){
+  if( digitalRead(A1) == HIGH ){
     omit_leaf2 = true;
     LAPTOP.println(" leaf2 to be omitted ");
   }
-  if( digitalRead(51) == HIGH ){
+  if( digitalRead(A4) == HIGH ){
     omit_leaf3 = true;
     LAPTOP.println(" leaf3 to be omitted ");
   }
@@ -597,7 +629,7 @@ void Read_External_Byte(){
     omit_leaf2 = true;
     omit_leaf3 = true; 
     LAPTOP.println(" bud1 to be omitted ");
-  }
+  
   if( digitalRead(!@#) == HIGH ){
     omit_bud2 = true;
     omit_leaf1 = true;
@@ -615,17 +647,15 @@ void Read_External_Byte(){
   
   */
     
-  
-  if( digitalRead(50) == HIGH ){
+ if(omit_leaf1 && omit_leaf2 && !omit_leaf3){
+    distances_fallback[3] = 25000;
+  }
+  if( digitalRead(50) == LOW ){
     strategy = AUTO_PID;
     LAPTOP.println(" Straight line PID strategy ");
   }else{
     strategy = AUTO_FALLBACK;
     LAPTOP.println(" Fallback LineFollow strategy ");
-  }
-  if( digitalRead(36) == HIGH ){
-    skip_reset = true;
-    LAPTOP.println(" Skip reset ");
   }
 }
 
@@ -667,16 +697,8 @@ void Initialise(){
   }
   servo1.Home();
   servo2.Home();
-/* if(omit_leaf3 && omit_bud1){
-    Transform_Fallback[8] = To_Next_Bud; Transform_Fallback[9] = Tokyo2; Transform_Fallback[10] =  To_Bud_Transfer;
-    Transform_Fallback[11] = Transfer_Bud;
-    if( omit_bud2){
-      Transform_Fallback[12] =  The_End; Transform_Fallback[13] = Toggle_Wait;
-    }else{
-      Transform_Fallback[12] =  To_Curve2; Transform_Fallback[13] = To_Next_Bud; Transform_Fallback[14] = Tokyo2; Transform_Fallback[15] =  To_Bud_Transfer;
-      Transform_Fallback[16] = Transfer_Bud; Transform_Fallback[17] =  The_End; Transform_Fallback[18] = Toggle_Wait;
-    }
-  }*/
+
   SHARP_SENSOR_PIN = Check_Mirror(SHARPR_SENSOR_PIN, SHARPL_SENSOR_PIN);
   distances_fallback[3] = Check_Mirror(23250, 24250);
+  
 }
