@@ -86,7 +86,7 @@ void Pick_LeavesF(){
   delay(450 - (omit_leaf1&&omit_leaf2&&!bud_count)*250);
   Actuate_Low(V_PISTON);
   LAPTOP.println("Picked up leaves");
-  Toggle_Wait(); // TMP
+  //Toggle_Wait(); // TMP
   delay(100);
 }
 
@@ -292,7 +292,7 @@ void First_LineFollow(){
   Motors_Brake(255,255);
   delay(800);
   motor1.Control(FWD,0);  
-  Turn_and_Align(1, Check_Mirror(140,100));//changed in the morning
+  Turn_and_Align(1, Check_Mirror(80,100));//changed in the morning
   Motors_Brake(255,255);
   delay(100);
   
@@ -370,11 +370,10 @@ void Latitude_To_Last_Leaf(){
   
   LCD.clear();
   LCD.print("To last leaf");
-//  Turn_and_Align(2);
   Parameters_Reset();
   motor1.Brake(255);
   motor2.Control(FWD,125);
-  delay(500);
+  delay(300);
   encoder_turret = 0;
   encoder_turret_target = Check_Mirror(TURRET_ANG3MF, TURRET_ANG3F);
   turret_motor.Control(Check_Mirror(BCK,FWD),255);
@@ -422,16 +421,17 @@ void Latitude_To_Last_Leaf(){
 void To_Last_Leaf(){
   Parameters_Reset();
 
-  int threshold_edge = Check_Mirror(490,350), threshold_mid = Check_Mirror(425, 430);
+  int threshold_edge = Check_Mirror(490,350), threshold_mid = Check_Mirror(310, 430);
   while(analogRead(SHARP_SENSOR_PIN)<threshold_edge){
     Query_Launchpad();
-    LineFollow12();
+    LineFollow12_Slow();
     Move_TurretF();
   }
+  servo2.Extend();
   encoder_turret = 0;
-  encoder_turret_target = 450;
+  encoder_turret_target = Check_Mirror(450,450);
   turret_motor.Control(Check_Mirror(FWD,BCK),255);
-  if(mirror){
+/*  if(mirror){
     while(analogRead(SHARP_SENSOR_PIN)>threshold_mid){
       Query_Launchpad();
       LineFollow12_Slow();
@@ -448,12 +448,16 @@ void To_Last_Leaf(){
     Query_Launchpad();
     LineFollow12_Slow();
     Move_Turret_EncoderF();  
+  }*/
+  Parameters_Reset();
+  while(!LineFollow12_Encoders(2500,1)){
+    Move_Turret_EncoderF();
   }
   Motors_Brake(255,255);
   Parallelogram_Down()
   delay((omit_leaf1&&omit_leaf2)*250);
   Parallelogram_Stop();
-  delay(300-(omit_leaf1&&omit_leaf2)*250);
+  delay(300);//-(omit_leaf1&&omit_leaf2)*250);
 }
 
 void Drop_Last_Leaf(){
@@ -470,7 +474,7 @@ void To_First_Bud(){
   servo2.Middle();
   if(omit_leaf1&&omit_leaf2){
     Parameters_Reset();
-    while(!LineFollow12_Encoders(3000));
+    while(!LineFollow12_Encoders(3000,1));
     Motors_Brake(255,255);
   }
   //Linefollowing centred on S2 and S1. Linefollowing with brake till bud junction
@@ -478,7 +482,7 @@ void To_First_Bud(){
   encoder_turret_target = Check_Mirror(TURRET_ANG4MF, TURRET_ANG4F);
   turret_motor.Control(Check_Mirror(FWD,BCK),255);
  
-  while(!LineFollow12()){
+  while(!LineFollow12_molu()){
     Move_TurretF();
   }
   Motors_Brake(255,255);
@@ -560,12 +564,12 @@ void To_First_Bud(){
   Parallelogram_Up(); 
  }
  Parallelogram_Stop();
-  Toggle_Wait();
+
   Actuate_Low(GRIPPER);                               // to pick up bud 1
   ///Take Parallelogram to lowest position
   
   Parallelogram_Down(); 
-  delay(600+(omit_leaf1&&omit_leaf2)*250);
+  delay(650+(omit_leaf1&&omit_leaf2)*250);
   Parallelogram_Stop();
   delay(200);
   
@@ -580,7 +584,7 @@ void Tokyo(){
   
   Parallelogram_Up();                                        //to raise para after black tape, to avoid count while shaking
   while(!parallelogram_sensor.High());
-  delay(500);
+  delay(1200);
   Parallelogram_Stop();
   Parameters_Reset();
   Move_Back(80,50);
@@ -588,7 +592,7 @@ void Tokyo(){
   Move_Back(170,120);
   Run_For_Encoder_Count(700);
   Move_Back(255,255);
-  Run_For_Encoder_Count(Check_Mirror(9350,6300));
+  Run_For_Encoder_Count(Check_Mirror(7350,6300));
   Motors_Brake(255,0);
   Parameters_Reset();
   motor2.Control(BCK,30);
@@ -663,11 +667,15 @@ void To_Bud_Transfer(){
     
     if(bud_count==0){
       LAPTOP.println("BUD ONE");
-      if(LineFollow_Encoders(5850,4))
+      if(LineFollow_Encoders(6450,4))
         break;
+      if(Received_TSOP())
+        break;        
     }else{
       LAPTOP.println("BUD TWO OR THREE");
-      if(LineFollow_Encoders(1500,3))
+      if(LineFollow_Encoders(3500,3))
+        break;
+      if(Received_TSOP())
         break;
     }
   }
@@ -679,25 +687,35 @@ void To_Bud_Transfer(){
   LAPTOP.println("Meet the Manual Bot");
 }
 
+int Received_TSOP(){
+
+  if( digitalRead(COMM_TSOP_M1) == LOW || digitalRead(COMM_TSOP_M2) == LOW ) { // if Comm is on
+    return 1;
+  }
+  else
+    return 0;
+  
+}
+
 void Wait_For_TSOP(){
   // Communication Code
 //    Parallelogram_Stop();
   long int temp_millis = millis(), wait_time = 20;
   if(mirror) {
-    while ( 1 ) {
+    while(1){
       if( digitalRead(COMM_TSOP_M1) == LOW || digitalRead(COMM_TSOP_M2) == LOW ) { // if Comm is on
         if( millis() - temp_millis > wait_time) { // AND for a long time
-          break; /// lets go !
+          break;
         }
       }
       else
         temp_millis = millis();
     }
   } else {
-    while ( 1 ) {
+    while(1){
       if( digitalRead(COMM_TSOP_1) == LOW || digitalRead(COMM_TSOP_2) == LOW ) { // if Comm is on
         if( millis() - temp_millis > wait_time) { // AND for a long time
-          break; /// lets go !
+          break;
         }
       }
       else
@@ -710,7 +728,7 @@ void Transfer_Bud(){
   LCD.clear();
   LCD.print("Transfering bud");
  
- Wait_For_TSOP();
+  Wait_For_TSOP();
 //  while( !(digitalRead(COMM_TSOP_1) == LOW || digitalRead(COMM_TSOP_2) == LOW) );
  // Toggle_Wait();
   Actuate_High(GRIPPER);
@@ -730,12 +748,11 @@ void To_Curve2(){
   if(bud_count == 2){
     Run_For_Encoder_Count(Check_Mirror(3800,2000));// to check
   }else{
-    Run_For_Encoder_Count(Check_Mirror(3200,3200));
+    Run_For_Encoder_Count(Check_Mirror(3600,3200));
   }
-  Parallelogram_Down();
   Motors_Brake(0,255);
   motor1.Control(BCK,255);
-  Turn_and_Align(1,Check_Mirror(100,115));
+  Turn_and_Align(1,Check_Mirror(75,115));
   Motors_Brake(255,255);
   delay(200);
   if(line_detected){
@@ -747,7 +764,7 @@ void To_Curve2(){
       motor2.Control(FWD,25);
     }
   }
-  
+  Parallelogram_Down();
   /*delay(600);
   while(S1.Low());
   while(S2.Low());
@@ -832,7 +849,7 @@ void To_Next_Bud(){
   }
   LAPTOP.println("Reached next bud");
 
-  Toggle_Wait();
+  //Toggle_Wait();
   
   Actuate_Low(GRIPPER);
   
@@ -860,9 +877,9 @@ void Tokyo2(){
   Parallelogram_Up();
   Move_Back(Check_Mirror(80,120), Check_Mirror(250,160));
   if(bud_count == 2){
-    Run_For_Encoder_Count(Check_Mirror(15000,11900));
+    Run_For_Encoder_Count(Check_Mirror(13000,11900));
   }else{
-    Run_For_Encoder_Count(Check_Mirror(13500,8500));
+    Run_For_Encoder_Count(Check_Mirror(9500,8500));
   }
   Motors_Brake(255,0);
   Parameters_Reset();
@@ -902,7 +919,7 @@ void Tokyo2(){
   }  
   Motors_Brake(255,255);*/
  // while(!Parallelogram_Tripped);
-Parallelogram_Stop();
+  Parallelogram_Stop();
   Wait_For_TSOP();
   Parallelogram_Up();
 

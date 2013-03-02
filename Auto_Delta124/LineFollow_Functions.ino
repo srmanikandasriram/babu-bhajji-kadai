@@ -417,12 +417,15 @@ void LineFollow34_Fast(){
   } 
 }
 
-int LineFollow12_Encoders(long int encoder_value){
+int LineFollow12_Encoders(long int encoder_value,int type){
   Query_Launchpad();
   LAPTOP.print(encoder_motor1);   LAPTOP.print("\t");   LAPTOP.println(encoder_motor2);
   
   if((encoder_motor1+encoder_motor2)/2 < encoder_value){
-    LineFollow12_Slow();
+    if(type == 1)
+      LineFollow12_Slow();
+    else if(type == 2)
+      LineFollow12();
     return 0;
   }
   Motors_Brake(255,255);

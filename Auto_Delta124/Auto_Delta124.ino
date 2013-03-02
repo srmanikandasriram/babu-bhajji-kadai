@@ -260,12 +260,12 @@ class Custom_Servo{
 #define SERVO_ANG_R3F 112    /// change to new value
 
 // mirror true is for blue arena
-#define SERVO_ANG_L1MF 140 // reset position, left is the one which drops first
+#define SERVO_ANG_L1MF 150 // reset position, left is the one which drops first
 #define SERVO_ANG_L2MF 107// piking up leaves position
 #define SERVO_ANG_L3MF 63// position for dropping two leaves
 #define SERVO_ANG_R1MF 20
 #define SERVO_ANG_R2MF 55
-#define SERVO_ANG_R3MF 57    /// change to new value
+#define SERVO_ANG_R3MF 53    /// change to new value
 
 #define TURRET_ANG1 1180
 #define TURRET_ANG2 1750
@@ -276,7 +276,7 @@ class Custom_Servo{
 #define TURRET_ANG1MF 950
 #define TURRET_ANG2MF 1950
 #define TURRET_ANG3MF 1800
-#define TURRET_ANG4MF 1900
+#define TURRET_ANG4MF 1700
 #define TURRET_ANG5MF 10330
 
 #define TURRET_ANG1F 950
@@ -455,9 +455,6 @@ void setup(){
   pinMode(A7, INPUT);
   pinMode(38, OUTPUT);
   do_toggle = true;
-
-  // for Sharp sensor
-  digitalWrite(38, Check_Mirror(LOW, HIGH)); 
   
   // for PID
   input = 0;
@@ -469,6 +466,10 @@ void setup(){
 //  Handshake_Launchpad();
   Actuate_High(GRIPPER);
   Initialise();
+
+  // for Sharp sensor
+  digitalWrite(38, Check_Mirror(LOW, HIGH)); 
+
   LAPTOP.println("Initialised");
   if(reset_enable){
     while(reset_switch){
@@ -641,8 +642,8 @@ void Read_External_Byte(){
 
 void Initialise(){
   // Code to read external byte and set the parameters respectively
-  distance_straight_line = Check_Mirror(23250, 24250);
   Read_External_Byte();
+  distance_straight_line = Check_Mirror(24250, 24250);
   if( mirror ){
     motor1.Attach(25,24,10);
     motor2.Attach(22,23,9);

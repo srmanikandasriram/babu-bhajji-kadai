@@ -56,7 +56,7 @@ void Auto_Stage_Two(){
   Parameters_Reset();
   while(1){
     //Parallelogram_Reached(2);
-    if(!LineFollow12_Encoders(5000)) //&& Parallelogram_Reached(2) && encoder_turret>TURRET_ANG5) 
+    if(!LineFollow12_Encoders(5000,1)) //&& Parallelogram_Reached(2) && encoder_turret>TURRET_ANG5) 
       break;    
   }
   while(LineFollow_Curve_Precision());

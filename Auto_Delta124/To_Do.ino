@@ -13,3 +13,11 @@
  
  
  /* Servo - Right angle */
+ 
+ 
+ /*  Checklist
+ 1. first turn angle
+ 2. tokyo1 distance
+ 3. tokyo2 distance
+ 4. to curve2 distance
+ */
