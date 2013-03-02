@@ -422,7 +422,7 @@ int LineFollow12_Encoders(long int encoder_value){
   LAPTOP.print(encoder_motor1);   LAPTOP.print("\t");   LAPTOP.println(encoder_motor2);
   
   if((encoder_motor1+encoder_motor2)/2 < encoder_value){
-    LineFollow12();
+    LineFollow12_Slow();
     return 0;
   }
   Motors_Brake(255,255);

@@ -96,7 +96,7 @@ void Handshake_Launchpad(){
 
 // Function for stopping parallelogram at top position. Parallelogram will stop only if trip is switched else will continue to try to rise up.
 int Parallelogram_Tripped(){
-   if(digitalRead(PARALLELOGRAM_TRIP_SWITCH_TOP)){
+   if(Trip_Switch(PARALLELOGRAM_TRIP_SWITCH_TOP)){
      Parallelogram_Stop();
      return 1;
    }else{
@@ -157,4 +157,17 @@ void Check_TSOP(){
     delay(100);
   }
   LAPTOP.read();
+}
+
+int Trip_Switch(int pin){
+  if(digitalRead(pin)){
+    return 0;
+  }else{
+    delay(10);
+    if(digitalRead(pin))
+      return 1;
+    else
+      return 0;    
+  }
+  
 }
