@@ -48,8 +48,6 @@ void LineFollow_Straight_Fast(){
   }else if(S4.High()){
     Move_Forward(90,0);
     motor2.Brake(255);
-  }else{
-    Move_Forward(30,30);
   }
 }
 
@@ -143,13 +141,9 @@ int LineFollow_Encoders(long int encoder_value, int curve_id){
     }else if(curve_id == 2){
       LineFollow_Curve2();
     }else if(curve_id == 3){
-      if(LineFollow_Straight_Precision())
-        return 1;
+      LineFollow_Straight_Precision(); 
     }else if(curve_id == 4){
-      LineFollow_Straight_Precision_slow();       
-    }else if(curve_id == 5){
-      if(LineFollow_Curve_Precision_Slow())
-        return 1;
+     LineFollow_Straight_Precision_slow();
     }else{
       LineFollow_Straight();
     }
@@ -423,15 +417,12 @@ void LineFollow34_Fast(){
   } 
 }
 
-int LineFollow12_Encoders(long int encoder_value,int type){
+int LineFollow12_Encoders(long int encoder_value){
   Query_Launchpad();
   LAPTOP.print(encoder_motor1);   LAPTOP.print("\t");   LAPTOP.println(encoder_motor2);
   
   if((encoder_motor1+encoder_motor2)/2 < encoder_value){
-    if(type == 1)
-      LineFollow12_Slow();
-    else if(type == 2)
-      LineFollow12();
+    LineFollow12_Slow();
     return 0;
   }
   Motors_Brake(255,255);
@@ -611,37 +602,6 @@ int LineFollow_Curve_Precision(){
     motor2.Brake(255);
   }else{
     Move_Forward(20,30);
-  }
-  if(S2.High() && S3.High()){
-    Motors_Brake(255,255);
-    return 1;
-  }
-  return 0;
-}
-
-int LineFollow_Curve_Precision_Slow(){
-  LAPTOP.println("LineFollow Curve Precision ");
-  Serial_Print_Sensors();
-  if(S2.High()){
-    if(S1.High()){
-      Move_Forward(0,30);
-      motor1.Brake(255);
-    }else{
-      Move_Forward(0,30); 
-    }
-  }else if(S1.High()){
-    Move_Forward(0,30);
-    motor1.Brake(255);
-  }else if(S3.High()){
-    if(S4.High()){
-      Move_Forward(20,0);
-      motor2.Brake(255);
-    }else{
-      Move_Forward(20,0);
-    }  
-  }else if(S4.High()){
-    Move_Forward(20,0);
-    motor2.Brake(255);
   }
   if(S2.High() && S3.High()){
     Motors_Brake(255,255);

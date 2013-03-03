@@ -220,6 +220,40 @@ void PID_Adjust(){
  //     path_phase++;
 //      Transform[path_phase]();
     }
+  }else if( pid_type == SOFT_TURN_PIDR_SLOW ){
+    /** soft turn PID **/
+    input = encoder_motor2;
+    pid.Compute();
+    if(output>150){
+      motor2.pwm(150);
+    }else if(output>45){
+      motor2.pwm(output);
+    }else{
+      motor2.pwm(15);
+    }
+    if(S1.High()||S2.High()||S3.High()||S4.High()){
+      LAPTOP.println("\n DETECTED LINE");
+      line_detected = true;
+ //     path_phase++;
+//      Transform[path_phase]();
+    }
+  }else if( pid_type == SOFT_TURN_PIDL_SLOW ){
+    /** soft turn PID **/
+    input = encoder_motor1;
+    pid.Compute();
+    if(output>150){
+      motor1.pwm(150);
+    }else if(output>45){
+      motor1.pwm(output);
+    }else{
+      motor1.pwm(15);
+    }
+    if(S1.High()||S2.High()||S3.High()||S4.High()){
+      LAPTOP.println("\n DETECTED LINE");
+      line_detected = true;
+ //     path_phase++;
+//      Transform[path_phase]();
+    }
   }
 }
 

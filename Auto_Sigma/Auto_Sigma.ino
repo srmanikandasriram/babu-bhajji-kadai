@@ -1,6 +1,6 @@
 // Core AutoBot Code
-// mirror is true for blue arena, mirror is false for red arena
-// 02 March 2013 06 16 PM
+// Mirror is true for blue arena, Mirror is false for red arena
+// 02 March 2013 23 49 PM
 
 /**********************************************************************
   Bot Data:
@@ -14,7 +14,6 @@
 #include <PID_v1.h>
 #include <Servo.h>
 #include <inttypes.h>
-#include <LiquidCrystal.h>
 
 /** Class definition for motor **/
 class Motor{
@@ -209,6 +208,7 @@ class Custom_Servo{
 };
 
 /** Macros and constants**/
+
 #define Actuate_High(pin) digitalWrite(pin,HIGH)
 #define Actuate_Low(pin) digitalWrite(pin,LOW)
 #define LAPTOP Serial
@@ -216,14 +216,18 @@ class Custom_Servo{
 #define FWD 1
 #define BCK 0
 
+//Pin definitons
+
 #define SERVO_LFT 6
 #define SERVO_RGT 7
 
 #define TURRET_ENCODER_PIN 0
 #define TURRET_SENSOR_PIN A10
-#define PARALLELOGRAM_SENSOR_PIN 3
+
 #define SHARPR_SENSOR_PIN A6
 #define SHARPL_SENSOR_PIN A2
+
+#define PARALLELOGRAM_SENSOR_PIN 3
 #define PARALLELOGRAM_TRIP_SWITCH_BOTTOM 20
 #define PARALLELOGRAM_TRIP_SWITCH_TOP A7
 
@@ -232,8 +236,14 @@ class Custom_Servo{
 #define RIGHT_VG 46
 #define V_PISTON 42
 #define GRIPPER 43
+
 #define PARALLELOGRAM_PIN1 39
 #define PARALLELOGRAM_PIN2 40
+
+#define COMM_TSOP_1 16
+#define COMM_TSOP_2 17
+#define COMM_TSOP_M1 14
+#define COMM_TSOP_M2 15
 
 #define VSOFTBRAKE 100
 #define HARDBRAKE 255
@@ -241,8 +251,6 @@ class Custom_Servo{
 #define STRAIGHT_LINE_PID 1
 #define SOFT_TURN_PIDL 2
 #define SOFT_TURN_PIDR 3
-#define SOFT_TURN_PIDR_SLOW 4
-#define SOFT_TURN_PIDL_SLOW 5
 
 #define AUTO_PID 1
 #define AUTO_FALLBACK 2
@@ -262,12 +270,12 @@ class Custom_Servo{
 #define SERVO_ANG_R3F 112    /// change to new value
 
 // mirror true is for blue arena
-#define SERVO_ANG_L1MF 150 // reset position, left is the one which drops first
+#define SERVO_ANG_L1MF 140 // reset position, left is the one which drops first
 #define SERVO_ANG_L2MF 107// piking up leaves position
-#define SERVO_ANG_L3MF 57// position for dropping two leaves
+#define SERVO_ANG_L3MF 63// position for dropping two leaves
 #define SERVO_ANG_R1MF 20
 #define SERVO_ANG_R2MF 55
-#define SERVO_ANG_R3MF 53    /// change to new value
+#define SERVO_ANG_R3MF 57    /// change to new value
 
 #define TURRET_ANG1 1180
 #define TURRET_ANG2 1750
@@ -278,7 +286,7 @@ class Custom_Servo{
 #define TURRET_ANG1MF 950
 #define TURRET_ANG2MF 1950
 #define TURRET_ANG3MF 1800
-#define TURRET_ANG4MF 1700
+#define TURRET_ANG4MF 1900
 #define TURRET_ANG5MF 10330
 
 #define TURRET_ANG1F 950
@@ -287,10 +295,7 @@ class Custom_Servo{
 #define TURRET_ANG4F 2100
 #define TURRET_ANG5F 10330
 
-#define COMM_TSOP_1 16
-#define COMM_TSOP_2 17
-#define COMM_TSOP_M1 14
-#define COMM_TSOP_M2 15
+
 
 #define VSLOW 20
 #define FAST 100
@@ -343,7 +348,7 @@ class Custom_Servo{
 
 // for Array of Functions
 typedef void (*fn) (void);
-fn Transform[] = {Initialise, Pick_Leaves, Accelerate_Bot, Decelerate_Bot, Drop_First_Leaf, Drop_Second_Leaf, Soft_Turn, Auto_Stage_One_Complete, Auto_Stage_Two};
+
 fn Transform_Fallback[] = {Initialise, To_Pick_LeavesF, Pick_LeavesF, Move_Straight_FastF,
                            First_LineFollow, Drop_Two_Leaves, Latitude_To_Last_Leaf, To_Last_Leaf, Drop_Last_Leaf,
                            To_First_Bud, Tokyo, To_Bud_Transfer, Transfer_Bud, To_Curve2, To_Next_Bud,
@@ -373,7 +378,6 @@ uint16_t distance_leaves_pickup = 2930, distance_straight_line = 23250, distance
 /** Global declarations **/
 Motor motor1, motor2, turret_motor(27, 26, 11); // the order of pin numbers determine the direction
 Sensor S1(false), S2(false), S3(false), S4(false), turret_sensor(false), parallelogram_sensor(false);
-LiquidCrystal LCD(13, 34, 30, 31, 32, 33);
 Custom_Servo servo1, servo2;
 
 const int actuations[] = {0, 39, 40, 42, 43, 44, 45, 46};
@@ -393,10 +397,8 @@ const int deceleration_delay = 2, deceleration = 5;
 const int encoder_count = 22134;  // Encoder count for hard turn 5802
 const int delay_long = 5;
 boolean stage_one_complete = false, mirror, ps_complete = false;
-boolean reset_pc = false, reset_switch = false, omit_leaf1 = false, omit_leaf2 = false, omit_leaf3 = false, omit_bud1 = false;//, omit_bud2 = false, omit_bud3 = false;
-boolean sharp_detected = false;
-int threshold_edge = Check_Mirror(430,350), threshold_mid = Check_Mirror(310, 430);
-uint16_t distance_to_curve2;
+boolean reset_enable = false, reset_switch = true, omit_leaf1 = false, omit_leaf2 = false, omit_leaf3 = false, omit_bud1 = false;//, omit_bud2 = false, omit_bud3 = false;
+
 // For PID
 double setpoint, input, output;
 double cons_kp = 1.0, cons_ki = 0, cons_kd = 0;
@@ -422,12 +424,21 @@ int parallelogram_count = 0, turret_count = 0;
 int encoder_turret_target = 0;
 int bud_count = 0;
 
+//Master Toggle Enable
 int do_toggle = true;
 
+//For parallel tasks
 long int prevmillis = 0;
 
+//Variables declared in Auto_Stage_One - Regarding PID
+float mx, my;
+float distance_per_count = PI*12.0/1668;
+float radians_per_count = distance_per_count/50.0;
+float motor_heading = PI/2.0;
+long int prev_left_counts, prev_right_counts;
+
 void setup(){
-  // //
+  
   LAPTOP.begin(115200);
   LAUNCHPAD.begin(115200);
 
@@ -459,6 +470,9 @@ void setup(){
   pinMode(A7, INPUT);
   pinMode(38, OUTPUT);
   do_toggle = true;
+
+  // for Sharp sensor
+  digitalWrite(38, Check_Mirror(LOW, HIGH)); 
   
   // for PID
   input = 0;
@@ -470,72 +484,70 @@ void setup(){
 //  Handshake_Launchpad();
   Actuate_High(GRIPPER);
   Initialise();
-
-  // for Sharp sensor
-  digitalWrite(38, Check_Mirror(LOW, HIGH)); 
-
   LAPTOP.println("Initialised");
-  while(reset_switch){
-    LAPTOP.println(analogRead(SHARP_SENSOR_PIN)); // for sharp
-    
-    if(digitalRead(A1)){
-      Parallelogram_Reset();
-    }
-    if(digitalRead(8)){
-      Parallelogram_Up();
-      while(!Trip_Switch(PARALLELOGRAM_TRIP_SWITCH_TOP));
-      Parallelogram_Stop();
-    }      
-    if(digitalRead(A0)){
-      Move_Turret_Dir('a');
-    }       
-    if(digitalRead(A4)){
-      Move_Turret_Dir('c');
-    }
-  }  
-
-  if(reset_pc){
-    char input = Serial_Wait();
-    while( input != 'q' ){
-      if( input == 'c' ){
-        Check_Motors(100);
-      }else if( input == 't' ){
-        Turret_Reset();
-      }else if( input == 'p' ){ 
-       
-        input = Serial_Wait();
-        if( input == 'u' ) {
-          Parallelogram_Up();
-          while(!Trip_Switch(PARALLELOGRAM_TRIP_SWITCH_TOP));
-          Parallelogram_Stop();
-        }else if( input == 'd' ){
-          Parallelogram_Reset();
-        }else if( input == 'i' ){
-           Parallelogram_InverseLogic_Up();
-         }
-       }
-       else if( input == 'P' ){
-         input = Serial_Wait();
-         if( input == 'u' ) {
-           Parallelogram_Up();
-           Serial_Wait();
-           Parallelogram_Stop();
-         }else if( input == 'd' ){
-           Parallelogram_Down();
-           Serial_Wait();
-           Parallelogram_Stop();
-         }
-       }else if (input == 'm'){
-          Auto_MSC();
-       }else if( input == 'k'){
-         Actuate_High(GRIPPER);
-       }else if( input == 'l'){
-         Actuate_Low(GRIPPER);      
-       }else{
-         LAPTOP.println("Enter t for turret reset or p for parallelogram reset or q to continue");
+  if(reset_enable){
+    while(reset_switch){
+      LAPTOP.println(analogRead(SHARP_SENSOR_PIN)); // for sharp
+      
+      if(digitalRead(A1)){
+        Parallelogram_Reset();
+      }
+      if(digitalRead(8)){
+        Parallelogram_Up();
+        while(!Trip_Switch(PARALLELOGRAM_TRIP_SWITCH_TOP));
+        Parallelogram_Stop();
+      }      
+      if(digitalRead(A0)){
+        Move_Turret_Dir('a');
+      }       
+      if(digitalRead(A4)){
+        Move_Turret_Dir('c');
+      }
+    }  
+  
+    if(!reset_switch){
+      char input = Serial_Wait();
+      while( input != 'q' ){
+        if( input == 'c' ){
+          Check_Motors(100);
+        }else if( input == 't' ){
+          Turret_Reset();
+        }else if( input == 'p' ){ 
+         
+          input = Serial_Wait();
+          if( input == 'u' ) {
+            Parallelogram_Up();
+            while(!Trip_Switch(PARALLELOGRAM_TRIP_SWITCH_TOP));
+            Parallelogram_Stop();
+          }else if( input == 'd' ){
+            Parallelogram_Reset();
+          }else if( input == 'i' ){
+            Parallelogram_InverseLogic_Up();
+          }
         }
-       input = Serial_Wait();
-     }
+        else if( input == 'P' ){
+          input = Serial_Wait();
+          if( input == 'u' ) {
+            Parallelogram_Up();
+            Serial_Wait();
+            Parallelogram_Stop();
+          }else if( input == 'd' ){
+            Parallelogram_Down();
+            Serial_Wait();
+            Parallelogram_Stop();
+          }
+        }else if (input == 'm'){
+          Auto_MSC();
+        }else if( input == 'k'){
+          Actuate_High(GRIPPER);
+        }else if( input == 'l'){
+          Actuate_Low(GRIPPER);      
+        }else{
+          LAPTOP.println("Enter t for turret reset or p for parallelogram reset or q to continue");
+        }
+        input = Serial_Wait();
+      }
+    }
   }
   Parameters_Reset();
   LAPTOP.println("Here we begin =>");  
@@ -550,14 +562,8 @@ void loop(){
   while(Trip_Switch(PARALLELOGRAM_TRIP_SWITCH_BOTTOM));
   Parallelogram_Stop();
 
-  if(strategy == AUTO_PID ){
-    LAPTOP.println("Commencing Auto PID ");
-    Auto_Stage_One();
-    Auto_Stage_Two();
-  }else if( strategy == AUTO_FALLBACK ){
-    LAPTOP.println("Commencing Auto Fallback ");
-    Auto_Fallback();
-  }
+  LAPTOP.println("Commencing Auto Fallback ");
+  Auto_Fallback();
 
   LAPTOP.println("I am done. Thank you.");
   while(1);
@@ -572,7 +578,7 @@ void Read_External_Byte(){
     LAPTOP.println(" We have toggles ! ");
   }
   if( digitalRead(A3) == HIGH ){
-    reset_pc = true;
+    reset_enable = true;
     LAPTOP.println(" Skip reset ");
   }
   if( digitalRead(53) == HIGH) {
@@ -606,46 +612,13 @@ void Read_External_Byte(){
     bud_count = 1;
     LAPTOP.println(" leaf3 to be omitted ");
   }
-
-  /*
-  // Pins for pushbutton switches to set if bud is omitted or not
-  
-  if( digitalRead(!@#) == HIGH ){
-    omit_bud1 = true;
-    omit_leaf1 = true;
-    omit_leaf2 = true;
-    omit_leaf3 = true; 
-    LAPTOP.println(" bud1 to be omitted ");
-  
-  if( digitalRead(!@#) == HIGH ){
-    omit_bud2 = true;
-    omit_leaf1 = true;
-    omit_leaf2 = true;
-    omit_leaf3 = true; 
-    LAPTOP.println(" bud2 to be omitted ");
-  }
-  if( digitalRead(!@#) == HIGH ){
-    omit_bud3 = true;
-    omit_leaf1 = true;
-    omit_leaf2 = true;
-    omit_leaf3 = true; 
-    LAPTOP.println(" bud3 to be omitted ");
-  }
-  
-  */
-  if( digitalRead(50) == LOW ){
-    strategy = AUTO_PID;
-    LAPTOP.println(" Straight line PID strategy ");
-  }else{
-    strategy = AUTO_FALLBACK;
-    LAPTOP.println(" Fallback LineFollow strategy ");
-  }
 }
 
 void Initialise(){
-  // Code to read external byte and set the parameters respectively
+  // Code to read external byte and set up corresponding parameters
+
   Read_External_Byte();
-  distance_straight_line = Check_Mirror(23250, 24250);
+  // Set up Motors, Servos, Servo Angles and Line Sensors
   if( mirror ){
     motor1.Attach(25,24,10);
     motor2.Attach(22,23,9);
@@ -679,11 +652,17 @@ void Initialise(){
     S3.Attach(A12);
     S4.Attach(A11);
   }
-  servo1.Home();
-  servo2.Home();
+  
+  //Set up SHARP sensors 
   SHARP_SENSOR_PIN = Check_Mirror(SHARPR_SENSOR_PIN, SHARPL_SENSOR_PIN);
+  //Set up straight distance
+  distance_straight_line = Check_Mirror(23250, 24250);
+  //Overwrite Straight Distance in case of third leaf failure or bud 1 failure 
   if(omit_leaf1&&omit_leaf2&&bud_count==0){
     distance_straight_line = 33000;
     LAPTOP.println("Leaf3 to be done!");
   } 
+  //Servo initial position - Turret is already aligned
+  servo1.Home();
+  servo2.Home();
 }
